@@ -40,14 +40,50 @@ follows the record into whichever one it is and lists the documents on offer:
 }
 ```
 
-Plenty of theses are not public, and `files` comes back empty with a `note` saying why —
-that is a real answer, not a failure:
+**`access` does not decide what you can download.** It describes the copy held by
+theses.cz, not the school's own policy. The VŠE thesis `pl09jx` is marked *"autentizovaným
+zaměstnancům ze stejné školy/fakulty"* on theses.cz while `vskp.vse.cz` links its 7.2 MB
+PDF to anyone — so always look at `files`, not at `access`.
 
-- `access: ["světu"]` — public to the world, expect files
-- `access: ["autentizovaným zaměstnancům ze stejné školy/fakulty"]` and similar — restricted
-  to that school; use `archive_url` and log in yourself
-- some repositories put a CAPTCHA in front of anonymous visitors; the server reports this
-  and does not try to get around it
+That link had no `.pdf` in the URL; the filename was only in the link text. Files are
+therefore matched by href **and** by label, and extensionless URLs are confirmed with a
+HEAD request (`confirmed`, `content_type`) rather than optimistically reported as PDFs.
+
+### What actually comes back
+
+Measured over 24 theses drawn from six unrelated subject searches:
+
+| repository | result |
+|---|---|
+| `is.muni.cz` | 7/7 — full text, both reviewer reports, usually DOCX and TXT too |
+| `vskp.vse.cz` | thesis, appendix and both reports, via extensionless `/zp/` URLs |
+| `is.vsfs.cz`, `is.slu.cz`, `is.ambis.cz`, `is.ucp.cz` | 0/14 — CAPTCHA for anonymous visitors |
+| `stag.upol.cz`, `portal.ujep.cz` | 0/2 — different systems, not implemented |
+
+The CAPTCHA is not bot detection — `is.muni.cz` serves this same client fine. Those
+schools gate *anonymous* access, and a human in a browser meets the same wall. This server
+reports it and does not try to defeat it.
+
+### Using your own login
+
+The way past a gate is to be someone entitled to pass it. Theses marked *"všem
+autentizovaným"* (any authenticated user) and repositories that gate anonymous visitors
+both open up once you are logged in. Log in through your browser, copy the session cookie
+and hand it over per host:
+
+```bash
+THESES_COOKIES='{"theses.cz": "__Host-issession=…", "is.vsfs.cz": "__Host-issession=…"}'
+```
+
+Cookies are scoped to their own domain and are never sent to any other host. This gets you
+what your account is entitled to — nothing more.
+
+### Known gaps
+
+STAG-based portals (`stag.upol.cz`, and the same software at ZČU, UPCE, JČU, TUL) put the
+download behind a session-bound portlet flow with `pc_phs` and `_csrf` parameters, and UPOL
+does not expose the STAG web service at the usual `/ws/services/rest2/` path. Not
+implemented — PRs welcome.
 
 ## Install
 

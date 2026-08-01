@@ -5,7 +5,7 @@ description = "MCP server for theses.cz — search Czech university theses"
 readme = "README.md"
 requires-python = ">=3.10"
 license = { text = "MIT" }
-dependencies = ["mcp>=1.2", "requests", "beautifulsoup4", "lxml"]
+dependencies = ["mcp>=1.2", "requests", "urllib3", "beautifulsoup4", "lxml"]
 
 [project.urls]
 Homepage = "https://github.com/koprjaa/theses-mcp"

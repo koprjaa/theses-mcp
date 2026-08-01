@@ -1,10 +1,14 @@
 """MCP server for theses.cz — search Czech university theses and their metadata."""
 
+import json
+import os
 import re
 import sys
 
 import requests
 from bs4 import BeautifulSoup
+from requests.adapters import HTTPAdapter
+from urllib3.util import Retry
 
 try:  # mcp >= 2.0 renamed FastMCP to MCPServer; same constructor, .tool() and .run()
     from mcp.server.mcpserver import MCPServer as _Server
@@ -16,6 +20,39 @@ mcp = _Server("theses")
 
 _s = requests.Session()
 _s.headers["User-Agent"] = "theses-mcp (+https://github.com/koprjaa/theses-mcp)"
+# school systems drop connections and rate-limit; back off instead of failing the call
+_s.mount("https://", HTTPAdapter(max_retries=Retry(
+    total=3, backoff_factor=1.5, status_forcelist=[429, 500, 502, 503, 504],
+    allowed_methods=["GET", "HEAD"])))
+
+
+def _load_cookies() -> list:
+    """Attach the user's own logged-in sessions from $THESES_COOKIES.
+
+    Many theses are marked "všem autentizovaným" (any authenticated user) or are held by
+    a school whose repository asks anonymous visitors for a CAPTCHA. Both open up once
+    you are logged in as yourself. Log in through the browser, copy the session cookie
+    and pass it per host — cookies are scoped to their own domain, never sent elsewhere:
+
+        THESES_COOKIES='{"theses.cz": "__Host-issession=…", "is.vsfs.cz": "…"}'
+    """
+    raw = os.environ.get("THESES_COOKIES", "").strip()
+    if not raw:
+        return []
+    try:
+        mapping = json.loads(raw)
+    except json.JSONDecodeError:
+        print("THESES_COOKIES is not valid JSON — ignored", file=sys.stderr)
+        return []
+    for host, blob in mapping.items():
+        for part in blob.split(";"):
+            if "=" in part:
+                name, value = part.split("=", 1)
+                _s.cookies.set(name.strip(), value.strip(), domain=host)
+    return list(mapping)
+
+
+AUTHENTICATED = _load_cookies()
 
 
 def _get(url: str) -> BeautifulSoup:
@@ -148,6 +185,46 @@ def detail(id_or_url: str) -> dict:
 
 
 DOC_EXT = (".pdf", ".docx", ".doc", ".rtf", ".odt", ".zip", ".txt")
+DOC_RE = re.compile(r"(\S+\.(?:pdf|docx?|rtf|odt|zip|txt))\b", re.I)
+DOC_MIME = ("application/pdf", "application/msword", "application/zip",
+            "application/vnd.openxmlformats", "application/octet-stream")
+
+
+def _documents(page, base: str) -> list:
+    """Collect downloadable files from a school repository page.
+
+    Extensions in the href are the easy case (is.muni.cz). Others hide the file behind
+    an extensionless URL and put the name in the link text — VŠE renders
+    "Hlavní práce 82000_kliv06.pdf, 7.2 MB Stáhnout" pointing at /zp/82000 — so the
+    label is parsed too, and anything still ambiguous is confirmed with a HEAD request.
+    """
+    out, seen = [], set()
+    for a in page.select("a[href]"):
+        href = requests.compat.urljoin(base, a["href"])
+        if href in seen or href.startswith("mailto:"):
+            continue
+        label = _txt(a)
+        named = DOC_RE.search(label)
+        if not (href.lower().split("?")[0].endswith(DOC_EXT) or named):
+            continue
+        seen.add(href)
+        out.append({
+            "label": re.sub(r"\s*St[áa]hnout\s*$", "", label) or href.rsplit("/", 1)[-1],
+            "filename": named.group(1) if named else href.rsplit("/", 1)[-1],
+            "url": href,
+        })
+
+    for f in out:  # confirm the extensionless ones actually serve a file
+        if f["url"].lower().split("?")[0].endswith(DOC_EXT):
+            continue
+        try:
+            h = _s.head(f["url"], timeout=20, allow_redirects=True)
+            ctype = h.headers.get("Content-Type", "")
+            f["confirmed"] = any(ctype.startswith(m) for m in DOC_MIME)
+            f["content_type"] = ctype.split(";")[0]
+        except Exception:
+            f["confirmed"] = None
+    return out
 
 
 @mcp.tool()
@@ -160,10 +237,13 @@ def fulltext(id_or_url: str) -> dict:
 
     id_or_url: thesis code ("7lfo74"), /id/7lfo74/ or a full URL.
 
-    Returns `access` (theses.cz visibility, "světu" = public), `files` (label + url,
-    usually the thesis plus supervisor/opponent reports) and `note` when nothing is
-    downloadable. Restricted theses and repositories behind a login or CAPTCHA return
-    an empty `files` — that is a real answer, not an error; use `archive_url` manually.
+    `access` is the visibility of the theses.cz copy and does NOT decide what you can
+    download: a thesis marked "autentizovaným zaměstnancům ze stejné školy" on theses.cz
+    is often served freely by the school's own repository, so always check `files`.
+
+    Each file carries `label`, `filename` and `url`; extensionless URLs also get
+    `confirmed` and `content_type` from a HEAD request. An empty `files` plus a `note`
+    means the school really does gate it (login or CAPTCHA) — a real answer, not an error.
     """
     code = id_or_url.strip("/ ").split("/")[-1]
     soup = _get(f"{BASE}/id/{code}/")
@@ -184,17 +264,13 @@ def fulltext(id_or_url: str) -> dict:
         res["note"] = f"school repository unreachable: {type(e).__name__}"
         return res
 
-    seen = set()
-    for a in page.select("a[href]"):
-        href = requests.compat.urljoin(archive, a["href"])
-        if not href.lower().split("?")[0].endswith(DOC_EXT) or href in seen:
-            continue
-        seen.add(href)
-        res["files"].append({"label": _txt(a) or href.rsplit("/", 1)[-1], "url": href})
+    res["files"] = _documents(page, archive)
 
     if not res["files"]:
+        host = requests.compat.urlparse(archive).netloc
         wall = "opište" in page.get_text() or "captcha" in page.get_text().lower()
-        res["note"] = ("school repository requires a CAPTCHA/login for anonymous access"
+        hint = "" if host in AUTHENTICATED else f" — set THESES_COOKIES for {host} to use your own login"
+        res["note"] = (f"repository gates anonymous access with a CAPTCHA/login{hint}"
                        if wall else "no public files listed; access is likely restricted")
     return res
 
@@ -216,10 +292,12 @@ def _selftest():
     pub = fulltext("7lfo74")  # public thesis → real PDF in the school repository
     assert pub["access"] == ["světu"], pub["access"]
     assert any(f["url"].endswith(".pdf") for f in pub["files"]), pub
-    priv = fulltext("pl09jx")  # restricted → empty file list plus an explanation
-    assert priv["files"] == [] and priv["note"], priv
+    # restricted on theses.cz, but VŠE serves the PDF from an extensionless /zp/ URL
+    vse = fulltext("pl09jx")
+    main = next(f for f in vse["files"] if f["filename"].endswith(".pdf"))
+    assert main["confirmed"] and main["content_type"] == "application/pdf", main
     print("OK", r["total"], "hits |", d["author"], "|", d["type"],
-          "|", len(pub["files"]), "files")
+          "|", len(pub["files"]), "+", len(vse["files"]), "files")
 
 
 def main():
