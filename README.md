@@ -13,6 +13,7 @@ metadata, and direct links to the publicly readable PDFs.
 |------|--------------|
 | `search(query, limit=10)` | Search records and thesis full texts. Supports theses.cz operators (`AND`, `OR`, `"phrase"`). Paginates by 10, max 50. |
 | `detail(id_or_url)` | Full record: author, CS/EN title and abstract, keywords, supervisor and opponent, defense date, full-text availability, school archive link, related theses. |
+| `fulltext(id_or_url)` | Follows the record into the school's own repository and lists the downloadable files — the thesis PDF plus supervisor/opponent reports. |
 
 `search` returns two kinds of hits:
 
@@ -20,9 +21,33 @@ metadata, and direct links to the publicly readable PDFs.
 - `kind="fulltext"` — a match **inside the thesis PDF**; `pdf_url` is a direct link to the
   full text, which your client can read directly
 
-Not every thesis is public. `detail` reports the restriction verbatim in
-`fulltext_access` (e.g. *"autentizovaným zaměstnancům ze stejné školy/fakulty"* — staff of
-the same faculty only) together with `archive_url`, the school's own repository.
+## Getting the PDF
+
+theses.cz stores metadata only — the files live in each school's own system. 64
+institutions are registered, but they are not 64 different problems: the large majority run
+the same IS software as theses.cz itself (`is.muni.cz`, `is.slu.cz`, `is.ambis.cz`,
+`is.vsfs.cz`, `is.jamu.cz`, …), with `vskp.vse.cz` and a few others alongside. `fulltext`
+follows the record into whichever one it is and lists the documents on offer:
+
+```json
+{
+  "access": ["světu"],
+  "archive_url": "https://is.muni.cz/th/avwwh/",
+  "files": [
+    {"label": "Plný text práce",   "url": "https://is.muni.cz/th/avwwh/Moutelik_Bakalarska_Prace_Final.pdf"},
+    {"label": "Posudek vedoucího", "url": "https://is.muni.cz/th/avwwh/posudek_vedouciho_Minjarikova.pdf"}
+  ]
+}
+```
+
+Plenty of theses are not public, and `files` comes back empty with a `note` saying why —
+that is a real answer, not a failure:
+
+- `access: ["světu"]` — public to the world, expect files
+- `access: ["autentizovaným zaměstnancům ze stejné školy/fakulty"]` and similar — restricted
+  to that school; use `archive_url` and log in yourself
+- some repositories put a CAPTCHA in front of anonymous visitors; the server reports this
+  and does not try to get around it
 
 ## Install
 
@@ -52,6 +77,7 @@ From a clone, use `pip install -e .` and `command: "theses-mcp"`.
 
 search("midjourney AND autorství")   → 12 hits, incl. public PDFs
 detail("c5uqln")                     → abstract, keywords, supervisor, defense date
+fulltext("7lfo74")                   → PDF, DOCX and both reviewer reports
 ```
 
 ## Notes

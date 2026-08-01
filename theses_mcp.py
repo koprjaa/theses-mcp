@@ -147,6 +147,58 @@ def detail(id_or_url: str) -> dict:
     }
 
 
+DOC_EXT = (".pdf", ".docx", ".doc", ".rtf", ".odt", ".zip", ".txt")
+
+
+@mcp.tool()
+def fulltext(id_or_url: str) -> dict:
+    """Resolve a thesis to downloadable full-text files in its school's repository.
+
+    theses.cz stores only metadata; the files live in each school's own system
+    (mostly the IS family — is.muni.cz, is.slu.cz, vskp.vse.cz …). This follows the
+    record to that repository and lists the documents it exposes publicly.
+
+    id_or_url: thesis code ("7lfo74"), /id/7lfo74/ or a full URL.
+
+    Returns `access` (theses.cz visibility, "světu" = public), `files` (label + url,
+    usually the thesis plus supervisor/opponent reports) and `note` when nothing is
+    downloadable. Restricted theses and repositories behind a login or CAPTCHA return
+    an empty `files` — that is a real answer, not an error; use `archive_url` manually.
+    """
+    code = id_or_url.strip("/ ").split("/")[-1]
+    soup = _get(f"{BASE}/id/{code}/")
+    if soup.select_one("#metadata") is None:
+        return {"error": f"record {code} not found"}
+
+    access = [_txt(li) for li in soup.select("#th-obsah li")]
+    link = soup.select_one(".plny_text_ext .ext_prez a[href]") or soup.select_one(".plny_text_ext a[href]")
+    archive = link["href"] if link else None
+    res = {"url": f"{BASE}/id/{code}/", "access": access, "archive_url": archive, "files": []}
+    if not archive:
+        res["note"] = "no school repository link in the record"
+        return res
+
+    try:
+        page = _get(archive)
+    except Exception as e:  # SSL/DNS/timeout — some school systems are simply broken
+        res["note"] = f"school repository unreachable: {type(e).__name__}"
+        return res
+
+    seen = set()
+    for a in page.select("a[href]"):
+        href = requests.compat.urljoin(archive, a["href"])
+        if not href.lower().split("?")[0].endswith(DOC_EXT) or href in seen:
+            continue
+        seen.add(href)
+        res["files"].append({"label": _txt(a) or href.rsplit("/", 1)[-1], "url": href})
+
+    if not res["files"]:
+        wall = "opište" in page.get_text() or "captcha" in page.get_text().lower()
+        res["note"] = ("school repository requires a CAPTCHA/login for anonymous access"
+                       if wall else "no public files listed; access is likely restricted")
+    return res
+
+
 def _selftest():
     """Live check against theses.cz — the parsers break when the site markup changes."""
     r = search("midjourney", limit=12)
@@ -161,7 +213,13 @@ def _selftest():
     d2 = detail("pl09jx")  # unclosed <li> must not collapse into a single entry
     assert d2["defense"] == ["Obhajoba proběhla 12. 6. 2023", "Vedoucí: Jiří Korčák",
                              "Oponent: Tomáš Sigmund"], d2["defense"]
-    print("OK", r["total"], "hits |", d["author"], "|", d["type"])
+    pub = fulltext("7lfo74")  # public thesis → real PDF in the school repository
+    assert pub["access"] == ["světu"], pub["access"]
+    assert any(f["url"].endswith(".pdf") for f in pub["files"]), pub
+    priv = fulltext("pl09jx")  # restricted → empty file list plus an explanation
+    assert priv["files"] == [] and priv["note"], priv
+    print("OK", r["total"], "hits |", d["author"], "|", d["type"],
+          "|", len(pub["files"]), "files")
 
 
 def main():
