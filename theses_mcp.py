@@ -63,11 +63,15 @@ def _get(url: str) -> BeautifulSoup:
     __Host-issession) returns the real page.
     """
     for _ in range(2):
-        html = _s.get(url, timeout=30).text
-        if 'http-equiv="refresh"' not in html[:400]:
+        r = _s.get(url, timeout=30)
+        if 'http-equiv="refresh"' not in r.text[:400]:
             break
     # lxml, not html.parser — theses.cz leaves <li> unclosed and html.parser nests them
-    return BeautifulSoup(html, "lxml")
+    soup = BeautifulSoup(r.text, "lxml")
+    # keep the post-redirect URL: hdl.handle.net hands off to the real repository host,
+    # and relative links must resolve against that, not against the handle
+    soup.final_url = r.url
+    return soup
 
 
 def _txt(node, *drop) -> str:
@@ -186,8 +190,6 @@ def detail(id_or_url: str) -> dict:
 
 DOC_EXT = (".pdf", ".docx", ".doc", ".rtf", ".odt", ".zip", ".txt")
 DOC_RE = re.compile(r"(\S+\.(?:pdf|docx?|rtf|odt|zip|txt))\b", re.I)
-DOC_MIME = ("application/pdf", "application/msword", "application/zip",
-            "application/vnd.openxmlformats", "application/octet-stream")
 
 
 def _documents(page, base: str) -> list:
@@ -217,14 +219,37 @@ def _documents(page, base: str) -> list:
     for f in out:  # confirm the extensionless ones actually serve a file
         if f["url"].lower().split("?")[0].endswith(DOC_EXT):
             continue
-        try:
-            h = _s.head(f["url"], timeout=20, allow_redirects=True)
-            ctype = h.headers.get("Content-Type", "")
-            f["confirmed"] = any(ctype.startswith(m) for m in DOC_MIME)
-            f["content_type"] = ctype.split(";")[0]
+        try:  # magic bytes, not Content-Type — DSpace answers text/html and serves a PDF
+            g = _s.get(f["url"], timeout=25, stream=True, headers={"Range": "bytes=0-7"})
+            magic = next(g.iter_content(8), b"")
+            g.close()
+            f["confirmed"] = magic.startswith((b"%PDF", b"PK\x03\x04", b"{\\rtf", b"\xd0\xcf\x11\xe0"))
         except Exception:
             f["confirmed"] = None
     return out
+
+
+def _archive_url(soup, code: str):
+    """Locate the school repository link for a record.
+
+    Usually it sits on the record page. VŠB and UHK records do not carry it there at
+    all — theses.cz only renders it in the search listing — so fall back to looking the
+    thesis up by title and reading the link off its own result row.
+    """
+    link = soup.select_one(".plny_text_ext .ext_prez a[href]") or soup.select_one(".plny_text_ext a[href]")
+    if link:
+        return link["href"]
+    title = _txt(soup.select_one(".th-title"))
+    if not title:
+        return None
+    listing = _get(f"{BASE}/vyhledavani/?search={requests.utils.quote(title)}&start=1")
+    for it in listing.select(".vyh_polozka"):
+        a = it.select_one("h4 a")
+        if a and a["href"].startswith(f"/id/{code}/"):
+            ext = [x["href"] for x in it.select("a[href^='http']") if "theses.cz" not in x["href"]]
+            if ext:
+                return ext[0]
+    return None
 
 
 @mcp.tool()
@@ -251,8 +276,7 @@ def fulltext(id_or_url: str) -> dict:
         return {"error": f"record {code} not found"}
 
     access = [_txt(li) for li in soup.select("#th-obsah li")]
-    link = soup.select_one(".plny_text_ext .ext_prez a[href]") or soup.select_one(".plny_text_ext a[href]")
-    archive = link["href"] if link else None
+    archive = _archive_url(soup, code)
     res = {"url": f"{BASE}/id/{code}/", "access": access, "archive_url": archive, "files": []}
     if not archive:
         res["note"] = "no school repository link in the record"
@@ -264,7 +288,7 @@ def fulltext(id_or_url: str) -> dict:
         res["note"] = f"school repository unreachable: {type(e).__name__}"
         return res
 
-    res["files"] = _documents(page, archive)
+    res["files"] = _documents(page, getattr(page, "final_url", archive))
 
     if not res["files"]:
         host = requests.compat.urlparse(archive).netloc
@@ -295,9 +319,13 @@ def _selftest():
     # restricted on theses.cz, but VŠE serves the PDF from an extensionless /zp/ URL
     vse = fulltext("pl09jx")
     main = next(f for f in vse["files"] if f["filename"].endswith(".pdf"))
-    assert main["confirmed"] and main["content_type"] == "application/pdf", main
-    print("OK", r["total"], "hits |", d["author"], "|", d["type"],
-          "|", len(pub["files"]), "+", len(vse["files"]), "files")
+    assert main["confirmed"], main
+    # VŠB: archive link missing from the record page, and a handle redirect to DSpace
+    vsb = fulltext("xggdtq")
+    assert vsb["archive_url"], "archive link not recovered from the search listing"
+    assert [f for f in vsb["files"] if f["confirmed"]], vsb["files"]
+    print("OK", r["total"], "hits |", d["author"], "|", d["type"], "|",
+          len(pub["files"]), "+", len(vse["files"]), "+", len(vsb["files"]), "files")
 
 
 def main():
