@@ -51,14 +51,21 @@ HEAD request (`confirmed`, `content_type`) rather than optimistically reported a
 
 ### What actually comes back
 
-Measured over 24 theses drawn from six unrelated subject searches:
+Measured over ~500 records from 20 unrelated subject searches, covering 17 distinct
+repository hosts:
 
-| repository | result |
-|---|---|
-| `is.muni.cz` | 7/7 — full text, both reviewer reports, usually DOCX and TXT too |
-| `vskp.vse.cz` | thesis, appendix and both reports, via extensionless `/zp/` URLs |
-| `is.vsfs.cz`, `is.slu.cz`, `is.ambis.cz`, `is.ucp.cz` | 0/14 — CAPTCHA for anonymous visitors |
-| `stag.upol.cz`, `portal.ujep.cz` | 0/2 — different systems, not implemented |
+| repository | schools | result |
+|---|---|---|
+| `is.muni.cz` | Masaryk University | works — full text, both reviewer reports, often DOCX and TXT |
+| `vskp.vse.cz`, `www.vse.cz` | VŠE Praha | works — thesis, appendix, both reports (extensionless `/zp/` URLs) |
+| `hdl.handle.net` | DSpace repositories, e.g. VŠB-TUO | works — handle redirects to the repository, bitstreams confirmed |
+| `is.ambis.cz`, `is.vsfs.cz`, `is.slu.cz`, `is.caritas-vos.cz`, `is.vstecb.cz`, `is.vszdrav.cz`, `is.cevro.cz`, `is.ucp.cz`, `is.jamu.cz`, `is.jabok.cz` | AMBIS, VŠFS, SU Opava, CARITAS, VŠTE, VŠ zdravotnická, CEVRO, UCP, JAMU, JABOK | CAPTCHA for anonymous visitors |
+| `is.vsh.cz`, `is.vshe.cz` | VŠH, VŠHE | broken TLS certificate (hostname mismatch) |
+| `evskp.uhk.cz` | Hradec Králové | different system, not implemented |
+| `stag.upol.cz`, `portal.ujep.cz` | UPOL, UJEP | STAG portal, not implemented |
+
+theses.cz lists 64 participating institutions; roughly twenty never appeared in the
+sample, so their repositories are untested rather than known-good.
 
 The CAPTCHA is not bot detection — `is.muni.cz` serves this same client fine. Those
 schools gate *anonymous* access, and a human in a browser meets the same wall. This server
@@ -80,10 +87,15 @@ what your account is entitled to — nothing more.
 
 ### Known gaps
 
-STAG-based portals (`stag.upol.cz`, and the same software at ZČU, UPCE, JČU, TUL) put the
-download behind a session-bound portlet flow with `pc_phs` and `_csrf` parameters, and UPOL
-does not expose the STAG web service at the usual `/ws/services/rest2/` path. Not
-implemented — PRs welcome.
+- **STAG portals** (`stag.upol.cz`, same software at ZČU, UPCE, JČU, TUL) put the download
+  behind a session-bound portlet flow with `pc_phs` and `_csrf` parameters, and UPOL does
+  not expose the STAG web service at the usual `/ws/services/rest2/` path.
+- **`evskp.uhk.cz`** and **`portal.ujep.cz`** are their own systems, unparsed.
+- **`is.vsh.cz`, `is.vshe.cz`** serve certificates that do not match their hostname. The
+  session verifies TLS and so refuses them; turning verification off would fix the symptom
+  and remove the guarantee that you are talking to the school at all.
+
+PRs welcome.
 
 ## Install
 
