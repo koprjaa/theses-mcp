@@ -47,6 +47,7 @@ fulltext("7lfo74")                   PDF, DOCX, and both reviewer reports
 | `search(query, limit=10)` | Searches records and thesis full texts. Accepts theses.cz operators `AND`, `OR`, and `"phrase"`. Pages by 10, maximum 50. |
 | `detail(id_or_url)` | Full record: author, Czech and English title and abstract, keywords, supervisor, opponent, defense date, full text availability, archive link, related theses. |
 | `fulltext(id_or_url)` | Follows the record into the school repository and lists the files. This includes the thesis PDF and the supervisor and opponent reports. |
+| `whoami()` | Reports which hosts `THESES_COOKIES` logs you in to, and whether each cookie is still accepted. |
 
 `search` returns two kinds of hit. A hit with `kind="record"` is a catalogue record and `url` points to the detail page. A hit with `kind="fulltext"` matched inside the thesis PDF and `pdf_url` links to the file.
 
@@ -96,7 +97,9 @@ One thesis was sampled for each of the 64 institutions, and separately about 500
 
 Roughly twenty institutions are still untested. The per-institution sweep picks a thesis by matching the school name in the result headers and misses them, which is a limit of the sampling and not a verdict on the school. VŠB proves the point: the sweep found no sample for it, yet it works.
 
-The CAPTCHA is not bot detection. `is.muni.cz` serves the same client without a problem. Those schools gate anonymous access, and a person in a browser meets the same wall. The server reports the CAPTCHA and does not try to defeat it.
+The CAPTCHA is not bot detection. A fresh session sending one request returns the identical page byte for byte whether it identifies itself as this server or as a browser. `is.muni.cz`, running the same software, serves that client without a problem. Those eleven schools gate anonymous access as a matter of policy, and a person in a browser meets the same wall. The server reports the CAPTCHA and does not try to defeat it.
+
+What the wall is standing in front of is worth knowing. Across five theses from each of the eleven schools, 55 of 55 came back empty — but 43 of those 55 are marked *"světu"*, published to the world, and only 5 are closed to everyone. These are not secret documents. The registry says they are public and the archive in front of them will not hand them to an anonymous caller, so `fulltext` says exactly that rather than filing them under "restricted".
 
 ## Authenticated access
 
@@ -107,6 +110,8 @@ THESES_COOKIES='{"theses.cz": "__Host-issession=…", "is.vsfs.cz": "__Host-isse
 ```
 
 Each cookie goes to its own domain only. This gives you the access that your account has and nothing more.
+
+Call `whoami` afterwards. An expired cookie, or one copied from the wrong browser profile, produces exactly the same empty `files` list as no cookie at all, so it is worth asking rather than guessing.
 
 ## Limits
 

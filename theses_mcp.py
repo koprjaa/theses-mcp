@@ -144,6 +144,33 @@ def search(query: str, limit: int = 10) -> dict:
 
 
 @mcp.tool()
+def whoami() -> dict:
+    """Report which hosts you are logged in to, and whether the login actually works.
+
+    Use this after setting $THESES_COOKIES. A cookie that has expired or was copied
+    from the wrong browser profile looks exactly like no cookie at all — the gated
+    repository simply answers with its CAPTCHA again — so this asks each configured
+    host directly instead of leaving you to guess from empty `files` lists.
+    """
+    if not AUTHENTICATED:
+        return {"authenticated": [], "hint": "set THESES_COOKIES to use your own login; "
+                "see the README section on authenticated access"}
+    def status(host):
+        try:
+            text = _get(f"https://{host}/").get_text()
+        except Exception as e:
+            return f"unreachable: {type(e).__name__}"
+        if "opište" in text or "captcha" in text.lower():
+            return "cookie not accepted — still asked for a CAPTCHA"
+        # the IS family prints a logout link once a session is recognised
+        if "Odhlášení" in text or "Log out" in text:
+            return "logged in"
+        return "reachable, but no sign of a session"
+
+    return {"authenticated": {host: status(host) for host in AUTHENTICATED}}
+
+
+@mcp.tool()
 def detail(id_or_url: str) -> dict:
     """Fetch the full record of a thesis from theses.cz.
 
@@ -500,7 +527,11 @@ def fulltext(id_or_url: str) -> dict:
             host = requests.compat.urlparse(archive).netloc
             wall = "opište" in page.get_text() or "captcha" in page.get_text().lower()
             hint = "" if host in AUTHENTICATED else f" — set THESES_COOKIES for {host} to use your own login"
-            res["note"] = (f"repository gates anonymous access with a CAPTCHA/login{hint}"
+            # "světu" means theses.cz publishes this to the world; a CAPTCHA in front of
+            # it is the school's own doing, not a restriction on the thesis
+            public = "světu" in access
+            res["note"] = (f"{'thesis is public, but the ' if public else ''}"
+                           f"repository gates anonymous access with a CAPTCHA/login{hint}"
                            if wall else "no public files listed; access is likely restricted")
     return res
 
