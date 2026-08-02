@@ -17,6 +17,7 @@ import logging
 import pathlib
 import re
 import sys
+import time
 import unicodedata
 import urllib.parse
 import warnings
@@ -53,28 +54,49 @@ def schools():
     return out
 
 
+def queries(name, want):
+    """Ways to ask for a school, cheapest and most exact first.
+
+    The quoted full name misses the long ones. "Obchodní akademie, Střední odborná
+    škola knihovnická a Vyšší odborná škola Brno" matches nothing as a phrase, so fall
+    back to the words that actually identify the school.
+    """
+    forms = [f'"{name}"']
+    if want:
+        forms.append(" ".join(want[:3]))
+        forms.append(want[0])
+    seen = set()
+    return [f for f in forms if not (f in seen or seen.add(f))]
+
+
 def candidates(name, want):
     """Codes of theses whose result header names this school."""
     found = []
-    for start in (1, 11):
-        try:
-            soup = th._get(f"{th.BASE}/vyhledavani/"
-                          f"?search={urllib.parse.quote(chr(34) + name + chr(34))}&start={start}")
-        except Exception:
+    for query in queries(name, want):
+        for start in (1, 11, 21):
+            try:
+                soup = th._get(f"{th.BASE}/vyhledavani/"
+                               f"?search={urllib.parse.quote(query)}&start={start}")
+            except Exception:
+                break
+            rows = soup.select(".vyh_polozka")
+            if not rows:
+                break
+            for it in rows:
+                if it.get("data-agenda") != "T":
+                    continue
+                m = SCHOOL_IN_HEADER.search(th._txt(it.select_one(".vyh_hlavicky")))
+                got = fold(m.group(1)) if m else ""
+                if want and not all(w in got for w in want[:2]):
+                    continue
+                a = it.select_one("h4 a")
+                cm = re.match(r"/id/(\w+)/", a["href"]) if a else None
+                if cm and cm.group(1) not in found:
+                    found.append(cm.group(1))
+            if len(found) >= 6:
+                return found
+        if found:
             return found
-        for it in soup.select(".vyh_polozka"):
-            if it.get("data-agenda") != "T":
-                continue
-            m = SCHOOL_IN_HEADER.search(th._txt(it.select_one(".vyh_hlavicky")))
-            got = fold(m.group(1)) if m else ""
-            if want and not all(w in got for w in want[:2]):
-                continue
-            a = it.select_one("h4 a")
-            cm = re.match(r"/id/(\w+)/", a["href"]) if a else None
-            if cm and cm.group(1) not in found:
-                found.append(cm.group(1))
-        if len(found) >= 6:
-            break
     return found
 
 
@@ -146,6 +168,10 @@ def main():
     ap.add_argument("--out", default=str(pathlib.Path(__file__).parent / "e2e_out"))
     ap.add_argument("--candidates", type=int, default=3)
     ap.add_argument("--only", default="")
+    ap.add_argument("--pause", type=float, default=1.0,
+                    help="seconds between schools, to stay under the rate limit")
+    ap.add_argument("--cooldown", type=int, default=60,
+                    help="seconds to wait before retrying a school that errored")
     args = ap.parse_args()
 
     out_dir = pathlib.Path(args.out)
@@ -155,11 +181,23 @@ def main():
 
     rows = []
     for code, name in todo.items():
-        try:
-            row = run_school(code, name, out_dir, args.candidates)
-        except Exception as e:
-            row = {"code": code, "school": name, "stage": "crash", "detail": type(e).__name__}
+        row = None
+        for attempt in (1, 2):
+            try:
+                row = run_school(code, name, out_dir, args.candidates)
+                break
+            except Exception as e:
+                # theses.cz starts refusing the pace part way through a long run; the
+                # schools at the end of the alphabet must not inherit that as a verdict
+                if attempt == 1:
+                    print(f"     {name[:34]} hit {type(e).__name__}, pausing {args.cooldown}s",
+                          flush=True)
+                    time.sleep(args.cooldown)
+                else:
+                    row = {"code": code, "school": name, "stage": "crash",
+                           "detail": type(e).__name__}
         rows.append(row)
+        time.sleep(args.pause)
         mark = {"pdf": "PDF ", "files": "list", "detail": "meta", "search": "----",
                 "crash": "!!!!"}[row["stage"]]
         size = f"{row.get('bytes', 0) / 1024:.0f} kB" if row["stage"] == "pdf" else ""

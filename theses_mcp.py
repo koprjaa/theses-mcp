@@ -194,6 +194,11 @@ def login(host: str = "theses.cz", wait_seconds: int = 240) -> dict:
     ~/.theses-mcp/cookies.json so a restart does not ask again; delete that file to
     forget them.
 
+    The CAPTCHA on the gated schools stands in front of anonymous visitors. Any account
+    the school federation accepts gets past it, so EduID from one Czech university often
+    opens the repository of another. The browser profile persists between calls, so the
+    second school usually signs in without asking again.
+
     host: the repository to sign in to, e.g. "is.slu.cz" or "theses.cz"
     wait_seconds: how long to leave the window open for you
 
@@ -210,7 +215,11 @@ def login(host: str = "theses.cz", wait_seconds: int = 240) -> dict:
         ctx = pw.chromium.launch_persistent_context(str(STORE / "browser"), headless=False)
         page = ctx.pages[0] if ctx.pages else ctx.new_page()
         try:
-            page.goto(f"https://{host}/", timeout=60_000)
+            # /auth/ drops you on the sign-in screen; the IS family forwards it to
+            # islogin.cz, which is where EduID lives. The root page only offers a link.
+            landed = page.goto(f"https://{host}/auth/", timeout=60_000)
+            if landed and landed.status >= 400:
+                page.goto(f"https://{host}/", timeout=60_000)
             deadline = time.monotonic() + wait_seconds
             while time.monotonic() < deadline and not page.is_closed():
                 try:
