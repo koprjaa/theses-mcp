@@ -5,6 +5,7 @@ MCP server for [theses.cz](https://theses.cz), the Czech national registry of un
 ![python](https://img.shields.io/badge/python-3.10+-3776AB?style=flat-square&logo=python&logoColor=white)
 ![license](https://img.shields.io/badge/license-MIT-A31F34?style=flat-square)
 ![status](https://img.shields.io/badge/status-active-22863A?style=flat-square)
+[![ci](https://github.com/koprjaa/theses-mcp/actions/workflows/ci.yml/badge.svg)](https://github.com/koprjaa/theses-mcp/actions/workflows/ci.yml)
 
 The registry holds about one million records from most Czech universities. The Faculty of Informatics at Masaryk University operates it.
 
@@ -116,6 +117,22 @@ Each cookie goes to its own domain only. This gives you the access that your acc
 - `is.vsh.cz` and `is.vshe.cz` serve certificates that do not match their hostname. The session verifies TLS and refuses them. Turning verification off would hide the problem and remove the proof that you talk to the school.
 
 Pull requests are welcome.
+
+## Development
+
+```bash
+uv run --extra dev ruff check .
+uv run --extra dev pytest -q
+```
+
+The suite reaches no network. It covers the text extraction, the document link
+patterns, and the three repository shapes: an extension in the href, a filename
+in the link text, and a label with neither. CI runs on Python 3.10, 3.11, and
+3.12, on Linux and Windows.
+
+`python theses_mcp.py --selftest` is the other half. It queries theses.cz for
+real and fails when the selectors stop matching. Run it when results look empty,
+because a markup change breaks parsing in a way unit tests cannot see.
 
 ## License
 
