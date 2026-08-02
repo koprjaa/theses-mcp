@@ -1,3 +1,17 @@
+#
+# Project: theses-mcp
+# File:    e2e_schools.py
+#
+# Description:
+# End to end check that every institution registered with theses.cz still answers a search.
+#
+# Author:
+# Jan Alexandr Kopřiva
+# jan.alexandr.kopriva@gmail.com
+#
+# License: MIT
+#
+
 """End-to-end check of every institution registered with theses.cz.
 
 For each school it runs the whole chain a user would: find a thesis by that school,

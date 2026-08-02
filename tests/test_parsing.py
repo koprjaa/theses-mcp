@@ -1,3 +1,17 @@
+#
+# Project: theses-mcp
+# File:    test_parsing.py
+#
+# Description:
+# Tests for the theses.cz page parsing and for matching a document link to its label.
+#
+# Author:
+# Jan Alexandr Kopřiva
+# jan.alexandr.kopriva@gmail.com
+#
+# License: MIT
+#
+
 """Tests for the theses.cz and repository parsing.
 
 No network. The markup below reproduces the structures seen on the real sites,

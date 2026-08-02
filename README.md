@@ -129,7 +129,9 @@ What stands behind that wall is worth knowing. Five theses from each of the elev
 
 Two groups of theses open after you log in. The first group carries the mark *"všem autentizovaným"*. The second group sits in a repository that gates anonymous visitors.
 
-Use `login` for this. It opens a real browser window on the sign-in page of the school. You sign in there, with EduID and any second factor. The server then keeps the session cookies that the host set.
+Use `login` for this. It opens a browser window on the sign-in page of the school. You sign in there, with EduID and any second factor. The server then keeps the session cookies that the host set.
+
+The window runs a profile of its own, so it starts signed out and without your extensions. You sign in once and the session persists. There is no way around that. `claude login` and similar commands reuse your everyday browser because OAuth lets the site hand a token back to a loopback address. theses.cz has no OAuth. Its only trace of a login is a cookie inside the browser, and browsers keep those away from other programs on purpose.
 
 ```
 login("is.slu.cz")     opens a window, waits for you, stores the session
@@ -140,10 +142,12 @@ fulltext("qr1tvh")     now sees what your account sees
 No password passes through this code. The server writes sessions to `~/.theses-mcp/cookies.json`. Delete that file to forget them. This tool needs the optional browser extra:
 
 ```bash
-pip install "theses-mcp[login]" && playwright install chromium
+pip install "theses-mcp[login]"
 ```
 
-To keep the server from launching a browser, set the cookies yourself instead:
+`login` drives the Chromium browser already on the machine, which on Windows means the one the system opens links with. Run `playwright install chromium` only if the machine has none.
+
+Two other routes exist. `login(attach=True)` uses the browser you already have open, with your extensions and saved passwords, but only if you started it with `--remote-debugging-port=9222`. Or set the cookies yourself:
 
 ```bash
 THESES_COOKIES='{"theses.cz": "__Host-issession=…", "is.vsfs.cz": "__Host-issession=…"}'

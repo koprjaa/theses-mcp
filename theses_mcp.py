@@ -1,3 +1,17 @@
+#
+# Project: theses-mcp
+# File:    theses_mcp.py
+#
+# Description:
+# MCP server for theses.cz: searches Czech university theses, reads their metadata, and lists their documents.
+#
+# Author:
+# Jan Alexandr Kopřiva
+# jan.alexandr.kopriva@gmail.com
+#
+# License: MIT
+#
+
 """MCP server for theses.cz. Search Czech university theses and their metadata."""
 
 import json
@@ -212,7 +226,8 @@ def _is_signed_in(text: str) -> bool:
 
 
 @mcp.tool()
-def login(host: str = "theses.cz", wait_seconds: int = 240) -> dict:
+def login(host: str = "theses.cz", wait_seconds: int = 240, attach: bool = False,
+          port: int = 9222) -> dict:
     """Open a browser window, let you sign in, and keep the session for later calls.
 
     Nothing here handles your password. A real browser opens on the school's own login
@@ -226,8 +241,17 @@ def login(host: str = "theses.cz", wait_seconds: int = 240) -> dict:
     opens the repository of another. The browser profile persists between calls, so the
     second school usually signs in without asking again.
 
+    The window uses a profile of its own, so it starts signed out and without your
+    extensions. You sign in once and the session is kept. theses.cz has no OAuth, so
+    there is no way for your everyday browser to hand a session to another program.
+    Nothing else needs setting up.
+
     host: the repository to sign in to, e.g. "is.slu.cz" or "theses.cz"
     wait_seconds: how long to leave the window open for you
+    attach: use the browser you already have open, with your extensions and saved
+        passwords. It only works if that browser was started with
+        `--remote-debugging-port`, which most people will not have done.
+    port: the debugging port, when `attach` is set
 
     Requires the optional browser extra: pip install "theses-mcp[login]".
     """
@@ -240,11 +264,28 @@ def login(host: str = "theses.cz", wait_seconds: int = 240) -> dict:
     collected, signed_in = [], False
     exe = _default_browser()
     with sync_playwright() as pw:
-        # your own browser where possible, but a separate profile: Playwright cannot
-        # drive a profile that the browser already has open
-        ctx = pw.chromium.launch_persistent_context(str(STORE / "browser"), headless=False,
-                                                    **({"executable_path": exe} if exe else {}))
-        page = ctx.pages[0] if ctx.pages else ctx.new_page()
+        attached = None
+        if attach:
+            try:
+                attached = pw.chromium.connect_over_cdp(f"http://127.0.0.1:{port}", timeout=5000)
+            except Exception:
+                return {
+                    "error": f"no browser is listening on port {port}",
+                    "how": ["quit the browser completely, including any tray icon",
+                            f"start it once with --remote-debugging-port={port}",
+                            "run login again, then restart it normally to close the port"],
+                    "command": f'"{exe or "browser.exe"}" --remote-debugging-port={port}',
+                    "simpler": "drop attach and sign in once in the window login opens",
+                }
+        try:
+            # the browser already on the machine, so no download is needed; the bundled
+            # Chromium is the fallback for a machine that has none
+            ctx = attached.contexts[0] if attached else pw.chromium.launch_persistent_context(
+                str(STORE / "browser"), headless=False, **({"executable_path": exe} if exe else {}))
+        except Exception as e:
+            return {"error": f"could not start a browser: {type(e).__name__}",
+                    "how": "run: playwright install chromium"}
+        page = ctx.new_page() if attached else (ctx.pages[0] if ctx.pages else ctx.new_page())
         try:
             # /shibboleth/ is the EduID entry where a host has one, and /auth/ is the
             # local sign-in, which the IS family forwards to islogin.cz. The root page
@@ -266,7 +307,12 @@ def login(host: str = "theses.cz", wait_seconds: int = 240) -> dict:
                     break
             collected = [c for c in ctx.cookies() if host.endswith(c["domain"].lstrip("."))]
         finally:
-            ctx.close()
+            if attached:
+                # the browser belongs to the user; close our tab and let go of it
+                if not page.is_closed():
+                    page.close()
+            else:
+                ctx.close()
 
     # these systems hand every anonymous visitor a session cookie, so the cookie alone
     # proves nothing — only the logout link the page grows once it knows who you are
