@@ -48,6 +48,7 @@ fulltext("7lfo74")                   PDF, DOCX, and both reviewer reports
 | `detail(id_or_url)` | Full record: author, Czech and English title and abstract, keywords, supervisor, opponent, defense date, full text availability, archive link, related theses. |
 | `fulltext(id_or_url)` | Follows the record into the school repository and lists the files. The list holds the thesis PDF and the two reviewer reports. |
 | `login(host)` | Opens a browser window on the sign-in page of the school. It waits for you, then keeps the session. |
+| `use_cookie(host, cookie)` | Takes a session cookie you copied out of your own browser. It checks the cookie before it keeps it. |
 | `whoami()` | Lists the hosts that have a session attached, and what each one answers. |
 
 `search` returns two kinds of hit. A hit with `kind="record"` is a catalogue record, and `url` points to the detail page. A hit with `kind="fulltext"` matched inside the thesis PDF, and `pdf_url` links to the file.
@@ -75,7 +76,7 @@ A link without an extension needs a check. The server reads the first eight byte
 
 Two more shapes matter. The archive link is sometimes the file itself, not a page that lists files. MENDELU and ČZU work this way. VŠB and UHK records carry no archive link on the record page. Only the search listing holds it, so the server looks the thesis up by title to recover the link.
 
-Some records link nowhere useful. ČVUT and VUT records carry no archive link at all. Those universities run a public DSpace of their own. The server searches that repository by title as a last resort. It accepts an exact title match only. A near miss would attach the PDF of a stranger to the record.
+Some records link nowhere useful. ČVUT and VUT records carry no archive link at all. Both universities run a public DSpace of their own. The server searches that repository by title as a last resort. It accepts an exact title match only. A near miss would attach the PDF of a stranger to the record.
 
 STAG needs its own path. A STAG record URL answers with an empty portal shell. The file list arrives afterwards, so the page itself holds nothing. That list comes from a portlet at `/StagPortletsJSR168/PagesDispatcherServlet`, which answers a plain GET. It needs no session, no CSRF token and no browser. The only argument is the `praceIdno` that the record URL already carries. The server asks for four blocks: the thesis, its attachments, and the two reviews.
 
@@ -97,7 +98,7 @@ A markup change breaks the parser. Run `python theses_mcp.py --selftest` to chec
 | Vysoká škola kreativní komunikace, s.r.o. | 14406 kB | `is.vskk.cz` |
 | CEVRO Univerzita, z.ú. | 10026 kB | `is.cevro.cz` |
 | Škoda Auto Vysoká škola z.ú. | 4039 kB | `is.savs.cz` |
-| University College Prague - Vysoká škola mezinárodních vztahů a Vysoká škola hot | 2919 kB | `is.ucp.cz` |
+| University College Prague | 2919 kB | `is.ucp.cz` |
 | České vysoké učení technické v Praze | 2670 kB | `dspace.cvut.cz` |
 | Univerzita Palackého v Olomouci | 1851 kB | `stag.upol.cz` |
 | Technická univerzita v Liberci | 1817 kB | `stag.tul.cz` |
@@ -165,11 +166,11 @@ The table below records the mechanism per repository. It comes from a wider samp
 | `is.vsh.cz`, `is.vshe.cz` | VŠH, VŠHE | Broken TLS certificate. The hostname does not match. |
 | `evskp.uhk.cz` | Hradec Králové | Works. theses.cz also holds a copy of its own. |
 
-The sampling is the weak part of every sweep here. It picks a thesis by matching the school name in the result headers, and for 22 institutions it finds none. That is a limit of the method, not a verdict on the school. An earlier sweep found no sample for VŠB, and VŠB downloads a PDF.
-
 The CAPTCHA is not bot detection. A fresh session sent one request twice, once as this server and once as a browser. Both answers were the same page, byte for byte. `is.muni.cz` runs the same software and serves that client without a problem. Those eleven schools gate anonymous access as a matter of policy. A person in a browser meets the same wall. The server reports the CAPTCHA and does not try to defeat it.
 
 What stands behind that wall is worth knowing. Five theses from each of the eleven schools gave 55 empty results out of 55. Of those 55, the registry marks 43 as *"světu"*, published to the world. It marks only 5 as closed to everyone. These are not secret documents. The registry calls them public. The archive in front of them refuses an anonymous caller. `fulltext` reports that, rather than filing them under "restricted".
+
+A session of your own removes the wall. Ten of the eleven then download a complete PDF. Sting is the one left. This run held no session for that host.
 
 ## Authenticated access
 
@@ -195,7 +196,15 @@ pip install "theses-mcp[login]"
 
 `login` drives the Chromium browser already on the machine, which on Windows means the one the system opens links with. Run `playwright install chromium` only if the machine has none.
 
-Two other routes exist. `login(attach=True)` uses the browser you already have open, with your extensions and saved passwords, but only if you started it with `--remote-debugging-port=9222`. Or set the cookies yourself:
+Two other routes exist. `login(attach=True)` uses the browser you already have open, with your extensions and saved passwords, but only if you started it with `--remote-debugging-port=9222`.
+
+The simplest route needs no browser control at all. Sign in as you normally would, copy the session cookie from the developer tools, and hand it over:
+
+```
+use_cookie("is.slu.cz", "__Host-issession=…")
+```
+
+`use_cookie` checks the cookie against the site before it keeps it. It refuses a stale one instead of storing it and puzzling you later. To configure the same thing outside the client, set the cookies in the environment:
 
 ```bash
 THESES_COOKIES='{"theses.cz": "__Host-issession=…", "is.vsfs.cz": "__Host-issession=…"}'
@@ -218,7 +227,6 @@ A logout link proves nothing either. The IS template shows one to anonymous visi
 - OSU is the one STAG school this server cannot reach. It runs STAG inside a WebSphere portal at `portal.osu.cz/wps/`, where the servlet path does not exist. The files are there. A click in a real browser downloads them. A WebSphere navigational state token wraps the Struts action behind that link. The token comes from a page that renders only under JavaScript. One school does not justify a browser in this path.
 - Signing in helps less than it sounds. theses.cz accepts eduID but answers a student with *"Systém theses.cz zatím neumožňuje přihlašování studentů"*, so only staff get a session. The eleven gated schools offer no eduID at all. Their sign-in goes to `islogin.cz/<school>/login/` and wants an account at that school. A student therefore has nothing to log in to, and `login` is for staff, or for a member of the school that holds the thesis.
 - The CAPTCHA schools have no second source. A search for five sample theses found none of them. That search covered NUŠL, OpenAIRE, and repositories of their own. Those files exist in one place, and that place wants a login.
-- `evskp.uhk.cz` runs its own system. The server does not parse it.
 - `is.vsh.cz` and `is.vshe.cz` serve certificates that do not match their hostname. The session verifies TLS and refuses them. Turning verification off would hide the problem. It would also remove the proof that you talk to the school.
 
 Pull requests are welcome.
@@ -234,7 +242,7 @@ The suite reaches no network. It covers the text extraction, the document link p
 
 `python theses_mcp.py --selftest` is the other half. It queries theses.cz for real, and it fails when the selectors stop matching. Run it when results look empty. A markup change breaks parsing in a way that unit tests cannot see.
 
-`python tools/e2e_schools.py` walks the whole chain for every institution on the register. It finds a thesis, opens the record, resolves the files, and downloads one. A school counts as working only when bytes that start with `%PDF` land on disk.
+`python tools/e2e_schools.py` walks the whole chain for every institution on the register. It finds a thesis, opens the record, resolves the files, and downloads one. A school counts as working only when a complete PDF lands on disk. Complete means the file starts with `%PDF` and ends with `%%EOF`. A download cut short still starts with `%PDF`, and four schools once passed that way with files that would not open.
 
 ## License
 
