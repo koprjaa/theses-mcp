@@ -229,6 +229,32 @@ def _documents(page, base: str) -> list:
     return out
 
 
+MAGIC = (b"%PDF", b"PK\x03\x04", b"{\\rtf", b"\xd0\xcf\x11\xe0")
+MAGIC_EXT = {b"%PDF": ".pdf", b"PK\x03\x04": ".docx", b"{\\rtf": ".rtf", b"\xd0\xcf\x11\xe0": ".doc"}
+
+
+def _as_document(url: str):
+    """Describe `url` if it serves a file rather than a landing page, else None.
+
+    theses.cz is inconsistent about what it links to: VŠE points at an HTML page that
+    lists downloads, MENDELU points straight at the PDF. Sniff eight bytes instead of
+    fetching a multi-megabyte file and trying to parse it as HTML.
+    """
+    try:
+        r = _s.get(url, timeout=25, stream=True, headers={"Range": "bytes=0-7"})
+        magic = next(r.iter_content(8), b"")
+        disposition = r.headers.get("Content-Disposition", "")
+        r.close()
+    except Exception:
+        return None
+    hit = next((m for m in MAGIC if magic.startswith(m)), None)
+    if not hit:
+        return None
+    named = re.search(r'filename\*?=(?:UTF-8\'\')?"?([^";]+)', disposition)
+    name = named.group(1) if named else url.rstrip("/").rsplit("/", 1)[-1] + MAGIC_EXT[hit]
+    return {"label": "Plný text práce", "filename": name, "url": url, "confirmed": True}
+
+
 def _archive_url(soup, code: str):
     """Locate the school repository link for a record.
 
@@ -282,6 +308,11 @@ def fulltext(id_or_url: str) -> dict:
         res["note"] = "no school repository link in the record"
         return res
 
+    direct = _as_document(archive)
+    if direct:  # the link is the file itself (MENDELU and other IS /zp/ hosts)
+        res["files"] = [direct]
+        return res
+
     try:
         page = _get(archive)
     except Exception as e:  # SSL/DNS/timeout — some school systems are simply broken
@@ -324,8 +355,11 @@ def _selftest():
     vsb = fulltext("xggdtq")
     assert vsb["archive_url"], "archive link not recovered from the search listing"
     assert [f for f in vsb["files"] if f["confirmed"]], vsb["files"]
+    men = fulltext("x52k58")  # MENDELU: the archive link IS the PDF, not a landing page
+    assert len(men["files"]) == 1 and men["files"][0]["confirmed"], men
     print("OK", r["total"], "hits |", d["author"], "|", d["type"], "|",
-          len(pub["files"]), "+", len(vse["files"]), "+", len(vsb["files"]), "files")
+          len(pub["files"]), "+", len(vse["files"]), "+", len(vsb["files"]),
+          "+", len(men["files"]), "files")
 
 
 def main():
