@@ -26,6 +26,8 @@ _documents asks the server about anything it cannot name from the page, so those
 tests replace _as_document.
 """
 
+import re
+
 import pytest
 from bs4 import BeautifulSoup
 
@@ -319,6 +321,52 @@ def test_stag_follows_a_file_the_portal_keeps_somewhere_else(stag_serves):
 def test_a_url_with_no_thesis_id_is_not_a_stag_record(stag_serves):
     assert theses_mcp._stag_files("https://is.muni.cz/th/avwwh/") == []
     assert stag_serves.calls == []
+
+
+# --- what search promises ---------------------------------------------------
+
+
+def test_a_record_url_is_the_record_page_not_whatever_the_title_linked_to():
+    """The title of a record can link at a file path, and that path is often dead.
+
+    theses.cz answered /id/gt2ymz/94924_bezm05.pdf with a stub and never with the
+    file, while search reported that URL as the record. The record page is always
+    /id/<code>/.
+    """
+    listing = soup("""
+      <div class="vyh_polozka" data-agenda="T">
+        <h4><a href="/id/gt2ymz/94924_bezm05.pdf">A thesis</a></h4>
+      </div>""")
+    href = listing.select_one("h4 a")["href"]
+    code = re.match(r"/id/(\w+)", href)
+    assert f"{theses_mcp.BASE}/id/{code.group(1)}/" == "https://theses.cz/id/gt2ymz/"
+
+
+def test_a_refresh_stub_is_read_for_the_delay_it_asks_for():
+    """_as_document used to sleep a fixed 1.5 s and give up after three tries."""
+    stub = b'<!DOCTYPE HTML>\n<html>\n<head>\n<meta http-equiv="refresh" content="2">'
+    found = theses_mcp.REFRESH.search(stub.decode("utf-8", "ignore"))
+    assert found and int(found.group(1)) == 2
+
+
+# --- not defended yet is not the same as restricted --------------------------
+
+
+@pytest.mark.parametrize("body", [
+    "Soubory ke stažení Soubory budou k dispozici až po obhajobě práce.",
+    "Files will be available after the defence of the thesis.",
+])
+def test_a_thesis_awaiting_its_defense_is_recognized(body):
+    assert theses_mcp.NOT_YET.search(body)
+
+
+@pytest.mark.parametrize("body", [
+    "Plný text práce je přístupný pouze autentizovaným uživatelům.",
+    "Soubory ke stažení: prace.pdf",
+    "Pro ověření opište prosíme tento kód",
+])
+def test_an_ordinary_restriction_is_not_read_as_a_pending_defense(body):
+    assert theses_mcp.NOT_YET.search(body) is None
 
 
 # --- session detection ------------------------------------------------------

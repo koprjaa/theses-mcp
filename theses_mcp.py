@@ -143,8 +143,11 @@ def search(query: str, limit: int = 10) -> dict:
 
     Returns two kinds of hits:
       kind="record"   — a thesis record; `url` points to the detail page (see `detail`)
-      kind="fulltext" — a match inside the thesis PDF; `pdf_url` is a direct link to
-                        the publicly readable full text
+      kind="fulltext" — a match inside the thesis PDF; `pdf_url` links to the file
+
+    Neither URL is checked here, because checking would cost one request per hit.
+    `pdf_url` in particular can point at a file the registry will not serve. Call
+    `fulltext` to get links that were confirmed by reading the first bytes.
 
     query: search terms; supports theses.cz operators (AND, OR, "phrase")
     limit: how many results (paginated by 10, max 50)
@@ -177,7 +180,11 @@ def search(query: str, limit: int = 10) -> dict:
                 hit["pdf_url"] = href.split("?")[0]
                 hit["url"] = BASE + rec["href"] if rec else None
             else:
-                hit["url"] = BASE + href.split("?")[0]
+                # the title of a record sometimes links straight at a file path, and that
+                # path is often dead. The record page is always /id/<code>/, so derive it
+                # rather than repeat whatever the listing happened to carry.
+                code = re.match(r"/id/(\w+)", href)
+                hit["url"] = f"{BASE}/id/{code.group(1)}/" if code else BASE + href.split("?")[0]
             out.append(hit)
         if len(out) >= limit:
             break
@@ -218,6 +225,12 @@ def _default_browser() -> str | None:
 
 def _is_gated(text: str) -> bool:
     return "opište" in text or "captcha" in text.lower()
+
+
+# A thesis submitted but not yet defended has no files, and it never will until the
+# defense. VŠE says so in as many words. That is a date, not a restriction, and the
+# two deserve different answers.
+NOT_YET = re.compile(r"až po obhajobě|po obhajobě práce|after the defen[cs]e", re.I)
 
 
 def _is_signed_in(text: str) -> bool:
@@ -590,7 +603,7 @@ def _as_document(url: str):
     fetching a multi-megabyte file and trying to parse it as HTML.
     """
     magic, disposition = b"", ""
-    for _ in range(3):
+    for _ in range(4):
         try:
             r = _s.get(url, timeout=25, stream=True, headers={"Range": "bytes=0-400"})
             magic = next(r.iter_content(400), b"")
@@ -599,10 +612,12 @@ def _as_document(url: str):
         except Exception:
             return None
         # files on theses.cz answer the first request with the same meta-refresh stub
-        # the HTML pages do, so a single look reports a PDF as HTML
-        if b'http-equiv="refresh"' not in magic[:400]:
+        # the HTML pages do, so a single look reports a PDF as HTML. Wait the delay the
+        # stub asks for, the way _get does, instead of guessing at a fixed one
+        stub = REFRESH.search(magic[:400].decode("utf-8", "ignore"))
+        if not stub:
             break
-        time.sleep(1.5)
+        time.sleep(min(int(stub.group(1)), 3) or 1)
     hit = next((m for m in MAGIC if magic.startswith(m)), None)
     if not hit:
         return None
@@ -914,14 +929,20 @@ def fulltext(id_or_url: str) -> dict:
                            if searched else "no school repository link in the record")
         else:
             host = requests.compat.urlparse(archive).netloc
-            wall = _is_gated(page.get_text())
+            body = page.get_text()
+            wall = _is_gated(body)
             hint = "" if host in AUTHENTICATED else f" — set THESES_COOKIES for {host} to use your own login"
             # "světu" means theses.cz publishes this to the world; a CAPTCHA in front of
             # it is the school's own doing, not a restriction on the thesis
             public = "světu" in access
-            res["note"] = (f"{'thesis is public, but the ' if public else ''}"
-                           f"repository gates anonymous access with a CAPTCHA/login{hint}"
-                           if wall else "no public files listed; access is likely restricted")
+            if NOT_YET.search(body):
+                res["note"] = "the thesis is not defended yet, so the school publishes no files"
+                res["pending_defense"] = True
+            elif wall:
+                res["note"] = (f"{'thesis is public, but the ' if public else ''}"
+                               f"repository gates anonymous access with a CAPTCHA/login{hint}")
+            else:
+                res["note"] = "no public files listed; access is likely restricted"
     return res
 
 

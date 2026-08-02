@@ -53,6 +53,8 @@ fulltext("7lfo74")                   PDF, DOCX, and both reviewer reports
 
 `search` returns two kinds of hit. A hit with `kind="record"` is a catalogue record, and `url` points to the detail page. A hit with `kind="fulltext"` matched inside the thesis PDF, and `pdf_url` links to the file.
 
+Neither URL is checked, because a check costs one request per hit. `pdf_url` can point at a file the registry will not serve. Call `fulltext` when you need a link that was confirmed by reading the first bytes.
+
 ## How it works
 
 theses.cz stores metadata only. The files live in the system of each school. 64 institutions take part. Most of them run the same IS software as theses.cz, such as `is.muni.cz`, `is.slu.cz`, `is.ambis.cz`, `is.vsfs.cz`, and `is.jamu.cz`. A few others sit alongside, such as `vskp.vse.cz`. `fulltext` follows the record into the correct system and lists the documents:
@@ -233,6 +235,8 @@ A logout link proves nothing either. The IS template shows one to anonymous visi
 - UJEP also runs ARL. This server does not speak that system.
 - A search result header comes in two shapes. `Diplomová práce, <School>, <year>` and `Diplomová práce: <title> (<author>) <School>, <faculty>, <year>`. In the second shape, a pattern anchored on "práce," swallows the title and the author. It returns the faculty alone. That misread every thesis of Charles University as "Filozofická fakulta". `tests/test_harness.py` holds both shapes.
 - theses.cz has no field search and no school facet. `fak`, `fakulta` and `skola` change nothing on the search URL. The only way to sample a school is to search its name and read the result headers.
+- The title of a record in the search listing sometimes links straight at a file path, such as `/id/gt2ymz/94924_bezm05.pdf`. That path often answers with the stub and never with the file. `search` derives `/id/<code>/` instead of repeating it.
+- "Not defended yet" is not a restriction. VŠE writes "Soubory budou k dispozici až po obhajobě práce" on the page and publishes nothing until the defense. `fulltext` reports that as `pending_defense`, because it becomes available on its own.
 - Give theses.cz room. A long sweep plus ad hoc queries pushed it into answering 503 twice in one day. Pace the runs and stop when it starts refusing.
 - OSU is the one STAG school this server cannot reach. It runs STAG inside a WebSphere portal at `portal.osu.cz/wps/`, where the servlet path does not exist. The files are there. A click in a real browser downloads them. A WebSphere navigational state token wraps the Struts action behind that link. The token comes from a page that renders only under JavaScript. One school does not justify a browser in this path.
 - Signing in helps less than it sounds. theses.cz accepts eduID but answers a student with *"Systém theses.cz zatím neumožňuje přihlašování studentů"*, so only staff get a session. The eleven gated schools offer no eduID at all. Their sign-in goes to `islogin.cz/<school>/login/` and wants an account at that school. A student therefore has nothing to log in to, and `login` is for staff, or for a member of the school that holds the thesis.
