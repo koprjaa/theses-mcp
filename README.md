@@ -75,7 +75,9 @@ A link without an extension needs a check. The server reads the first eight byte
 
 Two more shapes matter. The archive link is sometimes the file itself, not a page that lists files. MENDELU and ČZU work this way. VŠB and UHK records carry no archive link on the record page. Only the search listing holds it, so the server looks the thesis up by title to recover the link.
 
-Some records link nowhere useful. ČVUT and VUT records carry no archive link at all. The STAG schools point at a study information system that holds metadata and no files. Those universities run a public DSpace of their own. The server searches that repository by title as a last resort. It accepts an exact title match only. A near miss would attach the PDF of a stranger to the record.
+Some records link nowhere useful. ČVUT and VUT records carry no archive link at all. Those universities run a public DSpace of their own. The server searches that repository by title as a last resort. It accepts an exact title match only. A near miss would attach the PDF of a stranger to the record.
+
+STAG needs its own path. A STAG record URL answers with an empty portal shell. The file list arrives afterwards, so the page itself holds nothing. That list comes from a portlet at `/StagPortletsJSR168/PagesDispatcherServlet`, which answers a plain GET. It needs no session, no CSRF token and no browser. The only argument is the `praceIdno` that the record URL already carries. The server asks for four blocks: the thesis, its attachments, and the two reviews.
 
 theses.cz has no public API, so the server scrapes it. A request that the server will not answer yet returns a 117 byte `<meta refresh>` stub, which asks for a delay. An instant retry earns another stub, so the server waits for the delay and tries up to four times. This is not limited to the first request of a session. Under load, theses.cz falls back to the stub as well.
 
@@ -115,7 +117,8 @@ The table below records the mechanism per repository. It comes from a wider samp
 | `hdl.handle.net`, `dspace.cvut.cz`, `dspace.vutbr.cz`, `dk.upce.cz`, `dspace.cuni.cz`, `dspace.jcu.cz`, `dspace.zcu.cz`, `digilib.k.utb.cz`, `repozitar.vscht.cz` | VŠB-TUO, ČVUT, VUT, UPCE, UK, JČU, ZČU, UTB, VŠCHT | Works. Handle redirect, or a title lookup in the repository of the school. |
 | `dspace.tul.cz` | TUL | Lists the files, then answers 410 for every one. Reported, not hidden. |
 | `is.ambis.cz`, `is.vsfs.cz`, `is.slu.cz`, `is.caritas-vos.cz`, `is.vstecb.cz`, `is.vszdrav.cz`, `is.cevro.cz`, `is.ucp.cz`, `is.jamu.cz`, `is.jabok.cz`, `is.sting.cz` | AMBIS, VŠFS, SU Opava, CARITAS, VŠTE, VŠ zdravotnická, CEVRO, UCP, JAMU, JABOK, Sting | CAPTCHA for anonymous visitors. Use your own login. |
-| `wstag.jcu.cz`, `stag.tul.cz`, `stag.upol.cz`, `portal.upce.cz`, `portal.zcu.cz`, `portal.osu.cz`, `portal.ujep.cz`, `stagweb.vfu.cz` | JČU, TUL, UPOL, UPCE, ZČU, OSU, UJEP, VFU | STAG holds metadata only. |
+| `stag.tul.cz`, `stag.upol.cz`, `portal.ujep.cz`, `stagweb.vfu.cz`, `stag-vsss.zcu.cz`, `wstag.jcu.cz`, `portal.upce.cz`, `portal.zcu.cz` | TUL, UPOL, UJEP, VFU, Evropská výzkumná, JČU, UPCE, ZČU | Works. The file list comes from the portlet, not the page. |
+| `portal.osu.cz` | OSU | STAG inside a WebSphere portal. Needs a browser. |
 | `is.vsh.cz`, `is.vshe.cz` | VŠH, VŠHE | Broken TLS certificate. The hostname does not match. |
 | `evskp.uhk.cz` | Hradec Králové | Own system. Not implemented. |
 
@@ -163,10 +166,11 @@ Call `whoami` afterwards rather than guessing. An expired cookie gives the same 
 
 - Each school records which repository software it runs. Blind probing costs a round of retries per wrong guess and never succeeds against the wrong flavour. A repository that changes flavour needs a correction here.
 - UTB and VŠCHT pass against their repositories, not through a record. No theses.cz thesis was both publicly viewable and present in them.
-- STAG does serve files, which contradicts the row above. They come from a portlet at `/StagPortletsJSR168/PagesDispatcherServlet` with `pp_page=souboryStudentuDownloadPage` and a `soubidno` file id. Three such URLs, from UJEP, VFU and the Evropská výzkumná univerzita, each returned a real PDF. What is missing is the file id. It appears on the thesis page only after the session bound portlet flow, and guessing the name of the listing page earns a 500. Follow the flow rather than construct the URL.
+- Do not guess a STAG page name. A wrong one earns a 500. The four that work are `ssProhlizeniElPodobaVSKPPage`, `ssProhlizeniElPodobaVSKPPrilohyPage`, and `ssProhlizeniPosudkyVSKPPage` twice, once per reviewer. The reviews also need `sou_aplikace`.
+- TUL keeps its STAG files in DSpace. It labels the link "Zde k dispozici" and names the file nowhere. The server reads the name from the file itself.
 - UJEP also runs ARL. This server does not speak that system.
 - Give theses.cz room. A long sweep plus ad hoc queries pushed it into answering 503 twice in one day. Pace the runs and stop when it starts refusing.
-- OSU has no repository of its own. Its theses live in STAG, which holds no files. UPOL was not located.
+- OSU is the one STAG school this server cannot reach. It runs STAG inside a WebSphere portal at `portal.osu.cz/wps/`, where the servlet path does not exist. The files are there. A click in a real browser downloads them. A WebSphere navigational state token wraps the Struts action behind that link. The token comes from a page that renders only under JavaScript. One school does not justify a browser in this path.
 - Signing in helps less than it sounds. theses.cz accepts eduID but answers a student with *"Systém theses.cz zatím neumožňuje přihlašování studentů"*, so only staff get a session. The eleven gated schools offer no eduID at all. Their sign-in goes to `islogin.cz/<school>/login/` and wants an account at that school. A student therefore has nothing to log in to, and `login` is for staff, or for a member of the school that holds the thesis.
 - The CAPTCHA schools have no second source. A search for five sample theses found none of them. That search covered NUŠL, OpenAIRE, and repositories of their own. Those files exist in one place, and that place wants a login.
 - `evskp.uhk.cz` runs its own system. The server does not parse it.

@@ -237,6 +237,90 @@ def test_norm_makes_two_titles_that_differ_only_in_punctuation_equal():
     assert _norm("Analýza dat, 2. vydání") == _norm("Analýza dat 2 vydání")
 
 
+# --- STAG portlet -----------------------------------------------------------
+
+
+STAG_HREF = ("/StagPortletsJSR168/PagesDispatcherServlet?pp_locale=cs&amp;"
+             "pp_portlet=souboryStudentuPagesPortlet&amp;"
+             "pp_page=souboryStudentuDownloadPage&amp;pp_nameSpace=G15790&amp;soubidno=80686")
+
+STAG_BLOCK = f"""
+<div id='G1validation_errors' class="xgt_validationErrors"></div>
+<table><tr><td></td><td>
+  <a class="xg_stag_a_in" href="{STAG_HREF}"> Atestacni prace Novak.pdf </a> (749 KB)
+</td></tr></table>
+"""
+
+# TUL keeps the file in DSpace and names neither the URL nor the link
+STAG_ELSEWHERE = """
+<table><tr><td>
+  <a class="xg_stag_a_out" href="https://dspace.tul.cz/bitstream/308a2f21/download">
+  Zde k dispozici</a>
+</td></tr></table>
+"""
+
+STAG_URL = ("https://stagweb.example.cz/StagPortletsJSR168/CleanUrl"
+            "?urlid=prohlizeni-prace-detail&praceIdno=10787")
+
+
+@pytest.fixture
+def stag_serves(monkeypatch):
+    """Answer every portlet call with the same block, and record the calls."""
+    calls = []
+
+    def fake_get(url, params=None, **kw):
+        calls.append((url, params))
+        if params is None:  # _as_document, sniffing a download URL
+            return type("R", (), {
+                "status_code": 200,
+                "headers": {},
+                "iter_content": lambda self, n: iter([b"%PDF-1.7"]),
+                "close": lambda self: None,
+            })()
+        return type("R", (), {"status_code": 200, "text": fake_get.body})()
+
+    fake_get.body = STAG_BLOCK
+    fake_get.calls = calls
+    monkeypatch.setattr(theses_mcp._s, "get", fake_get)
+    return fake_get
+
+
+def test_stag_reads_the_file_out_of_the_portlet(stag_serves):
+    files = theses_mcp._stag_files(STAG_URL)
+    assert files[0]["url"].startswith("https://stagweb.example.cz/StagPortletsJSR168/")
+    assert "soubidno=80686" in files[0]["url"]
+
+
+def test_stag_asks_the_portlet_for_the_thesis_id_in_the_record_url(stag_serves):
+    theses_mcp._stag_files(STAG_URL)
+    sent = [p for _, p in stag_serves.calls if p]
+    assert {p["sou_adipidno"] for p in sent} == {"10787"}
+    assert {p["pp_portlet"] for p in sent} == {"souboryStudentuPagesPortlet"}
+
+
+def test_stag_lists_a_file_once_even_though_four_blocks_are_asked(stag_serves):
+    """The four blocks are separate pages, and more than one can name the same file."""
+    assert len(theses_mcp._stag_files(STAG_URL)) == 1
+    assert len([p for _, p in stag_serves.calls if p]) == 4
+
+
+def test_a_label_that_ends_at_the_extension_is_the_whole_filename(stag_serves):
+    """STAG names files with spaces, and DOC_RE would keep only the last word."""
+    assert theses_mcp._stag_files(STAG_URL)[0]["filename"] == "Atestacni prace Novak.pdf"
+
+
+def test_stag_follows_a_file_the_portal_keeps_somewhere_else(stag_serves):
+    stag_serves.body = STAG_ELSEWHERE
+    files = theses_mcp._stag_files(STAG_URL)
+    assert files[0]["url"] == "https://dspace.tul.cz/bitstream/308a2f21/download"
+    assert files[0]["label"] == "Zde k dispozici"
+
+
+def test_a_url_with_no_thesis_id_is_not_a_stag_record(stag_serves):
+    assert theses_mcp._stag_files("https://is.muni.cz/th/avwwh/") == []
+    assert stag_serves.calls == []
+
+
 # --- session detection ------------------------------------------------------
 
 

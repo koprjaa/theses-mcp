@@ -526,7 +526,8 @@ DOC_EXT = (".pdf", ".docx", ".doc", ".rtf", ".odt", ".zip", ".txt")
 DOC_RE = re.compile(r"(\S+\.(?:pdf|docx?|rtf|odt|zip|txt))\b", re.I)
 DOC_LABEL = re.compile(
     r"plný text|full text|final thesis|závěrečná práce|posudek|review|"
-    r"oponent|vedoucí|supervisor|příloha|attachment|hlavní práce", re.I)
+    r"oponent|vedoucí|supervisor|příloha|attachment|hlavní práce|"
+    r"k dispozici|available here", re.I)
 
 
 def _documents(page, base: str) -> list:
@@ -547,9 +548,14 @@ def _documents(page, base: str) -> list:
         by_href = href.lower().split("?")[0].endswith(DOC_EXT)
         if by_href or named:
             seen.add(href)
+            # STAG names files with spaces ("Atestační práce Nováková.pdf") and makes the
+            # label nothing else, while VŠE wraps the name in "Hlavní práce … 1.5 MB
+            # Stáhnout". A label that ends at the extension is the whole filename.
+            whole = label.lower().endswith(DOC_EXT)
             out.append({
                 "label": re.sub(r"\s*St[áa]hnout\s*$", "", label) or href.rsplit("/", 1)[-1],
-                "filename": named.group(1) if named else href.rsplit("/", 1)[-1],
+                "filename": (label if whole else
+                             named.group(1) if named else href.rsplit("/", 1)[-1]),
                 "url": href,
             })
         elif DOC_LABEL.search(label):
@@ -764,6 +770,51 @@ def _hosted_files(soup, code: str) -> list:
     return out
 
 
+STAG_ID = re.compile(r"[?&]praceIdno=(\d+)", re.I)
+
+# The blocks a STAG record page fills in: the thesis, its attachments, and the two
+# reviews. Each is the same portlet asked for a different page.
+STAG_PAGES = (
+    ("ssProhlizeniElPodobaVSKPPage", {}),
+    ("ssProhlizeniElPodobaVSKPPrilohyPage", {}),
+    ("ssProhlizeniPosudkyVSKPPage", {"sou_aplikace": "PROHLIZENI_VSKP_POSUDKY_OPONENTA_K_VSKP"}),
+    ("ssProhlizeniPosudkyVSKPPage", {"sou_aplikace": "PROHLIZENI_VSKP_POSUDKY_VEDOUCIHO_K_VSKP"}),
+)
+
+
+def _stag_files(archive: str) -> list:
+    """Files behind a record in a STAG portal (UJEP, UPOL, TUL, VFU and others).
+
+    A STAG record URL answers with an empty portal shell and fills the file list in
+    afterwards, so reading that page finds nothing. The list comes from a portlet, and
+    the portlet answers a plain GET: no session, no CSRF token, no browser. The thesis
+    id in the record URL is the only argument it needs.
+    """
+    thesis = STAG_ID.search(archive)
+    if not thesis:
+        return []
+    parts = requests.compat.urlparse(archive)
+    root = f"{parts.scheme}://{parts.netloc}"
+    out, seen = [], set()
+    for page, extra in STAG_PAGES:
+        query = {"pp_locale": "cs", "pp_reqType": "render", "pp_ajaxCall": 1,
+                 "pp_portlet": "souboryStudentuPagesPortlet", "pp_page": page,
+                 # any namespace works, it only prefixes the ids in the markup
+                 "pp_nameSpace": "G1", "sou_adipidno": thesis.group(1), **extra}
+        try:
+            r = _s.get(f"{root}/StagPortletsJSR168/PagesDispatcherServlet",
+                       params=query, timeout=45)
+        except Exception:  # one dead block must not lose the other three
+            continue
+        if r.status_code != 200:
+            continue
+        for f in _documents(BeautifulSoup(r.text, "lxml"), root):
+            if f["url"] not in seen:
+                seen.add(f["url"])
+                out.append(f)
+    return out
+
+
 def _archive_url(soup, code: str):
     """Locate the school repository link for a record.
 
@@ -825,6 +876,10 @@ def fulltext(id_or_url: str) -> dict:
 
     page = None
     if archive:
+        stag = _stag_files(archive)
+        if stag:  # a STAG portal never puts its files on the page itself
+            res["files"] = stag
+            return res
         direct = _as_document(archive)
         if direct:  # the link is the file itself (MENDELU and other IS /zp/ hosts)
             res["files"] = [direct]

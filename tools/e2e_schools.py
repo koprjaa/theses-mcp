@@ -42,7 +42,9 @@ sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent.parent))
 
 import theses_mcp as th  # noqa: E402
 
-MAX_BYTES = 30 * 1024 * 1024
+# Theses with scanned appendices run past 30 MB. The cap only stops an endless stream,
+# so keep it well above a real document and report the file as failed when it is hit.
+MAX_BYTES = 250 * 1024 * 1024
 SCHOOL_IN_HEADER = re.compile(r"práce[^,]*,\s*(.+?),\s*(\d{4})")
 
 
@@ -115,10 +117,15 @@ def candidates(name, want):
 
 
 def fetch(url, target):
-    """Download and report what actually arrived."""
+    """Download and report what actually arrived.
+
+    A PDF is complete only when it ends with %%EOF. Reading the first bytes is not
+    enough: a download cut short still starts with %PDF, and four schools passed that
+    way on an earlier run while their files were unreadable.
+    """
     got = 0
-    head = b""
-    with th._s.get(url, timeout=120, stream=True) as r:
+    head = tail = b""
+    with th._s.get(url, timeout=300, stream=True) as r:
         if r.status_code != 200:
             return {"ok": False, "why": f"HTTP {r.status_code}"}
         with target.open("wb") as fh:
@@ -127,11 +134,18 @@ def fetch(url, target):
                     head = chunk[:8]
                 fh.write(chunk)
                 got += len(chunk)
+                tail = (tail + chunk)[-2048:]
                 if got > MAX_BYTES:
-                    break
+                    target.unlink(missing_ok=True)
+                    return {"ok": False, "why": f"over {MAX_BYTES // 1048576} MB, gave up",
+                            "bytes": got}
     if not head.startswith(b"%PDF"):
         target.unlink(missing_ok=True)
         return {"ok": False, "why": f"not a PDF (starts {head[:8]!r})", "bytes": got}
+    if b"%%EOF" not in tail:
+        target.unlink(missing_ok=True)
+        return {"ok": False, "why": "PDF ends without %%EOF, so it arrived incomplete",
+                "bytes": got}
     return {"ok": True, "bytes": got, "file": target.name}
 
 
@@ -170,7 +184,8 @@ def run_school(code, name, out_dir, tries):
             last = f"download failed: {type(e).__name__}"
             continue
         if got["ok"]:
-            row.update(stage="pdf", bytes=got["bytes"], file=got["file"], detail="")
+            row.update(stage="pdf", bytes=got["bytes"], file=got["file"],
+                       detail="", file_url=pdfs[0]["url"])
             return row
         last = got["why"]
     row["detail"] = last
