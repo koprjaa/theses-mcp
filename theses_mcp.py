@@ -280,11 +280,54 @@ DSPACE = {
     "Vysoká škola báňská": "dspace.vsb.cz",
     "Technická univerzita v Liberci": "dspace.tul.cz",
     "Univerzita Pardubice": "dk.upce.cz",
+    "Univerzita Karlova": "dspace.cuni.cz",
+    "Jihočeská univerzita": "dspace.jcu.cz",
 }
 
 
 def _norm(s: str) -> str:
     return re.sub(r"[^0-9a-zá-žA-ZÁ-Ž]+", "", s or "").lower()
+
+
+def _dspace7(host: str, title: str):
+    """DSpace 7: search, then read the files off the item page."""
+    r = _s.get(f"https://{host}/server/api/discover/search/objects", timeout=30,
+               params={"query": title, "dsoType": "item", "size": 5})
+    objects = r.json()["_embedded"]["searchResult"]["_embedded"]["objects"]
+    for o in objects:
+        item = o.get("_embedded", {}).get("indexableObject", {})
+        if _norm(item.get("name")) != _norm(title):
+            continue
+        page = f"https://{host}/items/{item['uuid']}"
+        soup = _get(page)
+        return page, _documents(soup, getattr(soup, "final_url", page))
+    return None
+
+
+def _dspace6(host: str, title: str):
+    """DSpace 6: the REST API hands over the bitstreams directly.
+
+    Only the ORIGINAL bundle is wanted. DSpace also stores an extracted-text copy of
+    every PDF in a TEXT bundle and a THUMBNAIL image, and those are not the thesis.
+    """
+    r = _s.get(f"https://{host}/rest/filtered-items", timeout=30,
+               headers={"Accept": "application/json"},
+               params={"query_field[]": "dc.title", "query_op[]": "contains",
+                       "query_val[]": title, "limit": 5, "expand": "bitstreams"})
+    for item in r.json().get("items", []):
+        if _norm(item.get("name")) != _norm(title):
+            continue
+        files = []
+        for b in item.get("bitstreams") or []:
+            if b.get("bundleName") != "ORIGINAL" or b.get("mimeType") == "text/plain":
+                continue
+            url = f"https://{host}{b['retrieveLink']}"
+            doc = _as_document(url)
+            files.append(doc or {"label": b.get("name", ""), "filename": b.get("name", ""),
+                                 "url": url, "confirmed": False})
+            files[-1]["label"] = b.get("description") or b.get("name", "")
+        return f"https://{host}/handle/{item.get('handle')}", files
+    return None
 
 
 def _dspace_lookup(school: str, title: str) -> list:
@@ -294,29 +337,25 @@ def _dspace_lookup(school: str, title: str) -> list:
     a study-information system that carries metadata only. Their repositories are public
     and searchable, so look the thesis up by title there. Only an exact title match is
     accepted — a near miss would attach someone else's PDF to this record.
+
+    The two REST generations are tried in turn rather than recorded per school, so a
+    repository that upgrades keeps working without an edit here.
     """
-    host = next((h for k, h in DSPACE.items() if k in (school or "")), None)
+    # some records spell the school in capitals, so compare normalised
+    hay = _norm(school)
+    host = next((h for k, h in DSPACE.items() if _norm(k) in hay), None)
     if not (host and title):
         return []
-    try:
-        r = _s.get(f"https://{host}/server/api/discover/search/objects", timeout=30,
-                   params={"query": title, "dsoType": "item", "size": 5})
-        objects = r.json()["_embedded"]["searchResult"]["_embedded"]["objects"]
-    except Exception:
-        return []
-    for o in objects:
-        item = o.get("_embedded", {}).get("indexableObject", {})
-        if _norm(item.get("name")) != _norm(title):
-            continue
-        page = f"https://{host}/items/{item['uuid']}"
+    for probe in (_dspace7, _dspace6):
         try:
-            soup = _get(page)
+            hit = probe(host, title)
         except Exception:
-            return []
-        found = _documents(soup, getattr(soup, "final_url", page))
-        for f in found:
-            f["source"] = page
-        return found
+            continue
+        if hit:
+            page, files = hit
+            for f in files:
+                f["source"] = page
+            return files
     return []
 
 
@@ -443,6 +482,9 @@ def _selftest():
     cvut = fulltext("dvopnp")  # ČVUT: record links nowhere, files live in its own DSpace
     assert "dspace.cvut.cz" in (cvut["archive_url"] or ""), cvut
     assert len(cvut["files"]) == 4 and all(f["confirmed"] for f in cvut["files"]), cvut
+    jcu = fulltext("tfmf5y")  # JČU: DSpace 6 REST, and the school is spelled in capitals
+    assert "dspace.jcu.cz" in (jcu["archive_url"] or ""), jcu
+    assert jcu["files"] and all(f["confirmed"] for f in jcu["files"]), jcu
     print("OK", r["total"], "hits |", d["author"], "|", d["type"], "|",
           len(pub["files"]), "+", len(vse["files"]), "+", len(vsb["files"]),
           "+", len(men["files"]), "files")
