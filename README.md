@@ -129,6 +129,8 @@ What stands behind that wall is worth knowing. Five theses from each of the elev
 
 Two groups of theses open after you log in. The first group carries the mark *"všem autentizovaným"*. The second group sits in a repository that gates anonymous visitors.
 
+Check first whether you have anything to log in with. theses.cz turns students away from eduID, and the gated schools want an account of their own. See Limits before you spend time on this.
+
 Use `login` for this. It opens a browser window on the sign-in page of the school. You sign in there, with EduID and any second factor. The server then keeps the session cookies that the host set.
 
 The window runs a profile of its own, so it starts signed out and without your extensions. You sign in once and the session persists. There is no way around that. `claude login` and similar commands reuse your everyday browser because OAuth lets the site hand a token back to a loopback address. theses.cz has no OAuth. Its only trace of a login is a cookie inside the browser, and browsers keep those away from other programs on purpose.
@@ -163,6 +165,7 @@ Call `whoami` afterwards rather than guessing. An expired cookie gives the same 
 - UTB and VŠCHT pass against their repositories, not through a record. No theses.cz thesis was both publicly viewable and present in them.
 - UJEP runs ARL. This server does not speak that system.
 - OSU has no repository of its own. Its theses live in STAG, which holds no files. UPOL was not located.
+- Signing in helps less than it sounds. theses.cz accepts eduID but answers a student with *"Systém theses.cz zatím neumožňuje přihlašování studentů"*, so only staff get a session. The eleven gated schools offer no eduID at all. Their sign-in goes to `islogin.cz/<school>/login/` and wants an account at that school. A student therefore has nothing to log in to, and `login` is for staff, or for a member of the school that holds the thesis.
 - The CAPTCHA schools have no second source. A search for five sample theses found none of them. That search covered NUŠL, OpenAIRE, and repositories of their own. Those files exist in one place, and that place wants a login.
 - `evskp.uhk.cz` runs its own system. The server does not parse it.
 - `is.vsh.cz` and `is.vshe.cz` serve certificates that do not match their hostname. The session verifies TLS and refuses them. Turning verification off would hide the problem. It would also remove the proof that you talk to the school.
