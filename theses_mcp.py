@@ -1,4 +1,4 @@
-"""MCP server for theses.cz — search Czech university theses and their metadata."""
+"""MCP server for theses.cz. Search Czech university theses and their metadata."""
 
 import json
 import os
@@ -88,7 +88,7 @@ def _txt(node, *drop) -> str:
     if not hasattr(node, "select"):  # NavigableString
         return re.sub(r"\s+", " ", str(node)).strip(" \xa0()")
     node = node.__copy__()
-    for sel in ("a.rozbal", "a.sbal", "h5", "h3") + drop:
+    for sel in ("a.rozbal", "a.sbal", "h5", "h3", *drop):
         for x in node.select(sel):
             x.decompose()
     return re.sub(r"\s+", " ", node.get_text(" ", strip=True)).strip()
@@ -110,7 +110,8 @@ def search(query: str, limit: int = 10) -> dict:
     for start in range(1, min(limit, 50) + 1, 10):
         soup = _get(f"{BASE}/vyhledavani/?search={requests.utils.quote(query)}&start={start}")
         if total is None:
-            m = re.search(r"Výsledky\s+\d+\s*–\s*\d+\s+z\s+([\d\s]+)", soup.get_text())
+            # The en dash is what the page prints, so it is load-bearing here.
+            m = re.search(r"Výsledky\s+\d+\s*–\s*\d+\s+z\s+([\d\s]+)", soup.get_text())  # noqa: RUF001
             total = int(re.sub(r"\D", "", m.group(1))) if m else None
         items = soup.select(".vyh_polozka")
         if not items:
@@ -282,7 +283,11 @@ DSPACE = {
     "Univerzita Pardubice": "dk.upce.cz",
     "Univerzita Karlova": "dspace.cuni.cz",
     "Jihočeská univerzita": "dspace.jcu.cz",
+    "Západočeská univerzita": "dspace.zcu.cz",
 }
+
+# ZČU serves the interface and the REST backend from different hosts
+DSPACE_API = {"dspace.zcu.cz": "naos-be.zcu.cz"}
 
 
 def _norm(s: str) -> str:
@@ -290,8 +295,9 @@ def _norm(s: str) -> str:
 
 
 def _dspace7(host: str, title: str):
-    """DSpace 7: search, then read the files off the item page."""
-    r = _s.get(f"https://{host}/server/api/discover/search/objects", timeout=30,
+    """DSpace 7: search the REST backend, then read the files off the item page."""
+    api = DSPACE_API.get(host, host)
+    r = _s.get(f"https://{api}/server/api/discover/search/objects", timeout=30,
                params={"query": title, "dsoType": "item", "size": 5})
     objects = r.json()["_embedded"]["searchResult"]["_embedded"]["objects"]
     for o in objects:
@@ -485,6 +491,9 @@ def _selftest():
     jcu = fulltext("tfmf5y")  # JČU: DSpace 6 REST, and the school is spelled in capitals
     assert "dspace.jcu.cz" in (jcu["archive_url"] or ""), jcu
     assert jcu["files"] and all(f["confirmed"] for f in jcu["files"]), jcu
+    zcu = fulltext("b1tsqt")  # ZČU: interface and REST backend on different hosts
+    assert "dspace.zcu.cz" in (zcu["archive_url"] or ""), zcu
+    assert zcu["files"] and all(f["confirmed"] for f in zcu["files"]), zcu
     print("OK", r["total"], "hits |", d["author"], "|", d["type"], "|",
           len(pub["files"]), "+", len(vse["files"]), "+", len(vsb["files"]),
           "+", len(men["files"]), "files")
