@@ -607,9 +607,11 @@ def fulltext(id_or_url: str) -> dict:
         except Exception as e:  # SSL/DNS — some school systems are simply broken
             res["note"] = f"school repository unreachable: {type(e).__name__}"
 
+    searched = None
     if not res["files"]:  # last resort: the school's own digital library
-        found = _repository_lookup(_txt(soup.select_one("#th-sloupec .oddil")),
-                               _txt(soup.select_one(".th-title")))
+        school = _txt(soup.select_one("#th-sloupec .oddil"))
+        searched = next((h for k, (h, _) in REPOSITORY.items() if _norm(k) in _norm(school)), None)
+        found = _repository_lookup(school, _txt(soup.select_one(".th-title")))
         if found:
             res["files"] = found
             res["archive_url"] = found[0].pop("source", archive)
@@ -623,7 +625,9 @@ def fulltext(id_or_url: str) -> dict:
 
     if not res["files"] and "note" not in res:
         if page is None:
-            res["note"] = "no school repository link in the record"
+            # do not blame a missing link when the repository was searched and came up empty
+            res["note"] = (f"the record links nowhere, and {searched} holds no thesis under this title"
+                           if searched else "no school repository link in the record")
         else:
             host = requests.compat.urlparse(archive).netloc
             wall = _is_gated(page.get_text())

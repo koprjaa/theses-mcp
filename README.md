@@ -83,7 +83,28 @@ A markup change breaks the parser. Run `python theses_mcp.py --selftest` to chec
 
 ## Coverage
 
-The sweep sampled one thesis for each of the 64 institutions. A separate sample drew about 500 records from 20 unrelated subject searches.
+`tools/e2e_schools.py` walked the whole chain for all 64 institutions. It downloaded a PDF for 12 of them. Those 12 are the only schools this project claims outright, because bytes that start with `%PDF` reached the disk:
+
+| School | Size | Source |
+|---|---|---|
+| Škoda Auto | 4039 kB | `is.savs.cz` |
+| ČVUT | 2670 kB | `dspace.cvut.cz` |
+| ČZU | 2536 kB | `is.czu.cz` |
+| ZČU | 2079 kB | `dspace.zcu.cz` |
+| VŠE | 1685 kB | `vskp.vse.cz` |
+| VUT | 1646 kB | `dspace.vutbr.cz` |
+| UPCE | 1505 kB | `dk.upce.cz` |
+| VŠB-TUO | 1271 kB | `hdl.handle.net` |
+| VŠKK | 956 kB | `is.vskk.cz` |
+| JČU | 821 kB | `dspace.jcu.cz` |
+| MENDELU | 743 kB | `is.mendelu.cz` |
+| MU | 705 kB | `is.muni.cz` |
+
+The other 52 split into four groups. 23 reached the record and found no file. 22 gave no thesis whose result header names the school, which is a limit of the sampling. 7 crashed with a retry error near the end of the run, after theses.cz began to refuse the pace, so they carry no verdict at all.
+
+Three schools work at the lookup and did not finish the chain. UK, UTB, and VŠCHT each return files when asked for a title that their repository holds. The run found no thesis for them that is both publicly viewable on theses.cz and present in that repository. Treat those three as probable, not proven.
+
+The table below records the mechanism per repository. It comes from a wider sample: one thesis for each of the 64 institutions, plus about 500 records from 20 unrelated subject searches.
 
 | Repository | Schools | Result |
 |---|---|---|
@@ -98,7 +119,7 @@ The sweep sampled one thesis for each of the 64 institutions. A separate sample 
 | `is.vsh.cz`, `is.vshe.cz` | VŠH, VŠHE | Broken TLS certificate. The hostname does not match. |
 | `evskp.uhk.cz` | Hradec Králové | Own system. Not implemented. |
 
-About twenty institutions remain untested. The per-institution sweep picks a thesis by matching the school name in the result headers, and it misses them. That is a limit of the sampling, not a verdict on the school. VŠB proves the point. The sweep found no sample for VŠB, and VŠB works.
+The sampling is the weak part of every sweep here. It picks a thesis by matching the school name in the result headers, and for 22 institutions it finds none. That is a limit of the method, not a verdict on the school. An earlier sweep found no sample for VŠB, and VŠB downloads a PDF.
 
 The CAPTCHA is not bot detection. A fresh session sent one request twice, once as this server and once as a browser. Both answers were the same page, byte for byte. `is.muni.cz` runs the same software and serves that client without a problem. Those eleven schools gate anonymous access as a matter of policy. A person in a browser meets the same wall. The server reports the CAPTCHA and does not try to defeat it.
 
