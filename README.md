@@ -66,9 +66,11 @@ theses.cz stores metadata only. The files live in the system of each school. 64 
 
 The `access` field does not control what you can download. It describes the copy that theses.cz holds, not the policy of the school. The VŠE thesis `pl09jx` shows *"autentizovaným zaměstnancům ze stejné školy/fakulty"* on theses.cz, but `vskp.vse.cz` serves its 7.2 MB PDF to anyone. Read the `files` list, not the `access` field.
 
-Some links have no `.pdf` in the URL and carry the filename in the link text only. The server therefore matches files by href and by label. It confirms URLs without an extension with a HEAD request and reports `confirmed` and `content_type` instead of assuming a PDF.
+Schools hide their files in three different ways, so the server looks for all of them. Some links carry the filename in the URL. Some carry it in the link text only, as VŠE does with "Hlavní práce 82000_kliv06.pdf, 7.2 MB Stáhnout" pointing at `/zp/82000`. ČZU and Škoda Auto give no filename at all and label the link "Final thesis" or "Supervisor's review". Anything without an extension is settled by reading the first eight bytes of the file and reporting `confirmed`, because DSpace answers a HEAD request with `text/html` and then serves a PDF.
 
-theses.cz has no public API, so the server scrapes it. This has two effects. The first request returns a 117 byte `<meta refresh>` stub, and the server retries once with the `__Host-issession` cookie it received. Markup changes break the parser, so run `python theses_mcp.py --selftest` to check the selectors against known records when results look empty.
+Two more shapes worth knowing. The archive link is sometimes the file itself rather than a page listing files, which is how MENDELU and ČZU work. And VŠB and UHK records carry no archive link on the record page, only in the search listing, so the server looks the thesis up by title to recover it.
+
+theses.cz has no public API, so the server scrapes it. A request the server does not want to answer yet returns a 117 byte `<meta refresh>` stub asking for a delay; retrying instantly earns another stub, so the delay is honoured and the request is tried up to four times. This is not only the first request of a session, as theses.cz falls back to the stub under load too. Markup changes break the parser, so run `python theses_mcp.py --selftest` to check the selectors against known records when results look empty.
 
 Keep the request rate reasonable.
 
