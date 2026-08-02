@@ -232,18 +232,24 @@ def _is_signed_in(text: str) -> bool:
     return not any(m in text for m in SIGNED_OUT)
 
 
-def _verify(cookies: list, host: str) -> bool:
-    """Ask the site whether these cookies amount to a session."""
+def _verify(cookies: list, host: str, url: str | None = None) -> bool:
+    """Ask the site whether these cookies buy anything.
+
+    Two things count. A session the site recognises as a person, and a session that has
+    already passed the CAPTCHA the gated schools put in front of anonymous callers.
+    Clearing the gate leaves you anonymous, so the sign-in test alone would miss it.
+    """
     if not cookies:
         return False
     jar = requests.cookies.RequestsCookieJar()
     for c in cookies:
         jar.set(c["name"], c["value"], domain=c["domain"].lstrip("."))
     try:
-        probe = _s.get(f"https://{host}/", timeout=30, cookies=jar, allow_redirects=True)
+        probe = _s.get(url or f"https://{host}/", timeout=30, cookies=jar, allow_redirects=True)
     except Exception:
         return False
-    return _is_signed_in(BeautifulSoup(probe.text, "lxml").get_text())
+    text = BeautifulSoup(probe.text, "lxml").get_text()
+    return _is_signed_in(text) or (url is not None and not _is_gated(text))
 
 
 def _store(host: str, cookies: list) -> None:
@@ -260,11 +266,11 @@ def _store(host: str, cookies: list) -> None:
     _attach(host, cookies)
 
 
-def _harvest(ctx, host: str) -> bool:
+def _harvest(ctx, host: str, url: str | None = None) -> bool:
     """Take the session for `host` out of a browser context, if there is one."""
     cookies = [{"name": c["name"], "value": c["value"], "domain": c["domain"]}
                for c in ctx.cookies() if host.endswith(c["domain"].lstrip("."))]
-    if not _verify(cookies, host):
+    if not _verify(cookies, host, url):
         return False
     _store(host, cookies)
     return True
@@ -272,7 +278,7 @@ def _harvest(ctx, host: str) -> bool:
 
 @mcp.tool()
 def login(host: str = "theses.cz", wait_seconds: int = 240, attach: bool = False,
-          port: int = 9222) -> dict:
+          port: int = 9222, url: str | None = None) -> dict:
     """Open a browser window, let you sign in, and keep the session for later calls.
 
     Nothing here handles your password. A real browser opens on the school's own login
@@ -331,7 +337,7 @@ def login(host: str = "theses.cz", wait_seconds: int = 240, attach: bool = False
             return {"error": f"could not start a browser: {type(e).__name__}",
                     "how": "run: playwright install chromium"}
 
-        if attached and _harvest(ctx, host):
+        if attached and _harvest(ctx, host, url):
             # already signed in from an earlier visit; no need to open anything
             return {"host": host, "result": "signed in", "source": "the browser you had open",
                     "stored": str(COOKIE_FILE), "next": "call whoami to confirm, then fulltext"}
@@ -340,14 +346,19 @@ def login(host: str = "theses.cz", wait_seconds: int = 240, attach: bool = False
             # /shibboleth/ is the EduID entry where a host has one, and /auth/ is the
             # local sign-in, which the IS family forwards to islogin.cz. The root page
             # only links to them, so land on the form itself.
-            for path in ("/shibboleth/", "/auth/", "/"):
-                landed = page.goto(f"https://{host}{path}", timeout=60_000)
-                if not landed or landed.status < 400:
-                    break
+            if url:
+                page.goto(url, timeout=60_000)
+            else:
+                for path in ("/shibboleth/", "/auth/", "/"):
+                    landed = page.goto(f"https://{host}{path}", timeout=60_000)
+                    if not landed or landed.status < 400:
+                        break
             deadline = time.monotonic() + wait_seconds
             while time.monotonic() < deadline and not page.is_closed():
                 try:
-                    signed_in = _is_signed_in(page.content())
+                    body = page.content()
+                    # either the site knows who you are, or the gate is behind you
+                    signed_in = _is_signed_in(body) or (url is not None and not _is_gated(body))
                     if signed_in:
                         break
                     page.wait_for_timeout(1000)
@@ -370,7 +381,7 @@ def login(host: str = "theses.cz", wait_seconds: int = 240, attach: bool = False
     # in hand is the real test, and it is the same request the rest of the tools make.
     collected = [{"name": c["name"], "value": c["value"], "domain": c["domain"]}
                  for c in collected]
-    if not _verify(collected, host):
+    if not _verify(collected, host, url):
         names = {c["name"] for c in collected}
         midway = any(n.startswith(("_shibstate", "_opensaml")) for n in names)
         return {"host": host, "result": "sign-in not detected, nothing stored",
@@ -571,13 +582,20 @@ def _as_document(url: str):
     lists downloads, MENDELU points straight at the PDF. Sniff eight bytes instead of
     fetching a multi-megabyte file and trying to parse it as HTML.
     """
-    try:
-        r = _s.get(url, timeout=25, stream=True, headers={"Range": "bytes=0-7"})
-        magic = next(r.iter_content(8), b"")
-        disposition = r.headers.get("Content-Disposition", "")
-        r.close()
-    except Exception:
-        return None
+    magic, disposition = b"", ""
+    for _ in range(3):
+        try:
+            r = _s.get(url, timeout=25, stream=True, headers={"Range": "bytes=0-400"})
+            magic = next(r.iter_content(400), b"")
+            disposition = r.headers.get("Content-Disposition", "")
+            r.close()
+        except Exception:
+            return None
+        # files on theses.cz answer the first request with the same meta-refresh stub
+        # the HTML pages do, so a single look reports a PDF as HTML
+        if b'http-equiv="refresh"' not in magic[:400]:
+            break
+        time.sleep(1.5)
     hit = next((m for m in MAGIC if magic.startswith(m)), None)
     if not hit:
         return None
@@ -725,6 +743,27 @@ def _repository_lookup(school: str, title: str) -> list:
     return files
 
 
+def _hosted_files(soup, code: str) -> list:
+    """Files theses.cz serves itself, from the file manager on the record page.
+
+    The registry does not only point at the school. Where it holds the documents, it
+    lists them at /id/<code>/<filename> in a file manager block. That block is rendered
+    server side, but it sits outside the metadata section, so looking only at the
+    archive link misses a copy that is right there.
+    """
+    out, seen = [], set()
+    for a in soup.select(f'a[href^="/id/{code}/"]'):
+        href = a["href"]
+        name = href.rsplit("/", 1)[-1]
+        if not name.lower().endswith(DOC_EXT) or href in seen:
+            continue
+        seen.add(href)
+        label = _txt(a) or name
+        out.append({"label": re.sub(rf"\s*{re.escape(name)}\s*$", "", label) or name,
+                    "filename": name, "url": BASE + href})
+    return out
+
+
 def _archive_url(soup, code: str):
     """Locate the school repository link for a record.
 
@@ -777,6 +816,12 @@ def fulltext(id_or_url: str) -> dict:
     access = [_txt(li) for li in soup.select("#th-obsah li")]
     archive = _archive_url(soup, code)
     res = {"url": f"{BASE}/id/{code}/", "access": access, "archive_url": archive, "files": []}
+
+    hosted = _hosted_files(soup, code)
+    if hosted:  # the registry's own copy, which needs no trip to the school at all
+        res["files"] = hosted
+        res["served_by"] = "theses.cz"
+        return res
 
     page = None
     if archive:
