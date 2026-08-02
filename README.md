@@ -137,7 +137,15 @@ Ten come from theses.cz itself. The registry does not only point at the school. 
 
 The remaining 26 split in two.
 
-16 gave no thesis whose result header names the school. That is a limit of the sampling, not a verdict. theses.cz has no field search, so the harness matches the school name in the result header. Short or shared names find nothing. An earlier sweep found no sample for VŠB, and VŠB downloads a PDF.
+16 gave no thesis at all. An earlier version of this file called that a limit of the sampling. It is not. A control settles it. A quoted search for "Univerzita Pardubice" returns 29 of that school's own theses in 30 results. The search does surface a school when the registry holds it. Each of the 15 below returns zero of its own across 50 to 90 results:
+
+> AVU · Univerzita Karlova · Univerzita obrany · Metropolitní · Panevropská · Palestra · Slovenská poľnohospodárska univerzita v Nitre · both CEDUK schools · five vyšší odborné školy · Institut pro veřejnou správu Praha
+
+A second test agrees. Three real thesis titles, taken straight from `dspace.cuni.cz`, return nothing on theses.cz. **Charles University does not publish its theses here.** It runs a repository of its own.
+
+The page that lists these schools is titled "Zapojené instituce", participating institutions. A school joins to use the system, which includes the plagiarism check through Odevzdej.cz. Joining does not put its theses in the public registry. Institut pro veřejnou správu Praha is the single entry under "Veřejná správa". It awards no degrees at all.
+
+The sixteenth is UTB. The harness sampled six of its records. Every one answers "not publicly viewable on theses.cz". Its own repository, `digilib.k.utb.cz`, serves files when asked for a title it holds.
 
 10 reached the record and found no file:
 
@@ -219,10 +227,12 @@ A logout link proves nothing either. The IS template shows one to anonymous visi
 ## Limits
 
 - Each school records which repository software it runs. Blind probing costs a round of retries per wrong guess and never succeeds against the wrong flavour. A repository that changes flavour needs a correction here.
-- UTB and VŠCHT pass against their repositories, not through a record. No theses.cz thesis was both publicly viewable and present in them.
+- UTB and VŠCHT pass against their repositories, not through a record. The harness sampled six UTB records. Every one is closed on theses.cz.
 - Do not guess a STAG page name. A wrong one earns a 500. The four that work are `ssProhlizeniElPodobaVSKPPage`, `ssProhlizeniElPodobaVSKPPrilohyPage`, and `ssProhlizeniPosudkyVSKPPage` twice, once per reviewer. The reviews also need `sou_aplikace`.
 - TUL keeps its STAG files in DSpace. It labels the link "Zde k dispozici" and names the file nowhere. The server reads the name from the file itself.
 - UJEP also runs ARL. This server does not speak that system.
+- A search result header comes in two shapes. `Diplomová práce, <School>, <year>` and `Diplomová práce: <title> (<author>) <School>, <faculty>, <year>`. In the second shape, a pattern anchored on "práce," swallows the title and the author. It returns the faculty alone. That misread every thesis of Charles University as "Filozofická fakulta". `tests/test_harness.py` holds both shapes.
+- theses.cz has no field search and no school facet. `fak`, `fakulta` and `skola` change nothing on the search URL. The only way to sample a school is to search its name and read the result headers.
 - Give theses.cz room. A long sweep plus ad hoc queries pushed it into answering 503 twice in one day. Pace the runs and stop when it starts refusing.
 - OSU is the one STAG school this server cannot reach. It runs STAG inside a WebSphere portal at `portal.osu.cz/wps/`, where the servlet path does not exist. The files are there. A click in a real browser downloads them. A WebSphere navigational state token wraps the Struts action behind that link. The token comes from a page that renders only under JavaScript. One school does not justify a browser in this path.
 - Signing in helps less than it sounds. theses.cz accepts eduID but answers a student with *"Systém theses.cz zatím neumožňuje přihlašování studentů"*, so only staff get a session. The eleven gated schools offer no eduID at all. Their sign-in goes to `islogin.cz/<school>/login/` and wants an account at that school. A student therefore has nothing to log in to, and `login` is for staff, or for a member of the school that holds the thesis.

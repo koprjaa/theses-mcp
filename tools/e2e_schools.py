@@ -45,7 +45,31 @@ import theses_mcp as th  # noqa: E402
 # Theses with scanned appendices run past 30 MB. The cap only stops an endless stream,
 # so keep it well above a real document and report the file as failed when it is hit.
 MAX_BYTES = 250 * 1024 * 1024
-SCHOOL_IN_HEADER = re.compile(r"práce[^,]*,\s*(.+?),\s*(\d{4})")
+YEAR_IN_HEADER = re.compile(r",\s*(\d{4})\b")
+
+
+def school_of(header):
+    """The school and faculty, which always sit just before the year of defense.
+
+    Two header shapes exist, and only the year separates them reliably:
+
+        Diplomová práce, Univerzita Jana Amose Komenského Praha, 2013
+        Diplomová práce: <title> (<author>) Masarykova univerzita, Filozofická fakulta, 2024
+
+    The second shape puts the title and the author first. A pattern anchored on
+    "práce," swallows all of it and returns the faculty alone, so every thesis of
+    Charles University read as "Filozofická fakulta" and matched nothing.
+    """
+    years = list(YEAR_IN_HEADER.finditer(header))
+    if not years:
+        return ""
+    before = header[:years[-1].start()]
+    # the author parenthesis ends the title, and the school starts right after it
+    cut = before.rfind(")")
+    if cut < 0:
+        opening = before.find("práce,")
+        cut = opening + 5 if opening >= 0 else -1
+    return before[cut + 1:]
 
 
 def fold(s):
@@ -101,8 +125,7 @@ def candidates(name, want):
             for it in rows:
                 if it.get("data-agenda") != "T":
                     continue
-                m = SCHOOL_IN_HEADER.search(th._txt(it.select_one(".vyh_hlavicky")))
-                got = fold(m.group(1)) if m else ""
+                got = fold(school_of(th._txt(it.select_one(".vyh_hlavicky"))))
                 if want and not all(w in got for w in want[:2]):
                     continue
                 a = it.select_one("h4 a")
