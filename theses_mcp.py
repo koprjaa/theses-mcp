@@ -284,6 +284,7 @@ DSPACE = {
     "Univerzita Karlova": "dspace.cuni.cz",
     "Jihočeská univerzita": "dspace.jcu.cz",
     "Západočeská univerzita": "dspace.zcu.cz",
+    "Univerzita Tomáše Bati": "digilib.k.utb.cz",
 }
 
 # ZČU serves the interface and the REST backend from different hosts
@@ -336,6 +337,22 @@ def _dspace6(host: str, title: str):
     return None
 
 
+def _dspace5(host: str, title: str):
+    """DSpace 5: no searchable REST API, but the XMLUI search page is server-rendered.
+
+    The search lives at /discover; /simple-search answers 200 with a login page and no
+    results, which reads like an empty result set unless you look.
+    """
+    r = _s.get(f"https://{host}/discover", params={"query": title}, timeout=30)
+    for a in BeautifulSoup(r.text, "lxml").select("a[href*='/handle/']"):
+        if _norm(_txt(a)) != _norm(title):
+            continue
+        page = requests.compat.urljoin(f"https://{host}/", a["href"])
+        soup = _get(page)
+        return page, _documents(soup, getattr(soup, "final_url", page))
+    return None
+
+
 def _dspace_lookup(school: str, title: str) -> list:
     """Find the thesis in the school's own DSpace and list its files.
 
@@ -344,7 +361,7 @@ def _dspace_lookup(school: str, title: str) -> list:
     and searchable, so look the thesis up by title there. Only an exact title match is
     accepted — a near miss would attach someone else's PDF to this record.
 
-    The two REST generations are tried in turn rather than recorded per school, so a
+    The three DSpace generations are tried in turn rather than recorded per school, so a
     repository that upgrades keeps working without an edit here.
     """
     # some records spell the school in capitals, so compare normalised
@@ -352,7 +369,7 @@ def _dspace_lookup(school: str, title: str) -> list:
     host = next((h for k, h in DSPACE.items() if _norm(k) in hay), None)
     if not (host and title):
         return []
-    for probe in (_dspace7, _dspace6):
+    for probe in (_dspace7, _dspace6, _dspace5):
         try:
             hit = probe(host, title)
         except Exception:
@@ -494,6 +511,10 @@ def _selftest():
     zcu = fulltext("b1tsqt")  # ZČU: interface and REST backend on different hosts
     assert "dspace.zcu.cz" in (zcu["archive_url"] or ""), zcu
     assert zcu["files"] and all(f["confirmed"] for f in zcu["files"]), zcu
+    # UTB is checked at the lookup, not through a record: its DSpace 5 has no searchable
+    # API and no theses.cz record was found that is both public and present in it
+    utb = _dspace_lookup("Univerzita Tomáše Bati ve Zlíně", "Korupce a její vliv na společnost")
+    assert len(utb) == 3, utb
     print("OK", r["total"], "hits |", d["author"], "|", d["type"], "|",
           len(pub["files"]), "+", len(vse["files"]), "+", len(vsb["files"]),
           "+", len(men["files"]), "files")
