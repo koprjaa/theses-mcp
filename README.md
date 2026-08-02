@@ -1,33 +1,57 @@
 # theses-mcp
 
-MCP server for [theses.cz](https://theses.cz) — the Czech national registry of university
-theses (~1M records from most Czech universities, operated by the Faculty of Informatics,
-Masaryk University).
+MCP server for [theses.cz](https://theses.cz), the Czech national registry of university theses. It gives an MCP client full text search over Czech bachelor, master, and doctoral theses, their metadata, and links to the PDF files.
 
-Gives any MCP client full-text search over Czech bachelor/master/doctoral theses, their
-metadata, and direct links to the publicly readable PDFs.
+![python](https://img.shields.io/badge/python-3.10+-3776AB?style=flat-square&logo=python&logoColor=white)
+![license](https://img.shields.io/badge/license-MIT-A31F34?style=flat-square)
+![status](https://img.shields.io/badge/status-active-22863A?style=flat-square)
+
+The registry holds about one million records from most Czech universities. The Faculty of Informatics at Masaryk University operates it.
+
+## Install
+
+Claude Code:
+
+```bash
+claude mcp add theses -s user -- uvx --from git+https://github.com/koprjaa/theses-mcp theses-mcp
+```
+
+Other clients, in `mcpServers`:
+
+```json
+{
+  "theses": {
+    "command": "uvx",
+    "args": ["--from", "git+https://github.com/koprjaa/theses-mcp", "theses-mcp"]
+  }
+}
+```
+
+From a clone, run `pip install -e .` and set `command` to `theses-mcp`.
+
+## Use
+
+```
+> find Czech theses about Midjourney and copyright
+
+search("midjourney AND autorství")   12 hits, some with public PDFs
+detail("c5uqln")                     abstract, keywords, supervisor, defense date
+fulltext("7lfo74")                   PDF, DOCX, and both reviewer reports
+```
 
 ## Tools
 
-| Tool | What it does |
-|------|--------------|
-| `search(query, limit=10)` | Search records and thesis full texts. Supports theses.cz operators (`AND`, `OR`, `"phrase"`). Paginates by 10, max 50. |
-| `detail(id_or_url)` | Full record: author, CS/EN title and abstract, keywords, supervisor and opponent, defense date, full-text availability, school archive link, related theses. |
-| `fulltext(id_or_url)` | Follows the record into the school's own repository and lists the downloadable files — the thesis PDF plus supervisor/opponent reports. |
+| Tool | Result |
+|---|---|
+| `search(query, limit=10)` | Searches records and thesis full texts. Accepts theses.cz operators `AND`, `OR`, and `"phrase"`. Pages by 10, maximum 50. |
+| `detail(id_or_url)` | Full record: author, Czech and English title and abstract, keywords, supervisor, opponent, defense date, full text availability, archive link, related theses. |
+| `fulltext(id_or_url)` | Follows the record into the school repository and lists the files. This includes the thesis PDF and the supervisor and opponent reports. |
 
-`search` returns two kinds of hits:
+`search` returns two kinds of hit. A hit with `kind="record"` is a catalogue record and `url` points to the detail page. A hit with `kind="fulltext"` matched inside the thesis PDF and `pdf_url` links to the file.
 
-- `kind="record"` — a catalogue record; `url` points to the detail page
-- `kind="fulltext"` — a match **inside the thesis PDF**; `pdf_url` is a direct link to the
-  full text, which your client can read directly
+## How it works
 
-## Getting the PDF
-
-theses.cz stores metadata only — the files live in each school's own system. 64
-institutions are registered, but they are not 64 different problems: the large majority run
-the same IS software as theses.cz itself (`is.muni.cz`, `is.slu.cz`, `is.ambis.cz`,
-`is.vsfs.cz`, `is.jamu.cz`, …), with `vskp.vse.cz` and a few others alongside. `fulltext`
-follows the record into whichever one it is and lists the documents on offer:
+theses.cz stores metadata only. The files live in the system of each school. 64 institutions take part. Most of them run the same IS software as theses.cz (`is.muni.cz`, `is.slu.cz`, `is.ambis.cz`, `is.vsfs.cz`, `is.jamu.cz`), with `vskp.vse.cz` and a few others alongside. `fulltext` follows the record into the correct system and lists the documents:
 
 ```json
 {
@@ -40,106 +64,50 @@ follows the record into whichever one it is and lists the documents on offer:
 }
 ```
 
-**`access` does not decide what you can download.** It describes the copy held by
-theses.cz, not the school's own policy. The VŠE thesis `pl09jx` is marked *"autentizovaným
-zaměstnancům ze stejné školy/fakulty"* on theses.cz while `vskp.vse.cz` links its 7.2 MB
-PDF to anyone — so always look at `files`, not at `access`.
+The `access` field does not control what you can download. It describes the copy that theses.cz holds, not the policy of the school. The VŠE thesis `pl09jx` shows *"autentizovaným zaměstnancům ze stejné školy/fakulty"* on theses.cz, but `vskp.vse.cz` serves its 7.2 MB PDF to anyone. Read the `files` list, not the `access` field.
 
-That link had no `.pdf` in the URL; the filename was only in the link text. Files are
-therefore matched by href **and** by label, and extensionless URLs are confirmed with a
-HEAD request (`confirmed`, `content_type`) rather than optimistically reported as PDFs.
+Some links have no `.pdf` in the URL and carry the filename in the link text only. The server therefore matches files by href and by label. It confirms URLs without an extension with a HEAD request and reports `confirmed` and `content_type` instead of assuming a PDF.
 
-### What actually comes back
+theses.cz has no public API, so the server scrapes it. This has two effects. The first request returns a 117 byte `<meta refresh>` stub, and the server retries once with the `__Host-issession` cookie it received. Markup changes break the parser, so run `python theses_mcp.py --selftest` to check the selectors against known records when results look empty.
 
-Measured over ~500 records from 20 unrelated subject searches, covering 17 distinct
-repository hosts:
+Keep the request rate reasonable.
 
-| repository | schools | result |
+## Coverage
+
+Measured over about 500 records from 20 unrelated subject searches, across 17 repository hosts.
+
+| Repository | Schools | Result |
 |---|---|---|
-| `is.muni.cz` | Masaryk University | works — full text, both reviewer reports, often DOCX and TXT |
-| `vskp.vse.cz`, `www.vse.cz` | VŠE Praha | works — thesis, appendix, both reports (extensionless `/zp/` URLs) |
-| `hdl.handle.net` | DSpace repositories, e.g. VŠB-TUO | works — handle redirects to the repository, bitstreams confirmed |
-| `is.ambis.cz`, `is.vsfs.cz`, `is.slu.cz`, `is.caritas-vos.cz`, `is.vstecb.cz`, `is.vszdrav.cz`, `is.cevro.cz`, `is.ucp.cz`, `is.jamu.cz`, `is.jabok.cz` | AMBIS, VŠFS, SU Opava, CARITAS, VŠTE, VŠ zdravotnická, CEVRO, UCP, JAMU, JABOK | CAPTCHA for anonymous visitors |
-| `is.vsh.cz`, `is.vshe.cz` | VŠH, VŠHE | broken TLS certificate (hostname mismatch) |
-| `evskp.uhk.cz` | Hradec Králové | different system, not implemented |
-| `stag.upol.cz`, `portal.ujep.cz` | UPOL, UJEP | STAG portal, not implemented |
+| `is.muni.cz` | Masaryk University | Works. Full text, both reviewer reports, often DOCX and TXT. |
+| `vskp.vse.cz`, `www.vse.cz` | VŠE Praha | Works. Thesis, appendix, both reports. |
+| `hdl.handle.net` | DSpace repositories such as VŠB-TUO | Works. The handle redirects to the repository. |
+| `is.ambis.cz`, `is.vsfs.cz`, `is.slu.cz`, `is.caritas-vos.cz`, `is.vstecb.cz`, `is.vszdrav.cz`, `is.cevro.cz`, `is.ucp.cz`, `is.jamu.cz`, `is.jabok.cz` | AMBIS, VŠFS, SU Opava, CARITAS, VŠTE, VŠ zdravotnická, CEVRO, UCP, JAMU, JABOK | CAPTCHA for anonymous visitors. |
+| `is.vsh.cz`, `is.vshe.cz` | VŠH, VŠHE | Broken TLS certificate. The hostname does not match. |
+| `evskp.uhk.cz` | Hradec Králové | Different system. Not implemented. |
+| `stag.upol.cz`, `portal.ujep.cz` | UPOL, UJEP | STAG portal. Not implemented. |
 
-theses.cz lists 64 participating institutions; roughly twenty never appeared in the
-sample, so their repositories are untested rather than known-good.
+About twenty of the 64 institutions never appeared in the sample. Their repositories are untested.
 
-The CAPTCHA is not bot detection — `is.muni.cz` serves this same client fine. Those
-schools gate *anonymous* access, and a human in a browser meets the same wall. This server
-reports it and does not try to defeat it.
+The CAPTCHA is not bot detection. `is.muni.cz` serves the same client without a problem. Those schools gate anonymous access, and a person in a browser meets the same wall. The server reports the CAPTCHA and does not try to defeat it.
 
-### Using your own login
+## Authenticated access
 
-The way past a gate is to be someone entitled to pass it. Theses marked *"všem
-autentizovaným"* (any authenticated user) and repositories that gate anonymous visitors
-both open up once you are logged in. Log in through your browser, copy the session cookie
-and hand it over per host:
+Theses marked *"všem autentizovaným"* and repositories that gate anonymous visitors both open after you log in. Log in through your browser, copy the session cookie, and pass it per host:
 
 ```bash
 THESES_COOKIES='{"theses.cz": "__Host-issession=…", "is.vsfs.cz": "__Host-issession=…"}'
 ```
 
-Cookies are scoped to their own domain and are never sent to any other host. This gets you
-what your account is entitled to — nothing more.
+Each cookie goes to its own domain only. This gives you the access that your account has and nothing more.
 
-### Known gaps
+## Limits
 
-- **STAG portals** (`stag.upol.cz`, same software at ZČU, UPCE, JČU, TUL) put the download
-  behind a session-bound portlet flow with `pc_phs` and `_csrf` parameters, and UPOL does
-  not expose the STAG web service at the usual `/ws/services/rest2/` path.
-- **`evskp.uhk.cz`** and **`portal.ujep.cz`** are their own systems, unparsed.
-- **`is.vsh.cz`, `is.vshe.cz`** serve certificates that do not match their hostname. The
-  session verifies TLS and so refuses them; turning verification off would fix the symptom
-  and remove the guarantee that you are talking to the school at all.
+- STAG portals (`stag.upol.cz`, and the same software at ZČU, UPCE, JČU, TUL) put the download behind a session bound portlet flow with `pc_phs` and `_csrf` parameters. UPOL does not expose the STAG web service at the usual `/ws/services/rest2/` path.
+- `evskp.uhk.cz` and `portal.ujep.cz` run their own systems. The server does not parse them.
+- `is.vsh.cz` and `is.vshe.cz` serve certificates that do not match their hostname. The session verifies TLS and refuses them. Turning verification off would hide the problem and remove the proof that you talk to the school.
 
-PRs welcome.
-
-## Install
-
-Claude Code:
-
-```bash
-claude mcp add theses -s user -- uvx --from git+https://github.com/koprjaa/theses-mcp theses-mcp
-```
-
-Any other client, in `mcpServers`:
-
-```json
-{
-  "theses": {
-    "command": "uvx",
-    "args": ["--from", "git+https://github.com/koprjaa/theses-mcp", "theses-mcp"]
-  }
-}
-```
-
-From a clone, use `pip install -e .` and `command: "theses-mcp"`.
-
-## Example
-
-```
-> find Czech theses about Midjourney and copyright
-
-search("midjourney AND autorství")   → 12 hits, incl. public PDFs
-detail("c5uqln")                     → abstract, keywords, supervisor, defense date
-fulltext("7lfo74")                   → PDF, DOCX and both reviewer reports
-```
-
-## Notes
-
-theses.cz is scraped, not queried through an API — it has no public one. Two consequences:
-
-- **Session bootstrap.** The first request returns a 117-byte `<meta refresh>` stub; the
-  server retries once with the `__Host-issession` cookie it just received.
-- **Markup drift breaks parsing.** `python theses_mcp.py --selftest` runs a live check
-  against known records and fails loudly when the selectors stop matching. Run it first
-  when results look empty.
-
-Be a decent citizen with request rates.
+Pull requests are welcome.
 
 ## License
 
-MIT
+[MIT](LICENSE)
