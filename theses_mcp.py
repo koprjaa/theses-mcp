@@ -173,6 +173,33 @@ def search(query: str, limit: int = 10) -> dict:
 # The IS template carries "Odhlášení ze systému" even for anonymous visitors, so a logout
 # link proves nothing. The invitation to log in is what disappears once you have.
 SIGNED_OUT = ("Přihlásit se", "Přihlásit sa", "Log in", "Login")
+CHROMIUM_BROWSERS = ("brave", "chrome", "msedge", "vivaldi", "opera", "chromium")
+
+
+def _default_browser() -> str | None:
+    """Path to the browser this machine opens links with, if Playwright can drive it.
+
+    Playwright only drives Chromium builds. Brave, Edge, Vivaldi and Opera all qualify,
+    so read the real default rather than starting a browser the user did not choose.
+    """
+    if sys.platform != "win32":
+        return None
+    try:
+        import winreg
+        with winreg.OpenKey(winreg.HKEY_CURRENT_USER,
+                            r"SOFTWARE\Microsoft\Windows\Shell\Associations"
+                            r"\UrlAssociations\https\UserChoice") as key:
+            prog_id = winreg.QueryValueEx(key, "ProgId")[0]
+        with winreg.OpenKey(winreg.HKEY_CLASSES_ROOT, rf"{prog_id}\shell\open\command") as key:
+            command = winreg.QueryValueEx(key, "")[0]
+    except OSError:
+        return None
+    match = re.search(r'"([^"]+\.exe)"', command) or re.search(r"(\S+\.exe)", command)
+    if not match:
+        return None
+    exe = match.group(1)
+    stem = pathlib.Path(exe).stem.lower()
+    return exe if any(b in stem for b in CHROMIUM_BROWSERS) and pathlib.Path(exe).exists() else None
 
 
 def _is_gated(text: str) -> bool:
@@ -211,24 +238,32 @@ def login(host: str = "theses.cz", wait_seconds: int = 240) -> dict:
 
     STORE.mkdir(parents=True, exist_ok=True)
     collected, signed_in = [], False
+    exe = _default_browser()
     with sync_playwright() as pw:
-        ctx = pw.chromium.launch_persistent_context(str(STORE / "browser"), headless=False)
+        # your own browser where possible, but a separate profile: Playwright cannot
+        # drive a profile that the browser already has open
+        ctx = pw.chromium.launch_persistent_context(str(STORE / "browser"), headless=False,
+                                                    **({"executable_path": exe} if exe else {}))
         page = ctx.pages[0] if ctx.pages else ctx.new_page()
         try:
-            # /auth/ drops you on the sign-in screen; the IS family forwards it to
-            # islogin.cz, which is where EduID lives. The root page only offers a link.
-            landed = page.goto(f"https://{host}/auth/", timeout=60_000)
-            if landed and landed.status >= 400:
-                page.goto(f"https://{host}/", timeout=60_000)
+            # /shibboleth/ is the EduID entry where a host has one, and /auth/ is the
+            # local sign-in, which the IS family forwards to islogin.cz. The root page
+            # only links to them, so land on the form itself.
+            for path in ("/shibboleth/", "/auth/", "/"):
+                landed = page.goto(f"https://{host}{path}", timeout=60_000)
+                if not landed or landed.status < 400:
+                    break
             deadline = time.monotonic() + wait_seconds
             while time.monotonic() < deadline and not page.is_closed():
                 try:
                     signed_in = _is_signed_in(page.content())
+                    if signed_in:
+                        break
+                    page.wait_for_timeout(1000)
                 except Exception:
-                    signed_in = False  # mid-navigation; look again in a moment
-                if signed_in:
+                    # closing the window is a normal way to end this, and a navigation
+                    # in flight raises here too; either way, look at the cookies
                     break
-                page.wait_for_timeout(1000)
             collected = [c for c in ctx.cookies() if host.endswith(c["domain"].lstrip("."))]
         finally:
             ctx.close()
