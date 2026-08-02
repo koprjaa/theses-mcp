@@ -278,6 +278,8 @@ DSPACE = {
     "České vysoké učení technické": "dspace.cvut.cz",
     "Vysoké učení technické v Brně": "dspace.vutbr.cz",
     "Vysoká škola báňská": "dspace.vsb.cz",
+    "Technická univerzita v Liberci": "dspace.tul.cz",
+    "Univerzita Pardubice": "dk.upce.cz",
 }
 
 
@@ -392,7 +394,10 @@ def fulltext(id_or_url: str) -> dict:
             res.pop("note", None)
             for f in res["files"]:
                 f.pop("source", None)
-            return res
+
+    if res["files"] and all(f.get("confirmed") is False for f in res["files"]):
+        # TUL answers its own bitstream URLs with 410; the listing is real, the files are not
+        res["note"] = "repository lists these files but will not serve them anonymously"
 
     if not res["files"] and "note" not in res:
         if page is None:
