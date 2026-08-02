@@ -67,7 +67,7 @@ def _get(url: str) -> BeautifulSoup:
     another stub, so honour the delay the page asks for. This is not only the first
     request of a session: theses.cz falls back to the stub under load as well.
     """
-    for attempt in range(4):
+    for _ in range(4):
         r = _s.get(url, timeout=30)
         stub = REFRESH.search(r.text[:400])
         if not stub:
@@ -199,6 +199,9 @@ def detail(id_or_url: str) -> dict:
 
 DOC_EXT = (".pdf", ".docx", ".doc", ".rtf", ".odt", ".zip", ".txt")
 DOC_RE = re.compile(r"(\S+\.(?:pdf|docx?|rtf|odt|zip|txt))\b", re.I)
+DOC_LABEL = re.compile(
+    r"plný text|full text|final thesis|závěrečná práce|posudek|review|"
+    r"oponent|vedoucí|supervisor|příloha|attachment|hlavní práce", re.I)
 
 
 def _documents(page, base: str) -> list:
@@ -209,32 +212,37 @@ def _documents(page, base: str) -> list:
     "Hlavní práce 82000_kliv06.pdf, 7.2 MB Stáhnout" pointing at /zp/82000 — so the
     label is parsed too, and anything still ambiguous is confirmed with a HEAD request.
     """
-    out, seen = [], set()
+    out, probe, seen = [], [], set()
     for a in page.select("a[href]"):
         href = requests.compat.urljoin(base, a["href"])
         if href in seen or href.startswith("mailto:"):
             continue
         label = _txt(a)
         named = DOC_RE.search(label)
-        if not (href.lower().split("?")[0].endswith(DOC_EXT) or named):
-            continue
-        seen.add(href)
-        out.append({
-            "label": re.sub(r"\s*St[áa]hnout\s*$", "", label) or href.rsplit("/", 1)[-1],
-            "filename": named.group(1) if named else href.rsplit("/", 1)[-1],
-            "url": href,
-        })
+        by_href = href.lower().split("?")[0].endswith(DOC_EXT)
+        if by_href or named:
+            seen.add(href)
+            out.append({
+                "label": re.sub(r"\s*St[áa]hnout\s*$", "", label) or href.rsplit("/", 1)[-1],
+                "filename": named.group(1) if named else href.rsplit("/", 1)[-1],
+                "url": href,
+            })
+        elif DOC_LABEL.search(label):
+            seen.add(href)
+            probe.append((label, href))
 
     for f in out:  # confirm the extensionless ones actually serve a file
         if f["url"].lower().split("?")[0].endswith(DOC_EXT):
             continue
-        try:  # magic bytes, not Content-Type — DSpace answers text/html and serves a PDF
-            g = _s.get(f["url"], timeout=25, stream=True, headers={"Range": "bytes=0-7"})
-            magic = next(g.iter_content(8), b"")
-            g.close()
-            f["confirmed"] = magic.startswith((b"%PDF", b"PK\x03\x04", b"{\\rtf", b"\xd0\xcf\x11\xe0"))
-        except Exception:
-            f["confirmed"] = None
+        doc = _as_document(f["url"])
+        f["confirmed"] = bool(doc)
+
+    # ČZU and Škoda Auto label their downloads "Final thesis" / "Supervisor's review"
+    # with neither the URL nor the text carrying a filename — ask the server instead.
+    for label, href in probe:
+        doc = _as_document(href)
+        if doc:
+            out.append({**doc, "label": label})
     return out
 
 
@@ -369,6 +377,8 @@ def _selftest():
     assert [f for f in vsb["files"] if f["confirmed"]], vsb["files"]
     men = fulltext("x52k58")  # MENDELU: the archive link IS the PDF, not a landing page
     assert len(men["files"]) == 1 and men["files"][0]["confirmed"], men
+    czu = fulltext("wjep6w")  # ČZU: downloads labelled, no filename in URL or text
+    assert len(czu["files"]) == 3 and all(f["confirmed"] for f in czu["files"]), czu
     print("OK", r["total"], "hits |", d["author"], "|", d["type"], "|",
           len(pub["files"]), "+", len(vse["files"]), "+", len(vsb["files"]),
           "+", len(men["files"]), "files")
