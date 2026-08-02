@@ -272,6 +272,52 @@ def _as_document(url: str):
     return {"label": "Plný text práce", "filename": name, "url": url, "confirmed": True}
 
 
+# Schools whose theses.cz records point nowhere, or only at a study-information system
+# that holds no files, but which run a public DSpace 7 of their own.
+DSPACE = {
+    "České vysoké učení technické": "dspace.cvut.cz",
+    "Vysoké učení technické v Brně": "dspace.vutbr.cz",
+    "Vysoká škola báňská": "dspace.vsb.cz",
+}
+
+
+def _norm(s: str) -> str:
+    return re.sub(r"[^0-9a-zá-žA-ZÁ-Ž]+", "", s or "").lower()
+
+
+def _dspace_lookup(school: str, title: str) -> list:
+    """Find the thesis in the school's own DSpace and list its files.
+
+    theses.cz links ČVUT and VUT records nowhere at all, and points the STAG schools at
+    a study-information system that carries metadata only. Their repositories are public
+    and searchable, so look the thesis up by title there. Only an exact title match is
+    accepted — a near miss would attach someone else's PDF to this record.
+    """
+    host = next((h for k, h in DSPACE.items() if k in (school or "")), None)
+    if not (host and title):
+        return []
+    try:
+        r = _s.get(f"https://{host}/server/api/discover/search/objects", timeout=30,
+                   params={"query": title, "dsoType": "item", "size": 5})
+        objects = r.json()["_embedded"]["searchResult"]["_embedded"]["objects"]
+    except Exception:
+        return []
+    for o in objects:
+        item = o.get("_embedded", {}).get("indexableObject", {})
+        if _norm(item.get("name")) != _norm(title):
+            continue
+        page = f"https://{host}/items/{item['uuid']}"
+        try:
+            soup = _get(page)
+        except Exception:
+            return []
+        found = _documents(soup, getattr(soup, "final_url", page))
+        for f in found:
+            f["source"] = page
+        return found
+    return []
+
+
 def _archive_url(soup, code: str):
     """Locate the school repository link for a record.
 
@@ -324,29 +370,39 @@ def fulltext(id_or_url: str) -> dict:
     access = [_txt(li) for li in soup.select("#th-obsah li")]
     archive = _archive_url(soup, code)
     res = {"url": f"{BASE}/id/{code}/", "access": access, "archive_url": archive, "files": []}
-    if not archive:
-        res["note"] = "no school repository link in the record"
-        return res
 
-    direct = _as_document(archive)
-    if direct:  # the link is the file itself (MENDELU and other IS /zp/ hosts)
-        res["files"] = [direct]
-        return res
+    page = None
+    if archive:
+        direct = _as_document(archive)
+        if direct:  # the link is the file itself (MENDELU and other IS /zp/ hosts)
+            res["files"] = [direct]
+            return res
+        try:
+            page = _get(archive)
+            res["files"] = _documents(page, getattr(page, "final_url", archive))
+        except Exception as e:  # SSL/DNS — some school systems are simply broken
+            res["note"] = f"school repository unreachable: {type(e).__name__}"
 
-    try:
-        page = _get(archive)
-    except Exception as e:  # SSL/DNS/timeout — some school systems are simply broken
-        res["note"] = f"school repository unreachable: {type(e).__name__}"
-        return res
+    if not res["files"]:  # last resort: the school's own digital library
+        found = _dspace_lookup(_txt(soup.select_one("#th-sloupec .oddil")),
+                               _txt(soup.select_one(".th-title")))
+        if found:
+            res["files"] = found
+            res["archive_url"] = found[0].pop("source", archive)
+            res.pop("note", None)
+            for f in res["files"]:
+                f.pop("source", None)
+            return res
 
-    res["files"] = _documents(page, getattr(page, "final_url", archive))
-
-    if not res["files"]:
-        host = requests.compat.urlparse(archive).netloc
-        wall = "opište" in page.get_text() or "captcha" in page.get_text().lower()
-        hint = "" if host in AUTHENTICATED else f" — set THESES_COOKIES for {host} to use your own login"
-        res["note"] = (f"repository gates anonymous access with a CAPTCHA/login{hint}"
-                       if wall else "no public files listed; access is likely restricted")
+    if not res["files"] and "note" not in res:
+        if page is None:
+            res["note"] = "no school repository link in the record"
+        else:
+            host = requests.compat.urlparse(archive).netloc
+            wall = "opište" in page.get_text() or "captcha" in page.get_text().lower()
+            hint = "" if host in AUTHENTICATED else f" — set THESES_COOKIES for {host} to use your own login"
+            res["note"] = (f"repository gates anonymous access with a CAPTCHA/login{hint}"
+                           if wall else "no public files listed; access is likely restricted")
     return res
 
 
@@ -379,6 +435,9 @@ def _selftest():
     assert len(men["files"]) == 1 and men["files"][0]["confirmed"], men
     czu = fulltext("wjep6w")  # ČZU: downloads labelled, no filename in URL or text
     assert len(czu["files"]) == 3 and all(f["confirmed"] for f in czu["files"]), czu
+    cvut = fulltext("dvopnp")  # ČVUT: record links nowhere, files live in its own DSpace
+    assert "dspace.cvut.cz" in (cvut["archive_url"] or ""), cvut
+    assert len(cvut["files"]) == 4 and all(f["confirmed"] for f in cvut["files"]), cvut
     print("OK", r["total"], "hits |", d["author"], "|", d["type"], "|",
           len(pub["files"]), "+", len(vse["files"]), "+", len(vsb["files"]),
           "+", len(men["files"]), "files")

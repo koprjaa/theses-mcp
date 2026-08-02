@@ -70,25 +70,29 @@ Schools hide their files in three different ways, so the server looks for all of
 
 Two more shapes worth knowing. The archive link is sometimes the file itself rather than a page listing files, which is how MENDELU and ČZU work. And VŠB and UHK records carry no archive link on the record page, only in the search listing, so the server looks the thesis up by title to recover it.
 
+Some records link nowhere useful. ČVUT and VUT records carry no archive link at all, and the STAG schools point at a study information system that holds metadata and no files. Those universities run a public DSpace of their own, so the server searches it by title as a last resort and accepts only an exact title match, because a near miss would attach someone else's PDF to the record. A ČVUT thesis that theses.cz links nowhere resolves this way to its PDF, its poster appendix, and both reviews.
+
 theses.cz has no public API, so the server scrapes it. A request the server does not want to answer yet returns a 117 byte `<meta refresh>` stub asking for a delay; retrying instantly earns another stub, so the delay is honoured and the request is tried up to four times. This is not only the first request of a session, as theses.cz falls back to the stub under load too. Markup changes break the parser, so run `python theses_mcp.py --selftest` to check the selectors against known records when results look empty.
 
 Keep the request rate reasonable.
 
 ## Coverage
 
-Measured over about 500 records from 20 unrelated subject searches, across 17 repository hosts.
+One thesis was sampled for each of the 64 institutions, and separately about 500 records were drawn from 20 unrelated subject searches.
 
 | Repository | Schools | Result |
 |---|---|---|
 | `is.muni.cz` | Masaryk University | Works. Full text, both reviewer reports, often DOCX and TXT. |
 | `vskp.vse.cz`, `www.vse.cz` | VŠE Praha | Works. Thesis, appendix, both reports. |
-| `hdl.handle.net` | DSpace repositories such as VŠB-TUO | Works. The handle redirects to the repository. |
-| `is.ambis.cz`, `is.vsfs.cz`, `is.slu.cz`, `is.caritas-vos.cz`, `is.vstecb.cz`, `is.vszdrav.cz`, `is.cevro.cz`, `is.ucp.cz`, `is.jamu.cz`, `is.jabok.cz` | AMBIS, VŠFS, SU Opava, CARITAS, VŠTE, VŠ zdravotnická, CEVRO, UCP, JAMU, JABOK | CAPTCHA for anonymous visitors. |
+| `is.czu.cz`, `is.savs.cz` | ČZU, Škoda Auto | Works. Thesis and both reviews. |
+| `is.mendelu.cz`, `is.vskk.cz` | MENDELU, VŠKK | Works. The link is the PDF itself. |
+| `hdl.handle.net`, `dspace.cvut.cz`, `dspace.vutbr.cz` | VŠB-TUO, ČVUT, VUT | Works. Handle redirect, or a title lookup in the school's DSpace. |
+| `is.ambis.cz`, `is.vsfs.cz`, `is.slu.cz`, `is.caritas-vos.cz`, `is.vstecb.cz`, `is.vszdrav.cz`, `is.cevro.cz`, `is.ucp.cz`, `is.jamu.cz`, `is.jabok.cz`, `is.sting.cz` | AMBIS, VŠFS, SU Opava, CARITAS, VŠTE, VŠ zdravotnická, CEVRO, UCP, JAMU, JABOK, Sting | CAPTCHA for anonymous visitors. Use your own login. |
+| `wstag.jcu.cz`, `stag.tul.cz`, `stag.upol.cz`, `portal.upce.cz`, `portal.zcu.cz`, `portal.osu.cz`, `portal.ujep.cz`, `stagweb.vfu.cz` | JČU, TUL, UPOL, UPCE, ZČU, OSU, UJEP, VFU | STAG holds metadata only. Their DSpace repositories run an older API and are not wired up yet. |
 | `is.vsh.cz`, `is.vshe.cz` | VŠH, VŠHE | Broken TLS certificate. The hostname does not match. |
-| `evskp.uhk.cz` | Hradec Králové | Different system. Not implemented. |
-| `stag.upol.cz`, `portal.ujep.cz` | UPOL, UJEP | STAG portal. Not implemented. |
+| `evskp.uhk.cz` | Hradec Králové | Own system. Not implemented. |
 
-About twenty of the 64 institutions never appeared in the sample. Their repositories are untested.
+Roughly twenty institutions are still untested. The per-institution sweep picks a thesis by matching the school name in the result headers and misses them, which is a limit of the sampling and not a verdict on the school. VŠB proves the point: the sweep found no sample for it, yet it works.
 
 The CAPTCHA is not bot detection. `is.muni.cz` serves the same client without a problem. Those schools gate anonymous access, and a person in a browser meets the same wall. The server reports the CAPTCHA and does not try to defeat it.
 
@@ -104,8 +108,9 @@ Each cookie goes to its own domain only. This gives you the access that your acc
 
 ## Limits
 
-- STAG portals (`stag.upol.cz`, and the same software at ZČU, UPCE, JČU, TUL) put the download behind a session bound portlet flow with `pc_phs` and `_csrf` parameters. UPOL does not expose the STAG web service at the usual `/ws/services/rest2/` path.
-- `evskp.uhk.cz` and `portal.ujep.cz` run their own systems. The server does not parse them.
+- The DSpace lookup speaks the DSpace 7 REST API. UK, ZČU, JČU, UPCE, TUL, and UTB run public repositories on an older DSpace that answers a different way, so those eight STAG schools stay empty until that path is added. Their hosts are `dspace.cuni.cz`, `dspace5.zcu.cz`, `dspace.jcu.cz`, `dk.upce.cz`, `dspace.tul.cz`, and `digilib.k.utb.cz`.
+- The repositories for VŠCHT, UPOL, OSU, and UJEP were not found under the obvious hostnames.
+- `evskp.uhk.cz` runs its own system. The server does not parse it.
 - `is.vsh.cz` and `is.vshe.cz` serve certificates that do not match their hostname. The session verifies TLS and refuses them. Turning verification off would hide the problem and remove the proof that you talk to the school.
 
 Pull requests are welcome.
