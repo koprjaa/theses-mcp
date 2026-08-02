@@ -240,14 +240,25 @@ def test_norm_makes_two_titles_that_differ_only_in_punctuation_equal():
 # --- session detection ------------------------------------------------------
 
 
+CHROME = ("Theses.cz Odevzdej.cz PravyDiplom.cz Repozitar.cz Vyhledávání Nápověda "
+          "Zapojené školy Správci zapojených škol Soukromí Přístupnost Provozuje "
+          "Fakulta informatiky MU Potřebujete poradit Často kladené dotazy "
+          "Vysokoškolské kvalifikační práce Domů Odhlášení ze systému ") * 2
+
+
 def test_a_logout_link_does_not_mean_you_are_logged_in():
     """The IS template ships "Odhlášení ze systému" to anonymous visitors too."""
-    anonymous = "Odhlášení ze systému Domů Přihlásit se Přihlásit se (EduID) Theses.cz"
-    assert theses_mcp._is_signed_in(anonymous) is False
+    assert theses_mcp._is_signed_in(CHROME + "Přihlásit se Přihlásit se (EduID)") is False
 
 
 def test_a_page_with_no_invitation_to_log_in_counts_as_signed_in():
-    assert theses_mcp._is_signed_in("Odhlášení ze systému Moje studium Jan Novák") is True
+    assert theses_mcp._is_signed_in(CHROME + "Moje studium Jan Novák") is True
+
+
+@pytest.mark.parametrize("body", ["", "   ", "<html><body></body></html>", "404 Not Found"])
+def test_a_page_that_says_nothing_is_not_a_session(body):
+    """theses.cz/auth/ answers with an empty body, which once passed as a valid login."""
+    assert theses_mcp._is_signed_in(body) is False
 
 
 def test_a_captcha_page_is_gated_and_not_signed_in():

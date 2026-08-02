@@ -221,8 +221,15 @@ def _is_gated(text: str) -> bool:
 
 
 def _is_signed_in(text: str) -> bool:
-    # a CAPTCHA page carries no invitation to log in either, so ask about it first
-    return not _is_gated(text) and not any(m in text for m in SIGNED_OUT)
+    """Whether a page was served to a known user.
+
+    This reads the absence of the invitation to log in, so it needs a page that would
+    have carried one. An empty body, an error, or a CAPTCHA carries no invitation
+    either, and each of those used to pass as a valid session.
+    """
+    if len(text.strip()) < 400 or _is_gated(text):
+        return False
+    return not any(m in text for m in SIGNED_OUT)
 
 
 @mcp.tool()
@@ -314,11 +321,24 @@ def login(host: str = "theses.cz", wait_seconds: int = 240, attach: bool = False
             else:
                 ctx.close()
 
-    # these systems hand every anonymous visitor a session cookie, so the cookie alone
-    # proves nothing — only the logout link the page grows once it knows who you are
-    if not (signed_in and collected):
+    # Reading the page inside the browser guesses. Asking the server with the cookies
+    # in hand is the real test, and it is the same request the rest of the tools make.
+    verified = False
+    if collected:
+        jar = requests.cookies.RequestsCookieJar()
+        for c in collected:
+            jar.set(c["name"], c["value"], domain=c["domain"].lstrip("."))
+        try:
+            probe = _s.get(f"https://{host}/", timeout=30, cookies=jar, allow_redirects=True)
+            verified = _is_signed_in(BeautifulSoup(probe.text, "lxml").get_text())
+        except Exception:
+            verified = False
+
+    if not verified:
         return {"host": host, "result": "sign-in not detected, nothing stored",
-                "hint": "the window closed or the wait ran out before you finished"}
+                "cookies_seen": len(collected),
+                "page_looked_signed_in": signed_in,
+                "hint": "the window closed or the wait ran out before the sign-in finished"}
 
     saved = {}
     if COOKIE_FILE.exists():
@@ -333,6 +353,50 @@ def login(host: str = "theses.cz", wait_seconds: int = 240, attach: bool = False
     _attach(host, saved[host])
     return {"host": host, "result": "signed in", "cookies": len(collected),
             "stored": str(COOKIE_FILE), "next": "call whoami to confirm, then fulltext"}
+
+
+@mcp.tool()
+def use_cookie(host: str, cookie: str) -> dict:
+    """Take a session cookie you copied out of your own browser.
+
+    This is the route for a browser that `login` cannot drive, or for anyone who would
+    rather not sign in a second time in a separate window. Sign in normally, open the
+    developer tools, and copy the session cookie from Application, then Cookies.
+
+    host: the site the cookie belongs to, e.g. "theses.cz"
+    cookie: either the bare value of `__Host-issession`, or a whole `name=value; …` header
+
+    The cookie is checked against the site before it is kept, so a stale one is refused
+    rather than stored and puzzled over later.
+    """
+    pairs = [p for p in cookie.split(";") if "=" in p] or [f"__Host-issession={cookie.strip()}"]
+    jar = requests.cookies.RequestsCookieJar()
+    parsed = []
+    for part in pairs:
+        name, value = part.split("=", 1)
+        parsed.append({"name": name.strip(), "value": value.strip(), "domain": host})
+        jar.set(name.strip(), value.strip(), domain=host)
+
+    try:
+        probe = _s.get(f"https://{host}/", timeout=30, cookies=jar, allow_redirects=True)
+    except Exception as e:
+        return {"error": f"could not reach {host}: {type(e).__name__}"}
+    if not _is_signed_in(BeautifulSoup(probe.text, "lxml").get_text()):
+        return {"host": host, "result": "that cookie does not sign you in",
+                "hint": "copy it again from a tab where you are signed in"}
+
+    saved = {}
+    if COOKIE_FILE.exists():
+        try:
+            saved = json.loads(COOKIE_FILE.read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError):
+            saved = {}
+    STORE.mkdir(parents=True, exist_ok=True)
+    saved[host] = parsed
+    COOKIE_FILE.write_text(json.dumps(saved), encoding="utf-8")
+    COOKIE_FILE.chmod(0o600)
+    _attach(host, parsed)
+    return {"host": host, "result": "signed in", "stored": str(COOKIE_FILE)}
 
 
 @mcp.tool()
