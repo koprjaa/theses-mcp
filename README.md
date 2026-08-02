@@ -163,7 +163,9 @@ Call `whoami` afterwards rather than guessing. An expired cookie gives the same 
 
 - Each school records which repository software it runs. Blind probing costs a round of retries per wrong guess and never succeeds against the wrong flavour. A repository that changes flavour needs a correction here.
 - UTB and VŠCHT pass against their repositories, not through a record. No theses.cz thesis was both publicly viewable and present in them.
-- UJEP runs ARL. This server does not speak that system.
+- STAG does serve files, which contradicts the row above. They come from a portlet at `/StagPortletsJSR168/PagesDispatcherServlet` with `pp_page=souboryStudentuDownloadPage` and a `soubidno` file id. Three such URLs, from UJEP, VFU and the Evropská výzkumná univerzita, each returned a real PDF. What is missing is the file id. It appears on the thesis page only after the session bound portlet flow, and guessing the name of the listing page earns a 500. Follow the flow rather than construct the URL.
+- UJEP also runs ARL. This server does not speak that system.
+- Give theses.cz room. A long sweep plus ad hoc queries pushed it into answering 503 twice in one day. Pace the runs and stop when it starts refusing.
 - OSU has no repository of its own. Its theses live in STAG, which holds no files. UPOL was not located.
 - Signing in helps less than it sounds. theses.cz accepts eduID but answers a student with *"Systém theses.cz zatím neumožňuje přihlašování studentů"*, so only staff get a session. The eleven gated schools offer no eduID at all. Their sign-in goes to `islogin.cz/<school>/login/` and wants an account at that school. A student therefore has nothing to log in to, and `login` is for staff, or for a member of the school that holds the thesis.
 - The CAPTCHA schools have no second source. A search for five sample theses found none of them. That search covered NUŠL, OpenAIRE, and repositories of their own. Those files exist in one place, and that place wants a login.
