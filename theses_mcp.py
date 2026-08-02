@@ -441,12 +441,12 @@ def use_cookie(host: str, cookie: str) -> dict:
 
 @mcp.tool()
 def whoami() -> dict:
-    """Report which hosts you are logged in to, and whether the login actually works.
+    """Report which hosts have a session attached, and what each one answers.
 
-    Use this after setting $THESES_COOKIES. A cookie that has expired or was copied
-    from the wrong browser profile looks exactly like no cookie at all — the gated
-    repository simply answers with its CAPTCHA again — so this asks each configured
-    host directly instead of leaving you to guess from empty `files` lists.
+    Use this after setting $THESES_COOKIES. A CAPTCHA in the answer is proof that the
+    cookie failed. The opposite does not follow. These schools gate their thesis pages
+    and leave the front page open, so a working cookie and no cookie at all give the
+    same front page. Only `fulltext` on a thesis of that school settles it.
     """
     if not AUTHENTICATED:
         return {"authenticated": [], "hint": "set THESES_COOKIES to use your own login; "
@@ -460,7 +460,8 @@ def whoami() -> dict:
             return "cookie not accepted — still asked for a CAPTCHA"
         if _is_signed_in(text):
             return "logged in"
-        return "reachable, but no sign of a session"
+        # the gate sits on the thesis pages, not here, so this proves nothing either way
+        return "cookie attached; the front page is not gated, so ask fulltext instead"
 
     return {"authenticated": {host: status(host) for host in AUTHENTICATED}}
 

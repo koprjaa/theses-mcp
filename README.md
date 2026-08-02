@@ -48,7 +48,7 @@ fulltext("7lfo74")                   PDF, DOCX, and both reviewer reports
 | `detail(id_or_url)` | Full record: author, Czech and English title and abstract, keywords, supervisor, opponent, defense date, full text availability, archive link, related theses. |
 | `fulltext(id_or_url)` | Follows the record into the school repository and lists the files. The list holds the thesis PDF and the two reviewer reports. |
 | `login(host)` | Opens a browser window on the sign-in page of the school. It waits for you, then keeps the session. |
-| `whoami()` | Lists the hosts where you hold a session. It also reports whether each session still works. |
+| `whoami()` | Lists the hosts that have a session attached, and what each one answers. |
 
 `search` returns two kinds of hit. A hit with `kind="record"` is a catalogue record, and `url` points to the detail page. A hit with `kind="fulltext"` matched inside the thesis PDF, and `pdf_url` links to the file.
 
@@ -85,26 +85,69 @@ A markup change breaks the parser. Run `python theses_mcp.py --selftest` to chec
 
 ## Coverage
 
-`tools/e2e_schools.py` walked the whole chain for all 64 institutions. It downloaded a PDF for 12 of them. Those 12 are the only schools this project claims outright, because bytes that start with `%PDF` reached the disk:
+`tools/e2e_schools.py` walked the whole chain for all 64 institutions: find a thesis of that school, open the record, resolve the files, download one, and read the bytes. A school counts only when a complete PDF reached the disk. Complete means the file starts with `%PDF` and ends with `%%EOF`. **38 of the 64 institutions pass.**
 
-| School | Size | Source |
+| School | Size | Served by |
 |---|---|---|
-| Škoda Auto | 4039 kB | `is.savs.cz` |
-| ČVUT | 2670 kB | `dspace.cvut.cz` |
-| ČZU | 2536 kB | `is.czu.cz` |
-| ZČU | 2079 kB | `dspace.zcu.cz` |
-| VŠE | 1685 kB | `vskp.vse.cz` |
-| VUT | 1646 kB | `dspace.vutbr.cz` |
-| UPCE | 1505 kB | `dk.upce.cz` |
-| VŠB-TUO | 1271 kB | `hdl.handle.net` |
-| VŠKK | 956 kB | `is.vskk.cz` |
-| JČU | 821 kB | `dspace.jcu.cz` |
-| MENDELU | 743 kB | `is.mendelu.cz` |
-| MU | 705 kB | `is.muni.cz` |
+| Vysoká škola aplikované psychologie, s.r.o. | 46783 kB | `theses.cz` |
+| Pražská vysoká škola psychosociálních studií, s.r.o. | 42756 kB | `theses.cz` |
+| JABOK - Vyšší odborná škola sociálně pedagogická a teologická | 38305 kB | `is.jabok.cz` |
+| Vysoká škola evropských a regionálních studií, z. ú. | 36128 kB | `theses.cz` |
+| Česká zemědělská univerzita v Praze | 29151 kB | `is.czu.cz` |
+| Vysoká škola kreativní komunikace, s.r.o. | 14406 kB | `is.vskk.cz` |
+| CEVRO Univerzita, z.ú. | 10026 kB | `is.cevro.cz` |
+| Škoda Auto Vysoká škola z.ú. | 4039 kB | `is.savs.cz` |
+| University College Prague - Vysoká škola mezinárodních vztahů a Vysoká škola hot | 2919 kB | `is.ucp.cz` |
+| České vysoké učení technické v Praze | 2670 kB | `dspace.cvut.cz` |
+| Univerzita Palackého v Olomouci | 1851 kB | `stag.upol.cz` |
+| Technická univerzita v Liberci | 1817 kB | `stag.tul.cz` |
+| Slezská univerzita v Opavě | 1796 kB | `is.slu.cz` |
+| Vysoká škola ekonomická v Praze | 1685 kB | `vskp.vse.cz` |
+| Moravská vysoká škola Olomouc, o.p.s. | 1684 kB | `stag-mvso.zcu.cz` |
+| Vysoké učení technické v Brně | 1646 kB | `theses.cz` |
+| Vysoká škola zdravotnická, o.p.s. | 1620 kB | `is.vszdrav.cz` |
+| Policejní akademie České republiky v Praze | 1619 kB | `theses.cz` |
+| Veterinární univerzita Brno | 1542 kB | `stagweb.vfu.cz` |
+| Univerzita Pardubice | 1505 kB | `portal.upce.cz` |
+| Vysoká škola obchodní a hotelová s.r.o. | 1502 kB | `theses.cz` |
+| Evropská výzkumná univerzita, z.ú. | 1481 kB | `stag-vsss.zcu.cz` |
+| Soukromá vysoká škola ekonomická Znojmo, s.r.o. | 1339 kB | `theses.cz` |
+| Vysoká škola báňská - Technická univerzita Ostrava | 1271 kB | `hdl.handle.net` |
+| Vysoká škola finanční a správní, a.s. | 1239 kB | `is.vsfs.cz` |
+| Janáčkova akademie múzických umění | 1158 kB | `is.jamu.cz` |
+| Západočeská univerzita v Plzni | 888 kB | `portal.zcu.cz` |
+| Vysoká škola technická a ekonomická v Českých Budějovicích | 872 kB | `is.vstecb.cz` |
+| Jihočeská univerzita v Českých Budějovicích | 821 kB | `wstag.jcu.cz` |
+| Mendelova univerzita v Brně | 743 kB | `is.mendelu.cz` |
+| Masarykova univerzita | 705 kB | `is.muni.cz` |
+| Ambis Univerzita | 660 kB | `is.ambis.cz` |
+| Univerzita Jana Amose Komenského Praha s.r.o. | 592 kB | `theses.cz` |
+| Vyšší odborná škola MILLS | 479 kB | `theses.cz` |
+| CARITAS – Vyšší odborná škola sociální Olomouc | 415 kB | `is.caritas-vos.cz` |
+| Univerzita Hradec Králové | 378 kB | `evskp.uhk.cz` |
+| Univerzita Jana Evangelisty Purkyně v Ústí nad Labem | 260 kB | `portal.ujep.cz` |
+| Vysoká škola logistiky o.p.s. | 102 kB | `theses.cz` |
 
-The other 52 split into four groups. 23 reached the record and found no file. 22 gave no thesis whose result header names the school, which is a limit of the sampling. 7 crashed with a retry error near the end of the run, after theses.cz began to refuse the pace, so they carry no verdict at all.
+Nine come from STAG. Six of those returned nothing before: UPOL, TUL, VFU, UJEP, Moravská VŠ Olomouc and the Evropská výzkumná univerzita. The other three, JČU, UPCE and ZČU, used to arrive through a title lookup in a DSpace next door. The portlet answers with a thesis id instead. A near miss can no longer attach the PDF of a stranger.
 
-Three schools work at the lookup and did not finish the chain. UK, UTB, and VŠCHT each return files when asked for a title that their repository holds. The run found no thesis for them that is both publicly viewable on theses.cz and present in that repository. Treat those three as probable, not proven.
+Ten come from schools that gate anonymous visitors with a CAPTCHA. Those rows need your own session. See [Authenticated access](#authenticated-access).
+
+Ten come from theses.cz itself. The registry does not only point at the school. Where it holds the documents, it serves them from `/id/<code>/<filename>`, and that block sits outside the metadata section. Reading only the archive link misses a copy that is already there.
+
+The remaining 26 split in two.
+
+16 gave no thesis whose result header names the school. That is a limit of the sampling, not a verdict. theses.cz has no field search, so the harness matches the school name in the result header. Short or shared names find nothing. An earlier sweep found no sample for VŠB, and VŠB downloads a PDF.
+
+10 reached the record and found no file:
+
+| School | Reason |
+|---|---|
+| OSU | STAG inside a WebSphere portal. Needs a browser. |
+| Sting | CAPTCHA, and no session for that host. |
+| NEWTON | No public files listed. |
+| AMU | The sampled record is not publicly viewable on theses.cz. |
+| VŠCHT | The record links nowhere, and `repozitar.vscht.cz` holds no thesis under that title. |
+| VŠP Jihlava, Unicorn, Jahodovka, OA Brno, Veřejně správní akademie | No repository link in the record. |
 
 The table below records the mechanism per repository. It comes from a wider sample: one thesis for each of the 64 institutions, plus about 500 records from 20 unrelated subject searches.
 
@@ -114,13 +157,13 @@ The table below records the mechanism per repository. It comes from a wider samp
 | `vskp.vse.cz`, `www.vse.cz` | VŠE Praha | Works. Thesis, appendix, both reports. |
 | `is.czu.cz`, `is.savs.cz` | ČZU, Škoda Auto | Works. Thesis and both reviews. |
 | `is.mendelu.cz`, `is.vskk.cz` | MENDELU, VŠKK | Works. The link is the PDF itself. |
-| `hdl.handle.net`, `dspace.cvut.cz`, `dspace.vutbr.cz`, `dk.upce.cz`, `dspace.cuni.cz`, `dspace.jcu.cz`, `dspace.zcu.cz`, `digilib.k.utb.cz`, `repozitar.vscht.cz` | VŠB-TUO, ČVUT, VUT, UPCE, UK, JČU, ZČU, UTB, VŠCHT | Works. Handle redirect, or a title lookup in the repository of the school. |
-| `dspace.tul.cz` | TUL | Lists the files, then answers 410 for every one. Reported, not hidden. |
-| `is.ambis.cz`, `is.vsfs.cz`, `is.slu.cz`, `is.caritas-vos.cz`, `is.vstecb.cz`, `is.vszdrav.cz`, `is.cevro.cz`, `is.ucp.cz`, `is.jamu.cz`, `is.jabok.cz`, `is.sting.cz` | AMBIS, VŠFS, SU Opava, CARITAS, VŠTE, VŠ zdravotnická, CEVRO, UCP, JAMU, JABOK, Sting | CAPTCHA for anonymous visitors. Use your own login. |
-| `stag.tul.cz`, `stag.upol.cz`, `portal.ujep.cz`, `stagweb.vfu.cz`, `stag-vsss.zcu.cz`, `wstag.jcu.cz`, `portal.upce.cz`, `portal.zcu.cz` | TUL, UPOL, UJEP, VFU, Evropská výzkumná, JČU, UPCE, ZČU | Works. The file list comes from the portlet, not the page. |
+| `hdl.handle.net`, `dspace.cvut.cz`, `dspace.vutbr.cz`, `dspace.cuni.cz`, `digilib.k.utb.cz`, `repozitar.vscht.cz` | VŠB-TUO, ČVUT, VUT, UK, UTB, VŠCHT | Works. Handle redirect, or a title lookup in the repository of the school. |
+| `dspace.tul.cz` | TUL | Reached through STAG, which links here. Some bitstreams answer 410. Reported, not hidden. |
+| `is.ambis.cz`, `is.vsfs.cz`, `is.slu.cz`, `is.caritas-vos.cz`, `is.vstecb.cz`, `is.vszdrav.cz`, `is.cevro.cz`, `is.ucp.cz`, `is.jamu.cz`, `is.jabok.cz`, `is.sting.cz` | AMBIS, VŠFS, SU Opava, CARITAS, VŠTE, VŠ zdravotnická, CEVRO, UCP, JAMU, JABOK, Sting | CAPTCHA for anonymous visitors. Ten of the eleven download with a session of your own. |
+| `stag.tul.cz`, `stag.upol.cz`, `portal.ujep.cz`, `stagweb.vfu.cz`, `stag-vsss.zcu.cz`, `stag-mvso.zcu.cz`, `wstag.jcu.cz`, `portal.upce.cz`, `portal.zcu.cz` | TUL, UPOL, UJEP, VFU, Evropská výzkumná, Moravská VŠ Olomouc, JČU, UPCE, ZČU | Works. The file list comes from the portlet, not the page. |
 | `portal.osu.cz` | OSU | STAG inside a WebSphere portal. Needs a browser. |
 | `is.vsh.cz`, `is.vshe.cz` | VŠH, VŠHE | Broken TLS certificate. The hostname does not match. |
-| `evskp.uhk.cz` | Hradec Králové | Own system. Not implemented. |
+| `evskp.uhk.cz` | Hradec Králové | Works. theses.cz also holds a copy of its own. |
 
 The sampling is the weak part of every sweep here. It picks a thesis by matching the school name in the result headers, and for 22 institutions it finds none. That is a limit of the method, not a verdict on the school. An earlier sweep found no sample for VŠB, and VŠB downloads a PDF.
 
@@ -140,7 +183,7 @@ The window runs a profile of its own, so it starts signed out and without your e
 
 ```
 login("is.slu.cz")     opens a window, waits for you, stores the session
-whoami()               confirms that the cookie still works
+whoami()               reports what each configured host answers
 fulltext("qr1tvh")     now sees what your account sees
 ```
 
@@ -160,7 +203,9 @@ THESES_COOKIES='{"theses.cz": "__Host-issession=…", "is.vsfs.cz": "__Host-isse
 
 Each cookie goes to its own domain only. Either route gives you the access of your account and nothing more.
 
-Call `whoami` afterwards rather than guessing. An expired cookie gives the same empty `files` list as no cookie at all. A logout link on the page proves nothing. The IS template shows one to anonymous visitors too. Instead, `whoami` looks for the missing invitation to log in.
+Call `whoami` afterwards, and read it for what it is. A CAPTCHA in the answer proves the cookie failed. The opposite does not follow. These schools gate their thesis pages and leave the front page open, so a working cookie and no cookie give the same front page. Only `fulltext` on a thesis of that school settles it.
+
+A logout link proves nothing either. The IS template shows one to anonymous visitors too, so `whoami` looks for the missing invitation to log in instead.
 
 ## Limits
 
