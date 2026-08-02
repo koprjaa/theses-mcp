@@ -23,7 +23,9 @@ _s = requests.Session()
 _s.headers["User-Agent"] = "theses-mcp (+https://github.com/koprjaa/theses-mcp)"
 # school systems drop connections and rate-limit; back off instead of failing the call
 _s.mount("https://", HTTPAdapter(max_retries=Retry(
-    total=3, backoff_factor=1.5, status_forcelist=[429, 500, 502, 503, 504],
+    # 500 is left out on purpose: repositories answer it for queries they cannot parse,
+    # and repeating those just burns half a minute before the same failure
+    total=3, backoff_factor=1.5, status_forcelist=[429, 502, 503, 504],
     allowed_methods=["GET", "HEAD"])))
 
 
@@ -274,21 +276,22 @@ def _as_document(url: str):
 
 
 # Schools whose theses.cz records point nowhere, or only at a study-information system
-# that holds no files, but which run a public DSpace 7 of their own.
-DSPACE = {
-    "České vysoké učení technické": "dspace.cvut.cz",
-    "Vysoké učení technické v Brně": "dspace.vutbr.cz",
-    "Vysoká škola báňská": "dspace.vsb.cz",
-    "Technická univerzita v Liberci": "dspace.tul.cz",
-    "Univerzita Pardubice": "dk.upce.cz",
-    "Univerzita Karlova": "dspace.cuni.cz",
-    "Jihočeská univerzita": "dspace.jcu.cz",
-    "Západočeská univerzita": "dspace.zcu.cz",
-    "Univerzita Tomáše Bati": "digilib.k.utb.cz",
+# that holds no files, but which run a public repository of their own.
+REPOSITORY = {
+    "České vysoké učení technické": ("dspace.cvut.cz", "dspace7"),
+    "Vysoké učení technické v Brně": ("dspace.vutbr.cz", "dspace7"),
+    "Vysoká škola báňská": ("dspace.vsb.cz", "dspace7"),
+    "Technická univerzita v Liberci": ("dspace.tul.cz", "dspace7"),
+    "Univerzita Pardubice": ("dk.upce.cz", "dspace7"),
+    "Západočeská univerzita": ("dspace.zcu.cz", "dspace7"),
+    "Univerzita Karlova": ("dspace.cuni.cz", "dspace6"),
+    "Jihočeská univerzita": ("dspace.jcu.cz", "dspace6"),
+    "Univerzita Tomáše Bati": ("digilib.k.utb.cz", "dspace5"),
+    "Vysoká škola chemicko-technologická": ("repozitar.vscht.cz", "invenio"),
 }
 
 # ZČU serves the interface and the REST backend from different hosts
-DSPACE_API = {"dspace.zcu.cz": "naos-be.zcu.cz"}
+REPOSITORY_API = {"dspace.zcu.cz": "naos-be.zcu.cz"}
 
 
 def _norm(s: str) -> str:
@@ -297,7 +300,7 @@ def _norm(s: str) -> str:
 
 def _dspace7(host: str, title: str):
     """DSpace 7: search the REST backend, then read the files off the item page."""
-    api = DSPACE_API.get(host, host)
+    api = REPOSITORY_API.get(host, host)
     r = _s.get(f"https://{api}/server/api/discover/search/objects", timeout=30,
                params={"query": title, "dsoType": "item", "size": 5})
     objects = r.json()["_embedded"]["searchResult"]["_embedded"]["objects"]
@@ -353,33 +356,62 @@ def _dspace5(host: str, title: str):
     return None
 
 
-def _dspace_lookup(school: str, title: str) -> list:
-    """Find the thesis in the school's own DSpace and list its files.
+def _invenio(host: str, title: str):
+    """Invenio: VŠCHT runs one of these instead of a DSpace.
+
+    Records list a cover image alongside the thesis, so keep only real documents.
+    """
+    r = _s.get(f"https://{host}/api/theses", params={"q": title, "size": 5}, timeout=30)
+    for hit in r.json()["hits"]["hits"]:
+        name = (hit.get("metadata") or hit).get("title")
+        if isinstance(name, dict):
+            name = name.get("cs") or next(iter(name.values()), "")
+        if _norm(name) != _norm(title):
+            continue
+        listing = hit["links"]["files"]
+        files = []
+        for entry in _s.get(listing, timeout=25).json().get("entries", []):
+            key = entry.get("key", "")
+            if not key.lower().endswith(DOC_EXT):
+                continue
+            url = f"{listing}/{key}/content"
+            doc = _as_document(url)
+            files.append(doc or {"filename": key, "url": url, "confirmed": False})
+            files[-1]["label"] = key
+        return hit["links"].get("self_html", f"https://{host}/theses/{hit['id']}"), files
+    return None
+
+
+def _repository_lookup(school: str, title: str) -> list:
+    """Find the thesis in the school's own repository and list its files.
 
     theses.cz links ČVUT and VUT records nowhere at all, and points the STAG schools at
     a study-information system that carries metadata only. Their repositories are public
     and searchable, so look the thesis up by title there. Only an exact title match is
     accepted — a near miss would attach someone else's PDF to this record.
 
-    The three DSpace generations are tried in turn rather than recorded per school, so a
-    repository that upgrades keeps working without an edit here.
+    Each school records which flavour it runs. Trying the other flavours as a fallback
+    was worse than useless: asking an Invenio host for DSpace endpoints costs a round of
+    retries and never succeeds. A repository that changes flavour needs an edit here.
     """
     # some records spell the school in capitals, so compare normalised
     hay = _norm(school)
-    host = next((h for k, h in DSPACE.items() if _norm(k) in hay), None)
-    if not (host and title):
+    entry = next((v for k, v in REPOSITORY.items() if _norm(k) in hay), None)
+    if not (entry and title):
         return []
-    for probe in (_dspace7, _dspace6, _dspace5):
-        try:
-            hit = probe(host, title)
-        except Exception:
-            continue
-        if hit:
-            page, files = hit
-            for f in files:
-                f["source"] = page
-            return files
-    return []
+    host, flavour = entry
+    probes = {"dspace7": _dspace7, "dspace6": _dspace6, "dspace5": _dspace5, "invenio": _invenio}
+
+    try:
+        hit = probes[flavour](host, title)
+    except Exception:
+        return []
+    if not hit:
+        return []
+    page, files = hit
+    for f in files:
+        f["source"] = page
+    return files
 
 
 def _archive_url(soup, code: str):
@@ -448,7 +480,7 @@ def fulltext(id_or_url: str) -> dict:
             res["note"] = f"school repository unreachable: {type(e).__name__}"
 
     if not res["files"]:  # last resort: the school's own digital library
-        found = _dspace_lookup(_txt(soup.select_one("#th-sloupec .oddil")),
+        found = _repository_lookup(_txt(soup.select_one("#th-sloupec .oddil")),
                                _txt(soup.select_one(".th-title")))
         if found:
             res["files"] = found
@@ -513,8 +545,11 @@ def _selftest():
     assert zcu["files"] and all(f["confirmed"] for f in zcu["files"]), zcu
     # UTB is checked at the lookup, not through a record: its DSpace 5 has no searchable
     # API and no theses.cz record was found that is both public and present in it
-    utb = _dspace_lookup("Univerzita Tomáše Bati ve Zlíně", "Korupce a její vliv na společnost")
+    utb = _repository_lookup("Univerzita Tomáše Bati ve Zlíně", "Korupce a její vliv na společnost")
     assert len(utb) == 3, utb
+    vscht = _repository_lookup("Vysoká škola chemicko-technologická v Praze",
+                               "Wikipedia v chemii, chemie na Wikipedii")  # Invenio, not DSpace
+    assert vscht and all(f["confirmed"] for f in vscht), vscht
     print("OK", r["total"], "hits |", d["author"], "|", d["type"], "|",
           len(pub["files"]), "+", len(vse["files"]), "+", len(vsb["files"]),
           "+", len(men["files"]), "files")

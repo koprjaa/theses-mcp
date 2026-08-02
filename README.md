@@ -87,7 +87,7 @@ One thesis was sampled for each of the 64 institutions, and separately about 500
 | `vskp.vse.cz`, `www.vse.cz` | VŠE Praha | Works. Thesis, appendix, both reports. |
 | `is.czu.cz`, `is.savs.cz` | ČZU, Škoda Auto | Works. Thesis and both reviews. |
 | `is.mendelu.cz`, `is.vskk.cz` | MENDELU, VŠKK | Works. The link is the PDF itself. |
-| `hdl.handle.net`, `dspace.cvut.cz`, `dspace.vutbr.cz`, `dk.upce.cz`, `dspace.cuni.cz`, `dspace.jcu.cz`, `dspace.zcu.cz`, `digilib.k.utb.cz` | VŠB-TUO, ČVUT, VUT, UPCE, UK, JČU, ZČU, UTB | Works. Handle redirect, or a title lookup in the school's DSpace. |
+| `hdl.handle.net`, `dspace.cvut.cz`, `dspace.vutbr.cz`, `dk.upce.cz`, `dspace.cuni.cz`, `dspace.jcu.cz`, `dspace.zcu.cz`, `digilib.k.utb.cz`, `repozitar.vscht.cz` | VŠB-TUO, ČVUT, VUT, UPCE, UK, JČU, ZČU, UTB, VŠCHT | Works. Handle redirect, or a title lookup in the school's own repository. |
 | `dspace.tul.cz` | TUL | Lists the files and then answers 410 for every one. Reported, not hidden. |
 | `is.ambis.cz`, `is.vsfs.cz`, `is.slu.cz`, `is.caritas-vos.cz`, `is.vstecb.cz`, `is.vszdrav.cz`, `is.cevro.cz`, `is.ucp.cz`, `is.jamu.cz`, `is.jabok.cz`, `is.sting.cz` | AMBIS, VŠFS, SU Opava, CARITAS, VŠTE, VŠ zdravotnická, CEVRO, UCP, JAMU, JABOK, Sting | CAPTCHA for anonymous visitors. Use your own login. |
 | `wstag.jcu.cz`, `stag.tul.cz`, `stag.upol.cz`, `portal.upce.cz`, `portal.zcu.cz`, `portal.osu.cz`, `portal.ujep.cz`, `stagweb.vfu.cz` | JČU, TUL, UPOL, UPCE, ZČU, OSU, UJEP, VFU | STAG holds metadata only. Their DSpace repositories run an older API and are not wired up yet. |
@@ -110,8 +110,9 @@ Each cookie goes to its own domain only. This gives you the access that your acc
 
 ## Limits
 
-- The DSpace lookup covers three generations and tries them in turn, so a repository that upgrades keeps working without an edit. UTB is verified against its repository rather than through a record: no theses.cz thesis was found that is both publicly viewable and present in `digilib.k.utb.cz`.
-- UJEP runs ARL and VŠCHT runs something else again on `repozitar.vscht.cz`; neither is DSpace. The repositories for UPOL and OSU were not located.
+- Each school records which repository software it runs, because probing the flavours blindly costs a round of retries per wrong guess and never succeeds against the wrong one. A repository that changes flavour needs its entry corrected.
+- UTB and VŠCHT are verified against their repositories rather than through a record: no theses.cz thesis was found that is both publicly viewable and present in them.
+- UJEP runs ARL, which is not a repository this server speaks. OSU has no repository of its own; its theses live in STAG, which holds no files. UPOL was not located.
 - The CAPTCHA schools have no second source. Five sample theses were looked for in NUŠL and OpenAIRE and in repositories of their own; none of them are anywhere else. Those files exist in one place, and that place wants a login.
 - `evskp.uhk.cz` runs its own system. The server does not parse it.
 - `is.vsh.cz` and `is.vshe.cz` serve certificates that do not match their hostname. The session verifies TLS and refuses them. Turning verification off would hide the problem and remove the proof that you talk to the school.
