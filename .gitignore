@@ -5,3 +5,4 @@ __pycache__/
 .venv/
 uv.lock
 *.egg-info/
+tools/e2e_out/
