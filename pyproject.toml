@@ -29,7 +29,10 @@ target-version = "py310"
 
 [tool.ruff.lint]
 select = ["E", "W", "F", "I", "B", "UP", "N", "SIM", "C4", "RET", "PTH", "TRY", "PERF", "RUF"]
-ignore = ["E501"]
+# E501  line length is handled by the formatter, not worth failing CI over
+# TRY003 wants one exception subclass per message. That is ceremony for a
+#        message a reader needs, so informative raises stay.
+ignore = ["E501", "TRY003"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
