@@ -9,6 +9,7 @@ dependencies = ["mcp>=1.2", "requests", "urllib3", "beautifulsoup4", "lxml"]
 
 [project.optional-dependencies]
 dev = ["pytest>=8.0", "ruff==0.16.1"]
+login = ["playwright>=1.40"]
 
 [project.urls]
 Homepage = "https://github.com/koprjaa/theses-mcp"

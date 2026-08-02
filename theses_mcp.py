@@ -2,6 +2,7 @@
 
 import json
 import os
+import pathlib
 import re
 import sys
 import time
@@ -56,6 +57,32 @@ def _load_cookies() -> list:
 
 
 AUTHENTICATED = _load_cookies()
+
+# where `login` keeps the sessions it collects, so a restart does not ask again
+STORE = pathlib.Path.home() / ".theses-mcp"
+COOKIE_FILE = STORE / "cookies.json"
+
+
+def _attach(host: str, cookies: list) -> None:
+    for c in cookies:
+        _s.cookies.set(c["name"], c["value"], domain=c.get("domain", host).lstrip("."))
+    if host not in AUTHENTICATED:
+        AUTHENTICATED.append(host)
+
+
+def _load_saved() -> None:
+    """Restore sessions collected by `login` on an earlier run."""
+    if not COOKIE_FILE.exists():
+        return
+    try:
+        saved = json.loads(COOKIE_FILE.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return
+    for host, cookies in saved.items():
+        _attach(host, cookies)
+
+
+_load_saved()
 
 
 REFRESH = re.compile(r'http-equiv="refresh"[^>]*content="(\d+)', re.I)
@@ -143,6 +170,81 @@ def search(query: str, limit: int = 10) -> dict:
     return {"total": total, "returned": len(out[:limit]), "results": out[:limit]}
 
 
+# The IS template carries "Odhlášení ze systému" even for anonymous visitors, so a logout
+# link proves nothing. The invitation to log in is what disappears once you have.
+SIGNED_OUT = ("Přihlásit se", "Přihlásit sa", "Log in", "Login")
+
+
+def _is_gated(text: str) -> bool:
+    return "opište" in text or "captcha" in text.lower()
+
+
+def _is_signed_in(text: str) -> bool:
+    # a CAPTCHA page carries no invitation to log in either, so ask about it first
+    return not _is_gated(text) and not any(m in text for m in SIGNED_OUT)
+
+
+@mcp.tool()
+def login(host: str = "theses.cz", wait_seconds: int = 240) -> dict:
+    """Open a browser window, let you sign in, and keep the session for later calls.
+
+    Nothing here handles your password. A real browser opens on the school's own login
+    page, you sign in there — EduID included, with whatever second factor it asks for —
+    and this reads back only the session cookies that host set. They are stored under
+    ~/.theses-mcp/cookies.json so a restart does not ask again; delete that file to
+    forget them.
+
+    host: the repository to sign in to, e.g. "is.slu.cz" or "theses.cz"
+    wait_seconds: how long to leave the window open for you
+
+    Requires the optional browser extra: pip install "theses-mcp[login]".
+    """
+    try:
+        from playwright.sync_api import sync_playwright
+    except ImportError:
+        return {"error": 'browser login needs the optional extra: pip install "theses-mcp[login]"'}
+
+    STORE.mkdir(parents=True, exist_ok=True)
+    collected, signed_in = [], False
+    with sync_playwright() as pw:
+        ctx = pw.chromium.launch_persistent_context(str(STORE / "browser"), headless=False)
+        page = ctx.pages[0] if ctx.pages else ctx.new_page()
+        try:
+            page.goto(f"https://{host}/", timeout=60_000)
+            deadline = time.monotonic() + wait_seconds
+            while time.monotonic() < deadline and not page.is_closed():
+                try:
+                    signed_in = _is_signed_in(page.content())
+                except Exception:
+                    signed_in = False  # mid-navigation; look again in a moment
+                if signed_in:
+                    break
+                page.wait_for_timeout(1000)
+            collected = [c for c in ctx.cookies() if host.endswith(c["domain"].lstrip("."))]
+        finally:
+            ctx.close()
+
+    # these systems hand every anonymous visitor a session cookie, so the cookie alone
+    # proves nothing — only the logout link the page grows once it knows who you are
+    if not (signed_in and collected):
+        return {"host": host, "result": "sign-in not detected, nothing stored",
+                "hint": "the window closed or the wait ran out before you finished"}
+
+    saved = {}
+    if COOKIE_FILE.exists():
+        try:
+            saved = json.loads(COOKIE_FILE.read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError):
+            saved = {}
+    saved[host] = [{"name": c["name"], "value": c["value"], "domain": c["domain"]}
+                   for c in collected]
+    COOKIE_FILE.write_text(json.dumps(saved), encoding="utf-8")
+    COOKIE_FILE.chmod(0o600)
+    _attach(host, saved[host])
+    return {"host": host, "result": "signed in", "cookies": len(collected),
+            "stored": str(COOKIE_FILE), "next": "call whoami to confirm, then fulltext"}
+
+
 @mcp.tool()
 def whoami() -> dict:
     """Report which hosts you are logged in to, and whether the login actually works.
@@ -160,10 +262,9 @@ def whoami() -> dict:
             text = _get(f"https://{host}/").get_text()
         except Exception as e:
             return f"unreachable: {type(e).__name__}"
-        if "opište" in text or "captcha" in text.lower():
+        if _is_gated(text):
             return "cookie not accepted — still asked for a CAPTCHA"
-        # the IS family prints a logout link once a session is recognised
-        if "Odhlášení" in text or "Log out" in text:
+        if _is_signed_in(text):
             return "logged in"
         return "reachable, but no sign of a session"
 
@@ -525,7 +626,7 @@ def fulltext(id_or_url: str) -> dict:
             res["note"] = "no school repository link in the record"
         else:
             host = requests.compat.urlparse(archive).netloc
-            wall = "opište" in page.get_text() or "captcha" in page.get_text().lower()
+            wall = _is_gated(page.get_text())
             hint = "" if host in AUTHENTICATED else f" — set THESES_COOKIES for {host} to use your own login"
             # "světu" means theses.cz publishes this to the world; a CAPTCHA in front of
             # it is the school's own doing, not a restriction on the thesis

@@ -221,3 +221,23 @@ def test_norm_of_none_is_empty():
 
 def test_norm_makes_two_titles_that_differ_only_in_punctuation_equal():
     assert _norm("Analýza dat, 2. vydání") == _norm("Analýza dat 2 vydání")
+
+
+# --- session detection ------------------------------------------------------
+
+
+def test_a_logout_link_does_not_mean_you_are_logged_in():
+    """The IS template ships "Odhlášení ze systému" to anonymous visitors too."""
+    anonymous = "Odhlášení ze systému Domů Přihlásit se Přihlásit se (EduID) Theses.cz"
+    assert theses_mcp._is_signed_in(anonymous) is False
+
+
+def test_a_page_with_no_invitation_to_log_in_counts_as_signed_in():
+    assert theses_mcp._is_signed_in("Odhlášení ze systému Moje studium Jan Novák") is True
+
+
+def test_a_captcha_page_is_gated_and_not_signed_in():
+    """It carries no login prompt either, so the CAPTCHA has to be checked first."""
+    captcha = "Závěrečné práce Pro ověření opište prosíme tento kód Odeslat IS VŠFS"
+    assert theses_mcp._is_gated(captcha) is True
+    assert theses_mcp._is_signed_in(captcha) is False

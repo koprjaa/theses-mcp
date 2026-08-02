@@ -47,7 +47,8 @@ fulltext("7lfo74")                   PDF, DOCX, and both reviewer reports
 | `search(query, limit=10)` | Searches records and thesis full texts. Accepts theses.cz operators `AND`, `OR`, and `"phrase"`. Pages by 10, maximum 50. |
 | `detail(id_or_url)` | Full record: author, Czech and English title and abstract, keywords, supervisor, opponent, defense date, full text availability, archive link, related theses. |
 | `fulltext(id_or_url)` | Follows the record into the school repository and lists the files. This includes the thesis PDF and the supervisor and opponent reports. |
-| `whoami()` | Reports which hosts `THESES_COOKIES` logs you in to, and whether each cookie is still accepted. |
+| `login(host)` | Opens a browser window on the school's sign-in page, waits for you, and keeps the session. |
+| `whoami()` | Reports which hosts you are signed in to, and whether each session is still accepted. |
 
 `search` returns two kinds of hit. A hit with `kind="record"` is a catalogue record and `url` points to the detail page. A hit with `kind="fulltext"` matched inside the thesis PDF and `pdf_url` links to the file.
 
@@ -103,15 +104,31 @@ What the wall is standing in front of is worth knowing. Across five theses from 
 
 ## Authenticated access
 
-Theses marked *"všem autentizovaným"* and repositories that gate anonymous visitors both open after you log in. Log in through your browser, copy the session cookie, and pass it per host:
+Theses marked *"všem autentizovaným"* and repositories that gate anonymous visitors both open after you log in.
+
+The easy way is `login`. It opens a real browser window on the school's own sign-in page, you sign in there — EduID and any second factor included — and the server keeps the session cookies that host set:
+
+```
+login("is.slu.cz")     opens a window, waits for you, stores the session
+whoami()               confirms the cookie is still accepted
+fulltext("qr1tvh")     now sees what your account sees
+```
+
+No password passes through this code. Sessions are written to `~/.theses-mcp/cookies.json`; delete that file to forget them. This needs the optional browser extra:
+
+```bash
+pip install "theses-mcp[login]" && playwright install chromium
+```
+
+If you would rather not have a browser launched, set the cookies yourself instead:
 
 ```bash
 THESES_COOKIES='{"theses.cz": "__Host-issession=…", "is.vsfs.cz": "__Host-issession=…"}'
 ```
 
-Each cookie goes to its own domain only. This gives you the access that your account has and nothing more.
+Either way each cookie goes to its own domain only, and you get the access your account has and nothing more.
 
-Call `whoami` afterwards. An expired cookie, or one copied from the wrong browser profile, produces exactly the same empty `files` list as no cookie at all, so it is worth asking rather than guessing.
+Call `whoami` afterwards rather than guessing: an expired cookie produces exactly the same empty `files` list as no cookie at all. Note that a logout link on the page proves nothing, as the IS template shows one to anonymous visitors too; what `whoami` actually looks for is the disappearance of the invitation to log in.
 
 ## Limits
 
