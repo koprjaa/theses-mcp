@@ -232,6 +232,44 @@ def _is_signed_in(text: str) -> bool:
     return not any(m in text for m in SIGNED_OUT)
 
 
+def _verify(cookies: list, host: str) -> bool:
+    """Ask the site whether these cookies amount to a session."""
+    if not cookies:
+        return False
+    jar = requests.cookies.RequestsCookieJar()
+    for c in cookies:
+        jar.set(c["name"], c["value"], domain=c["domain"].lstrip("."))
+    try:
+        probe = _s.get(f"https://{host}/", timeout=30, cookies=jar, allow_redirects=True)
+    except Exception:
+        return False
+    return _is_signed_in(BeautifulSoup(probe.text, "lxml").get_text())
+
+
+def _store(host: str, cookies: list) -> None:
+    saved = {}
+    if COOKIE_FILE.exists():
+        try:
+            saved = json.loads(COOKIE_FILE.read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError):
+            saved = {}
+    STORE.mkdir(parents=True, exist_ok=True)
+    saved[host] = cookies
+    COOKIE_FILE.write_text(json.dumps(saved), encoding="utf-8")
+    COOKIE_FILE.chmod(0o600)
+    _attach(host, cookies)
+
+
+def _harvest(ctx, host: str) -> bool:
+    """Take the session for `host` out of a browser context, if there is one."""
+    cookies = [{"name": c["name"], "value": c["value"], "domain": c["domain"]}
+               for c in ctx.cookies() if host.endswith(c["domain"].lstrip("."))]
+    if not _verify(cookies, host):
+        return False
+    _store(host, cookies)
+    return True
+
+
 @mcp.tool()
 def login(host: str = "theses.cz", wait_seconds: int = 240, attach: bool = False,
           port: int = 9222) -> dict:
@@ -292,6 +330,11 @@ def login(host: str = "theses.cz", wait_seconds: int = 240, attach: bool = False
         except Exception as e:
             return {"error": f"could not start a browser: {type(e).__name__}",
                     "how": "run: playwright install chromium"}
+
+        if attached and _harvest(ctx, host):
+            # already signed in from an earlier visit; no need to open anything
+            return {"host": host, "result": "signed in", "source": "the browser you had open",
+                    "stored": str(COOKIE_FILE), "next": "call whoami to confirm, then fulltext"}
         page = ctx.new_page() if attached else (ctx.pages[0] if ctx.pages else ctx.new_page())
         try:
             # /shibboleth/ is the EduID entry where a host has one, and /auth/ is the
@@ -315,42 +358,28 @@ def login(host: str = "theses.cz", wait_seconds: int = 240, attach: bool = False
             collected = [c for c in ctx.cookies() if host.endswith(c["domain"].lstrip("."))]
         finally:
             if attached:
-                # the browser belongs to the user; close our tab and let go of it
-                if not page.is_closed():
+                # the browser belongs to the user. Closing a tab in the middle of a
+                # sign-in would throw away the flow they are half way through, so the
+                # tab only goes once the session is in hand.
+                if signed_in and not page.is_closed():
                     page.close()
             else:
                 ctx.close()
 
     # Reading the page inside the browser guesses. Asking the server with the cookies
     # in hand is the real test, and it is the same request the rest of the tools make.
-    verified = False
-    if collected:
-        jar = requests.cookies.RequestsCookieJar()
-        for c in collected:
-            jar.set(c["name"], c["value"], domain=c["domain"].lstrip("."))
-        try:
-            probe = _s.get(f"https://{host}/", timeout=30, cookies=jar, allow_redirects=True)
-            verified = _is_signed_in(BeautifulSoup(probe.text, "lxml").get_text())
-        except Exception:
-            verified = False
-
-    if not verified:
+    collected = [{"name": c["name"], "value": c["value"], "domain": c["domain"]}
+                 for c in collected]
+    if not _verify(collected, host):
+        names = {c["name"] for c in collected}
+        midway = any(n.startswith(("_shibstate", "_opensaml")) for n in names)
         return {"host": host, "result": "sign-in not detected, nothing stored",
-                "cookies_seen": len(collected),
-                "page_looked_signed_in": signed_in,
-                "hint": "the window closed or the wait ran out before the sign-in finished"}
+                "cookies_seen": sorted(names),
+                "hint": "the eduID exchange started but never came back; finish it in the "
+                        "tab that is still open, then run login again"
+                        if midway else "the wait ran out before the sign-in finished"}
 
-    saved = {}
-    if COOKIE_FILE.exists():
-        try:
-            saved = json.loads(COOKIE_FILE.read_text(encoding="utf-8"))
-        except (OSError, json.JSONDecodeError):
-            saved = {}
-    saved[host] = [{"name": c["name"], "value": c["value"], "domain": c["domain"]}
-                   for c in collected]
-    COOKIE_FILE.write_text(json.dumps(saved), encoding="utf-8")
-    COOKIE_FILE.chmod(0o600)
-    _attach(host, saved[host])
+    _store(host, collected)
     return {"host": host, "result": "signed in", "cookies": len(collected),
             "stored": str(COOKIE_FILE), "next": "call whoami to confirm, then fulltext"}
 
