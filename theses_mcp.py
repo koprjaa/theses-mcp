@@ -4,6 +4,7 @@ import json
 import os
 import re
 import sys
+import time
 
 import requests
 from bs4 import BeautifulSoup
@@ -55,17 +56,23 @@ def _load_cookies() -> list:
 AUTHENTICATED = _load_cookies()
 
 
+REFRESH = re.compile(r'http-equiv="refresh"[^>]*content="(\d+)', re.I)
+
+
 def _get(url: str) -> BeautifulSoup:
     """GET, working around the session bootstrap.
 
-    The first request without a cookie returns a 117-byte stub with
-    <meta http-equiv="refresh">; only the second one (now carrying
-    __Host-issession) returns the real page.
+    A request the server does not want to answer yet comes back as a 117-byte stub
+    holding <meta http-equiv="refresh" content="N">. Retrying instantly just earns
+    another stub, so honour the delay the page asks for. This is not only the first
+    request of a session: theses.cz falls back to the stub under load as well.
     """
-    for _ in range(2):
+    for attempt in range(4):
         r = _s.get(url, timeout=30)
-        if 'http-equiv="refresh"' not in r.text[:400]:
+        stub = REFRESH.search(r.text[:400])
+        if not stub:
             break
+        time.sleep(min(int(stub.group(1)), 3) or 1)
     # lxml, not html.parser — theses.cz leaves <li> unclosed and html.parser nests them
     soup = BeautifulSoup(r.text, "lxml")
     # keep the post-redirect URL: hdl.handle.net hands off to the real repository host,
@@ -145,7 +152,9 @@ def detail(id_or_url: str) -> dict:
     soup = _get(f"{BASE}/id/{code}/")
     meta = soup.select_one("#metadata")
     if meta is None:
-        return {"error": f"record {code} not found"}
+        hidden = "Chybná adresa v ISu" in soup.get_text()
+        return {"error": f"record {code} is not publicly viewable on theses.cz"
+                if hidden else f"record {code} not found"}
 
     anot = meta.select(".anotace")
     kw = {}
@@ -299,7 +308,10 @@ def fulltext(id_or_url: str) -> dict:
     code = id_or_url.strip("/ ").split("/")[-1]
     soup = _get(f"{BASE}/id/{code}/")
     if soup.select_one("#metadata") is None:
-        return {"error": f"record {code} not found"}
+        # theses.cz answers with a file-manager error for records it will not show
+        hidden = "Chybná adresa v ISu" in soup.get_text()
+        return {"error": f"record {code} is not publicly viewable on theses.cz"
+                if hidden else f"record {code} not found"}
 
     access = [_txt(li) for li in soup.select("#th-obsah li")]
     archive = _archive_url(soup, code)
