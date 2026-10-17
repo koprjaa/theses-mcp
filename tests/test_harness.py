@@ -32,13 +32,17 @@ sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent.parent / "tools")
 from e2e_schools import distinctive, fold, school_of
 
 # "práce," then the school
-FLAT = ("Diplomová práce, Univerzita Jana Amose Komenského Praha, 2013 "
-        "Pedagogika / Andragogika Příbuzné soubory: th76_1201110365.pdf")
+FLAT = (
+    "Diplomová práce, Univerzita Jana Amose Komenského Praha, 2013 "
+    "Pedagogika / Andragogika Příbuzné soubory: th76_1201110365.pdf"
+)
 
 # "práce:" then the title and the author, and only then the school
-TITLED = ("Diplomová práce: Univerzita jako sbírkotvorná instituce. Umělecká sbírka "
-          "Masarykovy univerzity (Simona Tichá) Masarykova univerzita, "
-          "Filozofická fakulta, 2024")
+TITLED = (
+    "Diplomová práce: Univerzita jako sbírkotvorná instituce. Umělecká sbírka "
+    "Masarykovy univerzity (Simona Tichá) Masarykova univerzita, "
+    "Filozofická fakulta, 2024"
+)
 
 
 def test_the_school_follows_the_word_prace():
@@ -52,8 +56,10 @@ def test_the_school_follows_the_author_when_a_title_comes_first():
 
 def test_the_title_is_left_out_even_when_it_names_another_school():
     """The title here says "Masarykovy univerzity" and the thesis is not from Brno."""
-    header = ("Diplomová práce: Sbírka Masarykovy univerzity (Jan Novák) "
-              "Univerzita Karlova, Filozofická fakulta, 2024")
+    header = (
+        "Diplomová práce: Sbírka Masarykovy univerzity (Jan Novák) "
+        "Univerzita Karlova, Filozofická fakulta, 2024"
+    )
     got = fold(school_of(header))
     assert "karlova" in got
     assert "masarykovy" not in got
@@ -68,10 +74,13 @@ def test_a_header_with_no_year_names_no_school():
     assert school_of("Diplomová práce: Něco o něčem (Jan Novák)") == ""
 
 
-@pytest.mark.parametrize("name,want", [
-    ("Univerzita Karlova", ["karlova"]),
-    ("Vysoká škola ekonomická v Praze", ["ekonomicka"]),
-    ("Univerzita Tomáše Bati ve Zlíně", ["tomase", "bati", "zline"]),
-])
+@pytest.mark.parametrize(
+    "name,want",
+    [
+        ("Univerzita Karlova", ["karlova"]),
+        ("Vysoká škola ekonomická v Praze", ["ekonomicka"]),
+        ("Univerzita Tomáše Bati ve Zlíně", ["tomase", "bati", "zline"]),
+    ],
+)
 def test_distinctive_keeps_the_words_that_identify_a_school(name, want):
     assert distinctive(name) == want

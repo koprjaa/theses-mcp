@@ -63,13 +63,13 @@ def school_of(header):
     years = list(YEAR_IN_HEADER.finditer(header))
     if not years:
         return ""
-    before = header[:years[-1].start()]
+    before = header[: years[-1].start()]
     # the author parenthesis ends the title, and the school starts right after it
     cut = before.rfind(")")
     if cut < 0:
         opening = before.find("práce,")
         cut = opening + 5 if opening >= 0 else -1
-    return before[cut + 1:]
+    return before[cut + 1 :]
 
 
 def fold(s):
@@ -79,8 +79,24 @@ def fold(s):
 
 def distinctive(name):
     """Words worth matching on — drop the ones half the country shares."""
-    noise = {"v", "a", "praze", "brne", "sro", "ops", "as", "zu", "vysoka", "skola",
-             "univerzita", "univerzity", "vyssi", "odborna", "ceske", "ceskych"}
+    noise = {
+        "v",
+        "a",
+        "praze",
+        "brne",
+        "sro",
+        "ops",
+        "as",
+        "zu",
+        "vysoka",
+        "skola",
+        "univerzita",
+        "univerzity",
+        "vyssi",
+        "odborna",
+        "ceske",
+        "ceskych",
+    }
     return [w for w in fold(name).split() if w not in noise and len(w) > 3]
 
 
@@ -115,8 +131,7 @@ def candidates(name, want):
     for query in queries(name, want):
         for start in (1, 11, 21):
             try:
-                soup = th._get(f"{th.BASE}/vyhledavani/"
-                               f"?search={urllib.parse.quote(query)}&start={start}")
+                soup = th._get(f"{th.BASE}/vyhledavani/?search={urllib.parse.quote(query)}&start={start}")
             except Exception:
                 break
             rows = soup.select(".vyh_polozka")
@@ -160,15 +175,13 @@ def fetch(url, target):
                 tail = (tail + chunk)[-2048:]
                 if got > MAX_BYTES:
                     target.unlink(missing_ok=True)
-                    return {"ok": False, "why": f"over {MAX_BYTES // 1048576} MB, gave up",
-                            "bytes": got}
+                    return {"ok": False, "why": f"over {MAX_BYTES // 1048576} MB, gave up", "bytes": got}
     if not head.startswith(b"%PDF"):
         target.unlink(missing_ok=True)
         return {"ok": False, "why": f"not a PDF (starts {head[:8]!r})", "bytes": got}
     if b"%%EOF" not in tail:
         target.unlink(missing_ok=True)
-        return {"ok": False, "why": "PDF ends without %%EOF, so it arrived incomplete",
-                "bytes": got}
+        return {"ok": False, "why": "PDF ends without %%EOF, so it arrived incomplete", "bytes": got}
     return {"ok": True, "bytes": got, "file": target.name}
 
 
@@ -207,8 +220,7 @@ def run_school(code, name, out_dir, tries):
             last = f"download failed: {type(e).__name__}"
             continue
         if got["ok"]:
-            row.update(stage="pdf", bytes=got["bytes"], file=got["file"],
-                       detail="", file_url=pdfs[0]["url"])
+            row.update(stage="pdf", bytes=got["bytes"], file=got["file"], detail="", file_url=pdfs[0]["url"])
             return row
         last = got["why"]
     row["detail"] = last
@@ -220,10 +232,12 @@ def main():
     ap.add_argument("--out", default=str(pathlib.Path(__file__).parent / "e2e_out"))
     ap.add_argument("--candidates", type=int, default=3)
     ap.add_argument("--only", default="")
-    ap.add_argument("--pause", type=float, default=1.0,
-                    help="seconds between schools, to stay under the rate limit")
-    ap.add_argument("--cooldown", type=int, default=60,
-                    help="seconds to wait before retrying a school that errored")
+    ap.add_argument(
+        "--pause", type=float, default=1.0, help="seconds between schools, to stay under the rate limit"
+    )
+    ap.add_argument(
+        "--cooldown", type=int, default=60, help="seconds to wait before retrying a school that errored"
+    )
     args = ap.parse_args()
 
     out_dir = pathlib.Path(args.out)
@@ -242,21 +256,19 @@ def main():
                 # theses.cz starts refusing the pace part way through a long run; the
                 # schools at the end of the alphabet must not inherit that as a verdict
                 if attempt == 1:
-                    print(f"     {name[:34]} hit {type(e).__name__}, pausing {args.cooldown}s",
-                          flush=True)
+                    print(f"     {name[:34]} hit {type(e).__name__}, pausing {args.cooldown}s", flush=True)
                     time.sleep(args.cooldown)
                 else:
-                    row = {"code": code, "school": name, "stage": "crash",
-                           "detail": type(e).__name__}
+                    row = {"code": code, "school": name, "stage": "crash", "detail": type(e).__name__}
         rows.append(row)
         time.sleep(args.pause)
-        mark = {"pdf": "PDF ", "files": "list", "detail": "meta", "search": "----",
-                "crash": "!!!!"}[row["stage"]]
+        mark = {"pdf": "PDF ", "files": "list", "detail": "meta", "search": "----", "crash": "!!!!"}[
+            row["stage"]
+        ]
         size = f"{row.get('bytes', 0) / 1024:.0f} kB" if row["stage"] == "pdf" else ""
         print(f"{mark} {name[:40]:42s} {size:9s} {row.get('detail', '')[:44]}", flush=True)
 
-    (out_dir / "results.json").write_text(json.dumps(rows, ensure_ascii=False, indent=1),
-                                          encoding="utf-8")
+    (out_dir / "results.json").write_text(json.dumps(rows, ensure_ascii=False, indent=1), encoding="utf-8")
     done = [r for r in rows if r["stage"] == "pdf"]
     print(f"\nPDF downloaded for {len(done)} of {len(rows)} institutions")
     print(f"files and results.json in {out_dir}")

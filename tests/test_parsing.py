@@ -42,6 +42,7 @@ def soup(markup):
 @pytest.fixture
 def no_probe(monkeypatch):
     """Fail loudly if a test reaches the network instead of the parser."""
+
     def unexpected(url):
         pytest.fail(f"_as_document called for {url}")
 
@@ -203,10 +204,7 @@ def test_a_mailto_link_is_skipped(no_probe):
 
 
 def test_the_same_url_is_listed_once(no_probe):
-    markup = (
-        '<div><a href="a.pdf">Plný text</a>'
-        '<a href="a.pdf">Plný text práce</a></div>'
-    )
+    markup = '<div><a href="a.pdf">Plný text</a><a href="a.pdf">Plný text práce</a></div>'
     assert len(_documents(soup(markup), "https://example.edu/")) == 1
 
 
@@ -242,9 +240,11 @@ def test_norm_makes_two_titles_that_differ_only_in_punctuation_equal():
 # --- STAG portlet -----------------------------------------------------------
 
 
-STAG_HREF = ("/StagPortletsJSR168/PagesDispatcherServlet?pp_locale=cs&amp;"
-             "pp_portlet=souboryStudentuPagesPortlet&amp;"
-             "pp_page=souboryStudentuDownloadPage&amp;pp_nameSpace=G15790&amp;soubidno=80686")
+STAG_HREF = (
+    "/StagPortletsJSR168/PagesDispatcherServlet?pp_locale=cs&amp;"
+    "pp_portlet=souboryStudentuPagesPortlet&amp;"
+    "pp_page=souboryStudentuDownloadPage&amp;pp_nameSpace=G15790&amp;soubidno=80686"
+)
 
 STAG_BLOCK = f"""
 <div id='G1validation_errors' class="xgt_validationErrors"></div>
@@ -261,8 +261,9 @@ STAG_ELSEWHERE = """
 </td></tr></table>
 """
 
-STAG_URL = ("https://stagweb.example.cz/StagPortletsJSR168/CleanUrl"
-            "?urlid=prohlizeni-prace-detail&praceIdno=10787")
+STAG_URL = (
+    "https://stagweb.example.cz/StagPortletsJSR168/CleanUrl?urlid=prohlizeni-prace-detail&praceIdno=10787"
+)
 
 
 @pytest.fixture
@@ -273,12 +274,16 @@ def stag_serves(monkeypatch):
     def fake_get(url, params=None, **kw):
         calls.append((url, params))
         if params is None:  # _as_document, sniffing a download URL
-            return type("R", (), {
-                "status_code": 200,
-                "headers": {},
-                "iter_content": lambda self, n: iter([b"%PDF-1.7"]),
-                "close": lambda self: None,
-            })()
+            return type(
+                "R",
+                (),
+                {
+                    "status_code": 200,
+                    "headers": {},
+                    "iter_content": lambda self, n: iter([b"%PDF-1.7"]),
+                    "close": lambda self: None,
+                },
+            )()
         return type("R", (), {"status_code": 200, "text": fake_get.body})()
 
     fake_get.body = STAG_BLOCK
@@ -352,19 +357,25 @@ def test_a_refresh_stub_is_read_for_the_delay_it_asks_for():
 # --- not defended yet is not the same as restricted --------------------------
 
 
-@pytest.mark.parametrize("body", [
-    "Soubory ke stažení Soubory budou k dispozici až po obhajobě práce.",
-    "Files will be available after the defence of the thesis.",
-])
+@pytest.mark.parametrize(
+    "body",
+    [
+        "Soubory ke stažení Soubory budou k dispozici až po obhajobě práce.",
+        "Files will be available after the defence of the thesis.",
+    ],
+)
 def test_a_thesis_awaiting_its_defense_is_recognized(body):
     assert theses_mcp.NOT_YET.search(body)
 
 
-@pytest.mark.parametrize("body", [
-    "Plný text práce je přístupný pouze autentizovaným uživatelům.",
-    "Soubory ke stažení: prace.pdf",
-    "Pro ověření opište prosíme tento kód",
-])
+@pytest.mark.parametrize(
+    "body",
+    [
+        "Plný text práce je přístupný pouze autentizovaným uživatelům.",
+        "Soubory ke stažení: prace.pdf",
+        "Pro ověření opište prosíme tento kód",
+    ],
+)
 def test_an_ordinary_restriction_is_not_read_as_a_pending_defense(body):
     assert theses_mcp.NOT_YET.search(body) is None
 
@@ -372,10 +383,12 @@ def test_an_ordinary_restriction_is_not_read_as_a_pending_defense(body):
 # --- session detection ------------------------------------------------------
 
 
-CHROME = ("Theses.cz Odevzdej.cz PravyDiplom.cz Repozitar.cz Vyhledávání Nápověda "
-          "Zapojené školy Správci zapojených škol Soukromí Přístupnost Provozuje "
-          "Fakulta informatiky MU Potřebujete poradit Často kladené dotazy "
-          "Vysokoškolské kvalifikační práce Domů Odhlášení ze systému ") * 2
+CHROME = (
+    "Theses.cz Odevzdej.cz PravyDiplom.cz Repozitar.cz Vyhledávání Nápověda "
+    "Zapojené školy Správci zapojených škol Soukromí Přístupnost Provozuje "
+    "Fakulta informatiky MU Potřebujete poradit Často kladené dotazy "
+    "Vysokoškolské kvalifikační práce Domů Odhlášení ze systému "
+) * 2
 
 
 def test_a_logout_link_does_not_mean_you_are_logged_in():

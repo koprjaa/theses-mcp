@@ -37,11 +37,19 @@ mcp = _Server("theses")
 _s = requests.Session()
 _s.headers["User-Agent"] = "theses-mcp (+https://github.com/koprjaa/theses-mcp)"
 # school systems drop connections and rate-limit; back off instead of failing the call
-_s.mount("https://", HTTPAdapter(max_retries=Retry(
-    # 500 is left out on purpose: repositories answer it for queries they cannot parse,
-    # and repeating those just burns half a minute before the same failure
-    total=3, backoff_factor=1.5, status_forcelist=[429, 502, 503, 504],
-    allowed_methods=["GET", "HEAD"])))
+_s.mount(
+    "https://",
+    HTTPAdapter(
+        max_retries=Retry(
+            # 500 is left out on purpose: repositories answer it for queries they cannot parse,
+            # and repeating those just burns half a minute before the same failure
+            total=3,
+            backoff_factor=1.5,
+            status_forcelist=[429, 502, 503, 504],
+            allowed_methods=["GET", "HEAD"],
+        )
+    ),
+)
 
 
 def _load_cookies() -> list:
@@ -207,9 +215,12 @@ def _default_browser() -> str | None:
         return None
     try:
         import winreg
-        with winreg.OpenKey(winreg.HKEY_CURRENT_USER,
-                            r"SOFTWARE\Microsoft\Windows\Shell\Associations"
-                            r"\UrlAssociations\https\UserChoice") as key:
+
+        with winreg.OpenKey(
+            winreg.HKEY_CURRENT_USER,
+            r"SOFTWARE\Microsoft\Windows\Shell\Associations"
+            r"\UrlAssociations\https\UserChoice",
+        ) as key:
             prog_id = winreg.QueryValueEx(key, "ProgId")[0]
         with winreg.OpenKey(winreg.HKEY_CLASSES_ROOT, rf"{prog_id}\shell\open\command") as key:
             command = winreg.QueryValueEx(key, "")[0]
@@ -281,8 +292,11 @@ def _store(host: str, cookies: list) -> None:
 
 def _harvest(ctx, host: str, url: str | None = None) -> bool:
     """Take the session for `host` out of a browser context, if there is one."""
-    cookies = [{"name": c["name"], "value": c["value"], "domain": c["domain"]}
-               for c in ctx.cookies() if host.endswith(c["domain"].lstrip("."))]
+    cookies = [
+        {"name": c["name"], "value": c["value"], "domain": c["domain"]}
+        for c in ctx.cookies()
+        if host.endswith(c["domain"].lstrip("."))
+    ]
     if not _verify(cookies, host, url):
         return False
     _store(host, cookies)
@@ -290,8 +304,13 @@ def _harvest(ctx, host: str, url: str | None = None) -> bool:
 
 
 @mcp.tool()
-def login(host: str = "theses.cz", wait_seconds: int = 240, attach: bool = False,
-          port: int = 9222, url: str | None = None) -> dict:
+def login(
+    host: str = "theses.cz",
+    wait_seconds: int = 240,
+    attach: bool = False,
+    port: int = 9222,
+    url: str | None = None,
+) -> dict:
     """Open a browser window, let you sign in, and keep the session for later calls.
 
     Nothing here handles your password. A real browser opens on the school's own login
@@ -335,25 +354,39 @@ def login(host: str = "theses.cz", wait_seconds: int = 240, attach: bool = False
             except Exception:
                 return {
                     "error": f"no browser is listening on port {port}",
-                    "how": ["quit the browser completely, including any tray icon",
-                            f"start it once with --remote-debugging-port={port}",
-                            "run login again, then restart it normally to close the port"],
+                    "how": [
+                        "quit the browser completely, including any tray icon",
+                        f"start it once with --remote-debugging-port={port}",
+                        "run login again, then restart it normally to close the port",
+                    ],
                     "command": f'"{exe or "browser.exe"}" --remote-debugging-port={port}',
                     "simpler": "drop attach and sign in once in the window login opens",
                 }
         try:
             # the browser already on the machine, so no download is needed; the bundled
             # Chromium is the fallback for a machine that has none
-            ctx = attached.contexts[0] if attached else pw.chromium.launch_persistent_context(
-                str(STORE / "browser"), headless=False, **({"executable_path": exe} if exe else {}))
+            ctx = (
+                attached.contexts[0]
+                if attached
+                else pw.chromium.launch_persistent_context(
+                    str(STORE / "browser"), headless=False, **({"executable_path": exe} if exe else {})
+                )
+            )
         except Exception as e:
-            return {"error": f"could not start a browser: {type(e).__name__}",
-                    "how": "run: playwright install chromium"}
+            return {
+                "error": f"could not start a browser: {type(e).__name__}",
+                "how": "run: playwright install chromium",
+            }
 
         if attached and _harvest(ctx, host, url):
             # already signed in from an earlier visit; no need to open anything
-            return {"host": host, "result": "signed in", "source": "the browser you had open",
-                    "stored": str(COOKIE_FILE), "next": "call whoami to confirm, then fulltext"}
+            return {
+                "host": host,
+                "result": "signed in",
+                "source": "the browser you had open",
+                "stored": str(COOKIE_FILE),
+                "next": "call whoami to confirm, then fulltext",
+            }
         page = ctx.new_page() if attached else (ctx.pages[0] if ctx.pages else ctx.new_page())
         try:
             # /shibboleth/ is the EduID entry where a host has one, and /auth/ is the
@@ -392,20 +425,28 @@ def login(host: str = "theses.cz", wait_seconds: int = 240, attach: bool = False
 
     # Reading the page inside the browser guesses. Asking the server with the cookies
     # in hand is the real test, and it is the same request the rest of the tools make.
-    collected = [{"name": c["name"], "value": c["value"], "domain": c["domain"]}
-                 for c in collected]
+    collected = [{"name": c["name"], "value": c["value"], "domain": c["domain"]} for c in collected]
     if not _verify(collected, host, url):
         names = {c["name"] for c in collected}
         midway = any(n.startswith(("_shibstate", "_opensaml")) for n in names)
-        return {"host": host, "result": "sign-in not detected, nothing stored",
-                "cookies_seen": sorted(names),
-                "hint": "the eduID exchange started but never came back; finish it in the "
-                        "tab that is still open, then run login again"
-                        if midway else "the wait ran out before the sign-in finished"}
+        return {
+            "host": host,
+            "result": "sign-in not detected, nothing stored",
+            "cookies_seen": sorted(names),
+            "hint": "the eduID exchange started but never came back; finish it in the "
+            "tab that is still open, then run login again"
+            if midway
+            else "the wait ran out before the sign-in finished",
+        }
 
     _store(host, collected)
-    return {"host": host, "result": "signed in", "cookies": len(collected),
-            "stored": str(COOKIE_FILE), "next": "call whoami to confirm, then fulltext"}
+    return {
+        "host": host,
+        "result": "signed in",
+        "cookies": len(collected),
+        "stored": str(COOKIE_FILE),
+        "next": "call whoami to confirm, then fulltext",
+    }
 
 
 @mcp.tool()
@@ -435,8 +476,11 @@ def use_cookie(host: str, cookie: str) -> dict:
     except Exception as e:
         return {"error": f"could not reach {host}: {type(e).__name__}"}
     if not _is_signed_in(BeautifulSoup(probe.text, "lxml").get_text()):
-        return {"host": host, "result": "that cookie does not sign you in",
-                "hint": "copy it again from a tab where you are signed in"}
+        return {
+            "host": host,
+            "result": "that cookie does not sign you in",
+            "hint": "copy it again from a tab where you are signed in",
+        }
 
     saved = {}
     if COOKIE_FILE.exists():
@@ -462,8 +506,12 @@ def whoami() -> dict:
     same front page. Only `fulltext` on a thesis of that school settles it.
     """
     if not AUTHENTICATED:
-        return {"authenticated": [], "hint": "set THESES_COOKIES to use your own login; "
-                "see the README section on authenticated access"}
+        return {
+            "authenticated": [],
+            "hint": "set THESES_COOKIES to use your own login; "
+            "see the README section on authenticated access",
+        }
+
     def status(host):
         try:
             text = _get(f"https://{host}/").get_text()
@@ -492,8 +540,11 @@ def detail(id_or_url: str) -> dict:
     meta = soup.select_one("#metadata")
     if meta is None:
         hidden = "Chybná adresa v ISu" in soup.get_text()
-        return {"error": f"record {code} is not publicly viewable on theses.cz"
-                if hidden else f"record {code} not found"}
+        return {
+            "error": f"record {code} is not publicly viewable on theses.cz"
+            if hidden
+            else f"record {code} not found"
+        }
 
     anot = meta.select(".anotace")
     kw = {}
@@ -541,7 +592,9 @@ DOC_RE = re.compile(r"(\S+\.(?:pdf|docx?|rtf|odt|zip|txt))\b", re.I)
 DOC_LABEL = re.compile(
     r"plný text|full text|final thesis|závěrečná práce|posudek|review|"
     r"oponent|vedoucí|supervisor|příloha|attachment|hlavní práce|"
-    r"k dispozici|available here", re.I)
+    r"k dispozici|available here",
+    re.I,
+)
 
 
 def _documents(page, base: str) -> list:
@@ -566,12 +619,13 @@ def _documents(page, base: str) -> list:
             # label nothing else, while VŠE wraps the name in "Hlavní práce … 1.5 MB
             # Stáhnout". A label that ends at the extension is the whole filename.
             whole = label.lower().endswith(DOC_EXT)
-            out.append({
-                "label": re.sub(r"\s*St[áa]hnout\s*$", "", label) or href.rsplit("/", 1)[-1],
-                "filename": (label if whole else
-                             named.group(1) if named else href.rsplit("/", 1)[-1]),
-                "url": href,
-            })
+            out.append(
+                {
+                    "label": re.sub(r"\s*St[áa]hnout\s*$", "", label) or href.rsplit("/", 1)[-1],
+                    "filename": (label if whole else named.group(1) if named else href.rsplit("/", 1)[-1]),
+                    "url": href,
+                }
+            )
         elif DOC_LABEL.search(label):
             seen.add(href)
             probe.append((label, href))
@@ -652,8 +706,11 @@ def _norm(s: str) -> str:
 def _dspace7(host: str, title: str):
     """DSpace 7: search the REST backend, then read the files off the item page."""
     api = REPOSITORY_API.get(host, host)
-    r = _s.get(f"https://{api}/server/api/discover/search/objects", timeout=30,
-               params={"query": title, "dsoType": "item", "size": 5})
+    r = _s.get(
+        f"https://{api}/server/api/discover/search/objects",
+        timeout=30,
+        params={"query": title, "dsoType": "item", "size": 5},
+    )
     objects = r.json()["_embedded"]["searchResult"]["_embedded"]["objects"]
     for o in objects:
         item = o.get("_embedded", {}).get("indexableObject", {})
@@ -671,10 +728,18 @@ def _dspace6(host: str, title: str):
     Only the ORIGINAL bundle is wanted. DSpace also stores an extracted-text copy of
     every PDF in a TEXT bundle and a THUMBNAIL image, and those are not the thesis.
     """
-    r = _s.get(f"https://{host}/rest/filtered-items", timeout=30,
-               headers={"Accept": "application/json"},
-               params={"query_field[]": "dc.title", "query_op[]": "contains",
-                       "query_val[]": title, "limit": 5, "expand": "bitstreams"})
+    r = _s.get(
+        f"https://{host}/rest/filtered-items",
+        timeout=30,
+        headers={"Accept": "application/json"},
+        params={
+            "query_field[]": "dc.title",
+            "query_op[]": "contains",
+            "query_val[]": title,
+            "limit": 5,
+            "expand": "bitstreams",
+        },
+    )
     for item in r.json().get("items", []):
         if _norm(item.get("name")) != _norm(title):
             continue
@@ -684,8 +749,10 @@ def _dspace6(host: str, title: str):
                 continue
             url = f"https://{host}{b['retrieveLink']}"
             doc = _as_document(url)
-            files.append(doc or {"label": b.get("name", ""), "filename": b.get("name", ""),
-                                 "url": url, "confirmed": False})
+            files.append(
+                doc
+                or {"label": b.get("name", ""), "filename": b.get("name", ""), "url": url, "confirmed": False}
+            )
             files[-1]["label"] = b.get("description") or b.get("name", "")
         return f"https://{host}/handle/{item.get('handle')}", files
     return None
@@ -781,8 +848,13 @@ def _hosted_files(soup, code: str) -> list:
             continue
         seen.add(href)
         label = _txt(a) or name
-        out.append({"label": re.sub(rf"\s*{re.escape(name)}\s*$", "", label) or name,
-                    "filename": name, "url": BASE + href})
+        out.append(
+            {
+                "label": re.sub(rf"\s*{re.escape(name)}\s*$", "", label) or name,
+                "filename": name,
+                "url": BASE + href,
+            }
+        )
     return out
 
 
@@ -813,13 +885,19 @@ def _stag_files(archive: str) -> list:
     root = f"{parts.scheme}://{parts.netloc}"
     out, seen = [], set()
     for page, extra in STAG_PAGES:
-        query = {"pp_locale": "cs", "pp_reqType": "render", "pp_ajaxCall": 1,
-                 "pp_portlet": "souboryStudentuPagesPortlet", "pp_page": page,
-                 # any namespace works, it only prefixes the ids in the markup
-                 "pp_nameSpace": "G1", "sou_adipidno": thesis.group(1), **extra}
+        query = {
+            "pp_locale": "cs",
+            "pp_reqType": "render",
+            "pp_ajaxCall": 1,
+            "pp_portlet": "souboryStudentuPagesPortlet",
+            "pp_page": page,
+            # any namespace works, it only prefixes the ids in the markup
+            "pp_nameSpace": "G1",
+            "sou_adipidno": thesis.group(1),
+            **extra,
+        }
         try:
-            r = _s.get(f"{root}/StagPortletsJSR168/PagesDispatcherServlet",
-                       params=query, timeout=45)
+            r = _s.get(f"{root}/StagPortletsJSR168/PagesDispatcherServlet", params=query, timeout=45)
         except Exception:  # one dead block must not lose the other three
             continue
         if r.status_code != 200:
@@ -877,8 +955,11 @@ def fulltext(id_or_url: str) -> dict:
     if soup.select_one("#metadata") is None:
         # theses.cz answers with a file-manager error for records it will not show
         hidden = "Chybná adresa v ISu" in soup.get_text()
-        return {"error": f"record {code} is not publicly viewable on theses.cz"
-                if hidden else f"record {code} not found"}
+        return {
+            "error": f"record {code} is not publicly viewable on theses.cz"
+            if hidden
+            else f"record {code} not found"
+        }
 
     access = [_txt(li) for li in soup.select("#th-obsah li")]
     archive = _archive_url(soup, code)
@@ -925,8 +1006,11 @@ def fulltext(id_or_url: str) -> dict:
     if not res["files"] and "note" not in res:
         if page is None:
             # do not blame a missing link when the repository was searched and came up empty
-            res["note"] = (f"the record links nowhere, and {searched} holds no thesis under this title"
-                           if searched else "no school repository link in the record")
+            res["note"] = (
+                f"the record links nowhere, and {searched} holds no thesis under this title"
+                if searched
+                else "no school repository link in the record"
+            )
         else:
             host = requests.compat.urlparse(archive).netloc
             body = page.get_text()
@@ -939,8 +1023,10 @@ def fulltext(id_or_url: str) -> dict:
                 res["note"] = "the thesis is not defended yet, so the school publishes no files"
                 res["pending_defense"] = True
             elif wall:
-                res["note"] = (f"{'thesis is public, but the ' if public else ''}"
-                               f"repository gates anonymous access with a CAPTCHA/login{hint}")
+                res["note"] = (
+                    f"{'thesis is public, but the ' if public else ''}"
+                    f"repository gates anonymous access with a CAPTCHA/login{hint}"
+                )
             else:
                 res["note"] = "no public files listed; access is likely restricted"
     return res
@@ -958,8 +1044,11 @@ def _selftest():
     assert d["author"] and d["title"] and d["abstract_cs"], d
     assert d["keywords"] and d["archive_url"] and d["related"], d
     d2 = detail("pl09jx")  # unclosed <li> must not collapse into a single entry
-    assert d2["defense"] == ["Obhajoba proběhla 12. 6. 2023", "Vedoucí: Jiří Korčák",
-                             "Oponent: Tomáš Sigmund"], d2["defense"]
+    assert d2["defense"] == [
+        "Obhajoba proběhla 12. 6. 2023",
+        "Vedoucí: Jiří Korčák",
+        "Oponent: Tomáš Sigmund",
+    ], d2["defense"]
     pub = fulltext("7lfo74")  # public thesis → real PDF in the school repository
     assert pub["access"] == ["světu"], pub["access"]
     assert any(f["url"].endswith(".pdf") for f in pub["files"]), pub
@@ -988,12 +1077,27 @@ def _selftest():
     # API and no theses.cz record was found that is both public and present in it
     utb = _repository_lookup("Univerzita Tomáše Bati ve Zlíně", "Korupce a její vliv na společnost")
     assert len(utb) == 3, utb
-    vscht = _repository_lookup("Vysoká škola chemicko-technologická v Praze",
-                               "Wikipedia v chemii, chemie na Wikipedii")  # Invenio, not DSpace
+    vscht = _repository_lookup(
+        "Vysoká škola chemicko-technologická v Praze", "Wikipedia v chemii, chemie na Wikipedii"
+    )  # Invenio, not DSpace
     assert vscht and all(f["confirmed"] for f in vscht), vscht
-    print("OK", r["total"], "hits |", d["author"], "|", d["type"], "|",
-          len(pub["files"]), "+", len(vse["files"]), "+", len(vsb["files"]),
-          "+", len(men["files"]), "files")
+    print(
+        "OK",
+        r["total"],
+        "hits |",
+        d["author"],
+        "|",
+        d["type"],
+        "|",
+        len(pub["files"]),
+        "+",
+        len(vse["files"]),
+        "+",
+        len(vsb["files"]),
+        "+",
+        len(men["files"]),
+        "files",
+    )
 
 
 def main():
