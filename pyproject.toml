@@ -1,7 +1,7 @@
 [project]
 name = "theses-mcp"
 version = "0.1.0"
-description = "MCP server for theses.cz. Search Czech university theses, metadata and full texts."
+description = "Search Czech university theses and retrieve document links for MCP clients."
 readme = "README.md"
 requires-python = ">=3.10"
 license = { text = "MIT" }
