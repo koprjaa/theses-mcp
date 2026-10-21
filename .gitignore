@@ -1,16 +1,15 @@
-__pycache__/
-*.pyc
-.pytest_cache/
-.ruff_cache/
-.venv/
+# Project: theses-mcp
+# File: .gitignore
+# Description: Ignore build output, local tools, and editor files.
+# Author: Jan Alexandr Kopřiva
+# License: MIT
+/target/
+/.tmp/
+/.venv/
 uv.lock
-*.egg-info/
-# downloads from the coverage harness. They are other people's theses, named after
-# their authors, and this repository has no reason to mirror them.
-tools/e2e_out/
-tools/e2e_big/
-tools/e2e_final/
-tools/e2e_*/
-*.pdf
-# the measurement itself is small and backs the numbers in the README
-!tools/e2e_*/results.json
+.vscode/
+.idea/
+*.swp
+*~
+.DS_Store
+Thumbs.db

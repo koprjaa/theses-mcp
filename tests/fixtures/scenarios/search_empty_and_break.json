@@ -1,0 +1,38 @@
+{
+ "name": "search_empty_and_break",
+ "env": {},
+ "saved": null,
+ "calls": [
+  {
+   "tool": "search",
+   "args": {
+    "query": "nic",
+    "limit": 30
+   }
+  }
+ ],
+ "responses": [
+  {
+   "key": "https://theses.cz/vyhledavani/?search=nic&start=1",
+   "status": 200,
+   "url": "https://theses.cz/vyhledavani/",
+   "headers": {
+    "Content-Type": "text/html; charset=utf-8"
+   },
+   "body": "<html><body>Žádné výsledky</body></html>"
+  }
+ ],
+ "expected": {
+  "results": [
+   {
+    "error": false,
+    "text": "{\n  \"total\": null,\n  \"returned\": 0,\n  \"results\": []\n}"
+   }
+  ],
+  "requests": [
+   "https://theses.cz/vyhledavani/?search=nic&start=1"
+  ],
+  "saved_after": null,
+  "authenticated": []
+ }
+}

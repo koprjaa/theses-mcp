@@ -1,0 +1,104 @@
+{
+ "name": "whoami_states",
+ "env": {
+  "THESES_COOKIES": "{\"gate.example\": \"a=1\", \"in.example\": \"b=2\", \"front.example\": \"\", \"nothere.example\": \"c=3\"}"
+ },
+ "saved": {
+  "dead.example": [
+   {
+    "name": "k",
+    "value": "v",
+    "domain": "dead.example"
+   }
+  ],
+  "in.example": [
+   {
+    "name": "z",
+    "value": "9",
+    "domain": ".in.example"
+   }
+  ]
+ },
+ "calls": [
+  {
+   "tool": "whoami",
+   "args": {}
+  }
+ ],
+ "responses": [
+  {
+   "key": "https://gate.example/",
+   "status": 200,
+   "url": "https://gate.example/",
+   "headers": {
+    "Content-Type": "text/html; charset=utf-8"
+   },
+   "body": "<html><body>Závěrečné práce. Pro ověření opište prosíme tento kód: 1234. Odeslat</body></html>"
+  },
+  {
+   "key": "https://in.example/",
+   "status": 200,
+   "url": "https://in.example/",
+   "headers": {
+    "Content-Type": "text/html; charset=utf-8"
+   },
+   "body": "<html><body>Theses.cz Odevzdej.cz Vyhledávání Nápověda Zapojené školy Soukromí Přístupnost Provozuje Fakulta informatiky MU Potřebujete poradit Často kladené dotazy Vysokoškolské kvalifikační práce Domů Odhlášení ze systému Theses.cz Odevzdej.cz Vyhledávání Nápověda Zapojené školy Soukromí Přístupnost Provozuje Fakulta informatiky MU Potřebujete poradit Často kladené dotazy Vysokoškolské kvalifikační práce Domů Odhlášení ze systému Theses.cz Odevzdej.cz Vyhledávání Nápověda Zapojené školy Soukromí Přístupnost Provozuje Fakulta informatiky MU Potřebujete poradit Často kladené dotazy Vysokoškolské kvalifikační práce Domů Odhlášení ze systému  Moje studium Jan Novák</body></html>"
+  },
+  {
+   "key": "https://front.example/",
+   "status": 200,
+   "url": "https://front.example/",
+   "headers": {
+    "Content-Type": "text/html; charset=utf-8"
+   },
+   "body": "<html><body>Theses.cz Odevzdej.cz Vyhledávání Nápověda Zapojené školy Soukromí Přístupnost Provozuje Fakulta informatiky MU Potřebujete poradit Často kladené dotazy Vysokoškolské kvalifikační práce Domů Odhlášení ze systému Theses.cz Odevzdej.cz Vyhledávání Nápověda Zapojené školy Soukromí Přístupnost Provozuje Fakulta informatiky MU Potřebujete poradit Často kladené dotazy Vysokoškolské kvalifikační práce Domů Odhlášení ze systému Theses.cz Odevzdej.cz Vyhledávání Nápověda Zapojené školy Soukromí Přístupnost Provozuje Fakulta informatiky MU Potřebujete poradit Často kladené dotazy Vysokoškolské kvalifikační práce Domů Odhlášení ze systému  Přihlásit se (EduID)</body></html>"
+  },
+  {
+   "key": "https://dead.example/",
+   "status": 502,
+   "url": "https://dead.example/",
+   "headers": {
+    "Content-Type": "text/html; charset=utf-8"
+   },
+   "body": "x"
+  }
+ ],
+ "expected": {
+  "results": [
+   {
+    "error": false,
+    "text": "{\n  \"authenticated\": {\n    \"gate.example\": \"cookie not accepted — still asked for a CAPTCHA\",\n    \"in.example\": \"logged in\",\n    \"front.example\": \"cookie attached; the front page is not gated, so ask fulltext instead\",\n    \"nothere.example\": \"unreachable: ConnectionError\",\n    \"dead.example\": \"cookie attached; the front page is not gated, so ask fulltext instead\"\n  }\n}"
+   }
+  ],
+  "requests": [
+   "https://gate.example/",
+   "https://in.example/",
+   "https://front.example/",
+   "https://nothere.example/",
+   "https://dead.example/"
+  ],
+  "saved_after": {
+   "dead.example": [
+    {
+     "name": "k",
+     "value": "v",
+     "domain": "dead.example"
+    }
+   ],
+   "in.example": [
+    {
+     "name": "z",
+     "value": "9",
+     "domain": ".in.example"
+    }
+   ]
+  },
+  "authenticated": [
+   "gate.example",
+   "in.example",
+   "front.example",
+   "nothere.example",
+   "dead.example"
+  ]
+ }
+}

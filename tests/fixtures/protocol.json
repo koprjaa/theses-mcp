@@ -1,0 +1,162 @@
+{
+ "tools_list": {
+  "tools": [
+   {
+    "description": "Search theses.cz (Czech national thesis registry) — full text and metadata.\n\n    Returns two kinds of hits:\n      kind=\"record\"   — a thesis record; `url` points to the detail page (see `detail`)\n      kind=\"fulltext\" — a match inside the thesis PDF; `pdf_url` links to the file\n\n    Neither URL is checked here, because checking would cost one request per hit.\n    `pdf_url` in particular can point at a file the registry will not serve. Call\n    `fulltext` to get links that were confirmed by reading the first bytes.\n\n    query: search terms; supports theses.cz operators (AND, OR, \"phrase\")\n    limit: how many results (paginated by 10, max 50)\n    ",
+    "inputSchema": {
+     "properties": {
+      "query": {
+       "title": "Query",
+       "type": "string"
+      },
+      "limit": {
+       "default": 10,
+       "title": "Limit",
+       "type": "integer"
+      }
+     },
+     "required": [
+      "query"
+     ],
+     "type": "object",
+     "title": "searchArguments"
+    },
+    "name": "search"
+   },
+   {
+    "description": "Open a browser window, let you sign in, and keep the session for later calls.\n\n    Nothing here handles your password. A real browser opens on the school's own login\n    page, you sign in there — EduID included, with whatever second factor it asks for —\n    and this reads back only the session cookies that host set. They are stored under\n    ~/.theses-mcp/cookies.json so a restart does not ask again; delete that file to\n    forget them.\n\n    The CAPTCHA on the gated schools stands in front of anonymous visitors. Any account\n    the school federation accepts gets past it, so EduID from one Czech university often\n    opens the repository of another. The browser profile persists between calls, so the\n    second school usually signs in without asking again.\n\n    The window uses a profile of its own, so it starts signed out and without your\n    extensions. You sign in once and the session is kept. theses.cz has no OAuth, so\n    there is no way for your everyday browser to hand a session to another program.\n    Nothing else needs setting up.\n\n    host: the repository to sign in to, e.g. \"is.slu.cz\" or \"theses.cz\"\n    wait_seconds: how long to leave the window open for you\n    attach: use the browser you already have open, with your extensions and saved\n        passwords. It only works if that browser was started with\n        `--remote-debugging-port`, which most people will not have done.\n    port: the debugging port, when `attach` is set\n\n    Requires the optional browser extra: pip install \"theses-mcp[login]\".\n    ",
+    "inputSchema": {
+     "properties": {
+      "host": {
+       "default": "theses.cz",
+       "title": "Host",
+       "type": "string"
+      },
+      "wait_seconds": {
+       "default": 240,
+       "title": "Wait Seconds",
+       "type": "integer"
+      },
+      "attach": {
+       "default": false,
+       "title": "Attach",
+       "type": "boolean"
+      },
+      "port": {
+       "default": 9222,
+       "title": "Port",
+       "type": "integer"
+      },
+      "url": {
+       "anyOf": [
+        {
+         "type": "string"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "default": null,
+       "title": "Url"
+      }
+     },
+     "type": "object",
+     "title": "loginArguments"
+    },
+    "name": "login"
+   },
+   {
+    "description": "Take a session cookie you copied out of your own browser.\n\n    This is the route for a browser that `login` cannot drive, or for anyone who would\n    rather not sign in a second time in a separate window. Sign in normally, open the\n    developer tools, and copy the session cookie from Application, then Cookies.\n\n    host: the site the cookie belongs to, e.g. \"theses.cz\"\n    cookie: either the bare value of `__Host-issession`, or a whole `name=value; …` header\n\n    The cookie is checked against the site before it is kept, so a stale one is refused\n    rather than stored and puzzled over later.\n    ",
+    "inputSchema": {
+     "properties": {
+      "host": {
+       "title": "Host",
+       "type": "string"
+      },
+      "cookie": {
+       "title": "Cookie",
+       "type": "string"
+      }
+     },
+     "required": [
+      "host",
+      "cookie"
+     ],
+     "type": "object",
+     "title": "use_cookieArguments"
+    },
+    "name": "use_cookie"
+   },
+   {
+    "description": "Report which hosts have a session attached, and what each one answers.\n\n    Use this after setting $THESES_COOKIES. A CAPTCHA in the answer is proof that the\n    cookie failed. The opposite does not follow. These schools gate their thesis pages\n    and leave the front page open, so a working cookie and no cookie at all give the\n    same front page. Only `fulltext` on a thesis of that school settles it.\n    ",
+    "inputSchema": {
+     "properties": {},
+     "type": "object",
+     "title": "whoamiArguments"
+    },
+    "name": "whoami"
+   },
+   {
+    "description": "Fetch the full record of a thesis from theses.cz.\n\n    id_or_url: thesis code (\"pl09jx\"), /id/pl09jx/ or a full URL.\n    Returns author, title (incl. translation), CS/EN abstracts, keywords,\n    supervisor/opponent, full-text availability and the school archive link.\n    ",
+    "inputSchema": {
+     "properties": {
+      "id_or_url": {
+       "title": "Id Or Url",
+       "type": "string"
+      }
+     },
+     "required": [
+      "id_or_url"
+     ],
+     "type": "object",
+     "title": "detailArguments"
+    },
+    "name": "detail"
+   },
+   {
+    "description": "Resolve a thesis to downloadable full-text files in its school's repository.\n\n    theses.cz stores only metadata; the files live in each school's own system\n    (mostly the IS family — is.muni.cz, is.slu.cz, vskp.vse.cz …). This follows the\n    record to that repository and lists the documents it exposes publicly.\n\n    id_or_url: thesis code (\"7lfo74\"), /id/7lfo74/ or a full URL.\n\n    `access` is the visibility of the theses.cz copy and does NOT decide what you can\n    download: a thesis marked \"autentizovaným zaměstnancům ze stejné školy\" on theses.cz\n    is often served freely by the school's own repository, so always check `files`.\n\n    Each file carries `label`, `filename` and `url`; extensionless URLs also get\n    `confirmed` and `content_type` from a HEAD request. An empty `files` plus a `note`\n    means the school really does gate it (login or CAPTCHA) — a real answer, not an error.\n    ",
+    "inputSchema": {
+     "properties": {
+      "id_or_url": {
+       "title": "Id Or Url",
+       "type": "string"
+      }
+     },
+     "required": [
+      "id_or_url"
+     ],
+     "type": "object",
+     "title": "fulltextArguments"
+    },
+    "name": "fulltext"
+   }
+  ]
+ },
+ "whoami": {
+  "content": [
+   {
+    "text": "{\n  \"authenticated\": [],\n  \"hint\": \"set THESES_COOKIES to use your own login; see the README section on authenticated access\"\n}",
+    "type": "text"
+   }
+  ],
+  "isError": false
+ },
+ "search_limit0": {
+  "content": [
+   {
+    "text": "{\n  \"total\": null,\n  \"returned\": 0,\n  \"results\": []\n}",
+    "type": "text"
+   }
+  ],
+  "isError": false
+ },
+ "unknown_tool": {
+  "content": [
+   {
+    "text": "Unknown tool: nosuch",
+    "type": "text"
+   }
+  ],
+  "isError": true
+ }
+}

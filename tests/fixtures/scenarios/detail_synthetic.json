@@ -1,0 +1,37 @@
+{
+ "name": "detail_synthetic",
+ "env": {},
+ "saved": null,
+ "calls": [
+  {
+   "tool": "detail",
+   "args": {
+    "id_or_url": "abc123"
+   }
+  }
+ ],
+ "responses": [
+  {
+   "key": "https://theses.cz/id/abc123/",
+   "status": 200,
+   "url": "https://theses.cz/id/abc123/",
+   "headers": {
+    "Content-Type": "text/html; charset=utf-8"
+   },
+   "body": "<!DOCTYPE html><html><head><title>Návrh systému řízení</title></head><body><main>\n<div id=\"metadata\"><h3 class=\"th-autor\"><b>Jana Nováková</b></h3><h5 class=\"typ-prace\">Diplomová práce</h5>\n<h2 class=\"th-title\">Návrh systému řízení</h2><h5 class=\"transl\">Design of a control system</h5>\n<div class=\"anotace\"><h5>Anotace:</h5>Česká anotace <a class=\"rozbal\">více</a></div>\n<div class=\"anotace\"><h5>Abstract:</h5>English abstract <a class=\"sbal\">less</a></div>\n<div class=\"klslova\"><h3>Klíčová slova</h3><a><span class=\"tg4\">řízení</span></a><a><span class=\"tg4\">systém</span></a></div>\n<div class=\"servis_info\"><div>Jazyk práce: čeština</div><div>Datum vytvoření / odevzdání či podání práce:\t1. 2. 2024</div><div>Bez dvojtečky</div></div>\n<div><h3>Obhajoba závěrečné práce</h3><ul><li>Obhajoba proběhla 1. 2. 2024<li> Vedoucí: Karel Novák<li> Oponent: Eva Svobodová<li></ul></div></div>\n<div class=\"plny_text_th\"><h5>Obsah</h5><ul id=\"th-obsah\"><li>světu</ul></div><div class=\"plny_text_ext\"><h5>Jak jinak</h5>Instituce: Vysoká škola testovací v Praze<br/><div class=\"ext_prez\"><a href=\"https://repo.example.cz/th/1/\">https://repo.example.cz/th/1/</a></div></div>\n<div id=\"th-sloupec\"><div class=\"oddil\"><h4>Vysoká škola testovací v Praze</h4></div>\n<div class=\"oddil\"><a href=\"/id/rel001/\">Příbuzná <b>práce</b></a><a href=\"/other\">ne</a></div></div>\n</main></body></html>"
+  }
+ ],
+ "expected": {
+  "results": [
+   {
+    "error": false,
+    "text": "{\n  \"url\": \"https://theses.cz/id/abc123/\",\n  \"author\": \"Jana Nováková\",\n  \"type\": \"Diplomová práce\",\n  \"title\": \"Návrh systému řízení\",\n  \"title_translated\": \"Design of a control system\",\n  \"abstract_cs\": \"Česká anotace\",\n  \"abstract_en\": \"English abstract\",\n  \"keywords\": {\n    \"Klíčová slova\": [\n      \"řízení\",\n      \"systém\"\n    ]\n  },\n  \"defense\": [\n    \"Obhajoba proběhla 1. 2. 2024\",\n    \"Vedoucí: Karel Novák\",\n    \"Oponent: Eva Svobodová\"\n  ],\n  \"language\": \"čeština\",\n  \"submitted\": \"1. 2. 2024\",\n  \"school\": \"Vysoká škola testovací v Praze\",\n  \"fulltext_access\": \"světu\",\n  \"archive_url\": \"https://repo.example.cz/th/1/\",\n  \"related\": [\n    {\n      \"title\": \"Příbuzná práce\",\n      \"url\": \"https://theses.cz/id/rel001/\"\n    }\n  ]\n}"
+   }
+  ],
+  "requests": [
+   "https://theses.cz/id/abc123/"
+  ],
+  "saved_after": null,
+  "authenticated": []
+ }
+}

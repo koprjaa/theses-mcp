@@ -1,0 +1,41 @@
+{
+ "name": "stub_forever",
+ "env": {},
+ "saved": null,
+ "calls": [
+  {
+   "tool": "search",
+   "args": {
+    "query": "zlatý řez",
+    "limit": 5
+   }
+  }
+ ],
+ "responses": [
+  {
+   "key": "https://theses.cz/vyhledavani/?search=zlatý řez&start=1",
+   "status": 200,
+   "url": "https://theses.cz/vyhledavani/",
+   "headers": {
+    "Content-Type": "text/html; charset=utf-8"
+   },
+   "body": "<!DOCTYPE HTML>\n<html>\n<head>\n<meta http-equiv=\"refresh\" content=\"2\">\n</head><body></body></html>"
+  }
+ ],
+ "expected": {
+  "results": [
+   {
+    "error": false,
+    "text": "{\n  \"total\": null,\n  \"returned\": 0,\n  \"results\": []\n}"
+   }
+  ],
+  "requests": [
+   "https://theses.cz/vyhledavani/?search=zlatý řez&start=1",
+   "https://theses.cz/vyhledavani/?search=zlatý řez&start=1",
+   "https://theses.cz/vyhledavani/?search=zlatý řez&start=1",
+   "https://theses.cz/vyhledavani/?search=zlatý řez&start=1"
+  ],
+  "saved_after": null,
+  "authenticated": []
+ }
+}

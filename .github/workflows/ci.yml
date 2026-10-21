@@ -1,3 +1,8 @@
+# Project: theses-mcp
+# File: .github/workflows/ci.yml
+# Description: Check formatting, linting, and tests on Linux and Windows.
+# Author: Jan Alexandr Kopřiva
+# License: MIT
 name: CI
 
 on:
@@ -13,15 +18,16 @@ jobs:
       fail-fast: false
       matrix:
         os: [ubuntu-latest, windows-latest]
-        python-version: ["3.10", "3.11", "3.12"]
     steps:
       - uses: actions/checkout@v4
-
-      - name: Install uv
-        uses: astral-sh/setup-uv@v3
-
-      - name: Lint (ruff)
-        run: uv run --python ${{ matrix.python-version }} --extra dev ruff check .
-
-      - name: Test (pytest)
-        run: uv run --python ${{ matrix.python-version }} --extra dev pytest -q
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt, clippy
+      - name: Format
+        run: cargo fmt --check
+      - name: Clippy
+        run: cargo clippy --all-targets -- -D warnings
+      - name: Test
+        run: cargo test
+      - name: Release build
+        run: cargo build --release

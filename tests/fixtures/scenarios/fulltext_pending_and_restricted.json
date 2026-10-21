@@ -1,0 +1,150 @@
+{
+ "name": "fulltext_pending_and_restricted",
+ "env": {},
+ "saved": null,
+ "calls": [
+  {
+   "tool": "fulltext",
+   "args": {
+    "id_or_url": "pen001"
+   }
+  },
+  {
+   "tool": "fulltext",
+   "args": {
+    "id_or_url": "res001"
+   }
+  },
+  {
+   "tool": "fulltext",
+   "args": {
+    "id_or_url": "unr001"
+   }
+  },
+  {
+   "tool": "fulltext",
+   "args": {
+    "id_or_url": "noa001"
+   }
+  }
+ ],
+ "responses": [
+  {
+   "key": "https://theses.cz/id/pen001/",
+   "status": 200,
+   "url": "https://theses.cz/id/pen001/",
+   "headers": {
+    "Content-Type": "text/html; charset=utf-8"
+   },
+   "body": "<!DOCTYPE html><html><head><title>Návrh systému řízení</title></head><body><main>\n<div id=\"metadata\"><h3 class=\"th-autor\"><b>Jana Nováková</b></h3><h5 class=\"typ-prace\">Diplomová práce</h5>\n<h2 class=\"th-title\">Návrh systému řízení</h2><h5 class=\"transl\">Design of a control system</h5>\n<div class=\"anotace\"><h5>Anotace:</h5>Česká anotace <a class=\"rozbal\">více</a></div>\n<div class=\"anotace\"><h5>Abstract:</h5>English abstract <a class=\"sbal\">less</a></div>\n<div class=\"klslova\"><h3>Klíčová slova</h3><a><span class=\"tg4\">řízení</span></a><a><span class=\"tg4\">systém</span></a></div>\n<div class=\"servis_info\"><div>Jazyk práce: čeština</div><div>Datum vytvoření / odevzdání či podání práce:\t1. 2. 2024</div><div>Bez dvojtečky</div></div>\n<div></div></div>\n<div class=\"plny_text_th\"><h5>Obsah</h5><ul id=\"th-obsah\"><li>světu</ul></div><div class=\"plny_text_ext\"><h5>Jak jinak</h5>Instituce: Vysoká škola testovací v Praze<br/><div class=\"ext_prez\"><a href=\"https://is.pend.example/th/1/\">https://is.pend.example/th/1/</a></div></div>\n<div id=\"th-sloupec\"><div class=\"oddil\"><h4>Vysoká škola testovací v Praze</h4></div>\n<div class=\"oddil\"><a href=\"/id/rel001/\">Příbuzná <b>práce</b></a><a href=\"/other\">ne</a></div></div>\n</main></body></html>"
+  },
+  {
+   "key": "https://is.pend.example/th/1/ [range]",
+   "status": 200,
+   "url": "https://is.pend.example/th/1/",
+   "headers": {
+    "Content-Type": "text/html; charset=utf-8"
+   },
+   "body": "<html><body>Soubory ke stažení. Soubory budou k dispozici až po obhajobě práce.</body></html>"
+  },
+  {
+   "key": "https://is.pend.example/th/1/",
+   "status": 200,
+   "url": "https://is.pend.example/th/1/",
+   "headers": {
+    "Content-Type": "text/html; charset=utf-8"
+   },
+   "body": "<html><body>Soubory ke stažení. Soubory budou k dispozici až po obhajobě práce.</body></html>"
+  },
+  {
+   "key": "https://theses.cz/id/res001/",
+   "status": 200,
+   "url": "https://theses.cz/id/res001/",
+   "headers": {
+    "Content-Type": "text/html; charset=utf-8"
+   },
+   "body": "<!DOCTYPE html><html><head><title>Návrh systému řízení</title></head><body><main>\n<div id=\"metadata\"><h3 class=\"th-autor\"><b>Jana Nováková</b></h3><h5 class=\"typ-prace\">Diplomová práce</h5>\n<h2 class=\"th-title\">Návrh systému řízení</h2><h5 class=\"transl\">Design of a control system</h5>\n<div class=\"anotace\"><h5>Anotace:</h5>Česká anotace <a class=\"rozbal\">více</a></div>\n<div class=\"anotace\"><h5>Abstract:</h5>English abstract <a class=\"sbal\">less</a></div>\n<div class=\"klslova\"><h3>Klíčová slova</h3><a><span class=\"tg4\">řízení</span></a><a><span class=\"tg4\">systém</span></a></div>\n<div class=\"servis_info\"><div>Jazyk práce: čeština</div><div>Datum vytvoření / odevzdání či podání práce:\t1. 2. 2024</div><div>Bez dvojtečky</div></div>\n<div></div></div>\n<div class=\"plny_text_th\"><h5>Obsah</h5><ul id=\"th-obsah\"><li>světu</ul></div><div class=\"plny_text_ext\"><h5>Jak jinak</h5>Instituce: Vysoká škola testovací v Praze<br/><div class=\"ext_prez\"><a href=\"https://is.pend.example/th/2/\">https://is.pend.example/th/2/</a></div></div>\n<div id=\"th-sloupec\"><div class=\"oddil\"><h4>Vysoká škola testovací v Praze</h4></div>\n<div class=\"oddil\"><a href=\"/id/rel001/\">Příbuzná <b>práce</b></a><a href=\"/other\">ne</a></div></div>\n</main></body></html>"
+  },
+  {
+   "key": "https://is.pend.example/th/2/ [range]",
+   "status": 200,
+   "url": "https://is.pend.example/th/2/",
+   "headers": {
+    "Content-Type": "text/html; charset=utf-8"
+   },
+   "body": "<html><body>Nothing here</body></html>"
+  },
+  {
+   "key": "https://is.pend.example/th/2/",
+   "status": 200,
+   "url": "https://is.pend.example/th/2/",
+   "headers": {
+    "Content-Type": "text/html; charset=utf-8"
+   },
+   "body": "<html><body>Nothing here</body></html>"
+  },
+  {
+   "key": "https://theses.cz/id/unr001/",
+   "status": 200,
+   "url": "https://theses.cz/id/unr001/",
+   "headers": {
+    "Content-Type": "text/html; charset=utf-8"
+   },
+   "body": "<!DOCTYPE html><html><head><title>Návrh systému řízení</title></head><body><main>\n<div id=\"metadata\"><h3 class=\"th-autor\"><b>Jana Nováková</b></h3><h5 class=\"typ-prace\">Diplomová práce</h5>\n<h2 class=\"th-title\">Návrh systému řízení</h2><h5 class=\"transl\">Design of a control system</h5>\n<div class=\"anotace\"><h5>Anotace:</h5>Česká anotace <a class=\"rozbal\">více</a></div>\n<div class=\"anotace\"><h5>Abstract:</h5>English abstract <a class=\"sbal\">less</a></div>\n<div class=\"klslova\"><h3>Klíčová slova</h3><a><span class=\"tg4\">řízení</span></a><a><span class=\"tg4\">systém</span></a></div>\n<div class=\"servis_info\"><div>Jazyk práce: čeština</div><div>Datum vytvoření / odevzdání či podání práce:\t1. 2. 2024</div><div>Bez dvojtečky</div></div>\n<div></div></div>\n<div class=\"plny_text_th\"><h5>Obsah</h5><ul id=\"th-obsah\"><li>světu</ul></div><div class=\"plny_text_ext\"><h5>Jak jinak</h5>Instituce: Univerzita Karlova<br/><div class=\"ext_prez\"><a href=\"https://down.example/th/3/\">https://down.example/th/3/</a></div></div>\n<div id=\"th-sloupec\"><div class=\"oddil\"><h4>Univerzita Karlova</h4></div>\n<div class=\"oddil\"><a href=\"/id/rel001/\">Příbuzná <b>práce</b></a><a href=\"/other\">ne</a></div></div>\n</main></body></html>"
+  },
+  {
+   "key": "https://theses.cz/id/noa001/",
+   "status": 200,
+   "url": "https://theses.cz/id/noa001/",
+   "headers": {
+    "Content-Type": "text/html; charset=utf-8"
+   },
+   "body": "<!DOCTYPE html><html><head><title>Návrh systému řízení</title></head><body><main>\n<div id=\"metadata\"><h3 class=\"th-autor\"><b>Jana Nováková</b></h3><h5 class=\"typ-prace\">Diplomová práce</h5>\n<h2 class=\"th-title\">Návrh systému řízení</h2><h5 class=\"transl\">Design of a control system</h5>\n<div class=\"anotace\"><h5>Anotace:</h5>Česká anotace <a class=\"rozbal\">více</a></div>\n<div class=\"anotace\"><h5>Abstract:</h5>English abstract <a class=\"sbal\">less</a></div>\n<div class=\"klslova\"><h3>Klíčová slova</h3><a><span class=\"tg4\">řízení</span></a><a><span class=\"tg4\">systém</span></a></div>\n<div class=\"servis_info\"><div>Jazyk práce: čeština</div><div>Datum vytvoření / odevzdání či podání práce:\t1. 2. 2024</div><div>Bez dvojtečky</div></div>\n<div></div></div>\n<div class=\"plny_text_th\"><h5>Obsah</h5><ul id=\"th-obsah\"><li>světu</ul></div>\n<div id=\"th-sloupec\"><div class=\"oddil\"><h4>Neznámá škola</h4></div>\n<div class=\"oddil\"><a href=\"/id/rel001/\">Příbuzná <b>práce</b></a><a href=\"/other\">ne</a></div></div>\n</main></body></html>"
+  },
+  {
+   "key": "https://theses.cz/vyhledavani/?search=Návrh systému řízení&start=1",
+   "status": 200,
+   "url": "https://theses.cz/vyhledavani/",
+   "headers": {
+    "Content-Type": "text/html; charset=utf-8"
+   },
+   "body": "<html><body><p>Výsledky 1 &ndash; 10 z 1 234 <span>(0,1 s)</span></p><div id=\"vysledky_vyhledavani\"></div></body></html>"
+  }
+ ],
+ "expected": {
+  "results": [
+   {
+    "error": false,
+    "text": "{\n  \"url\": \"https://theses.cz/id/pen001/\",\n  \"access\": [\n    \"světu\"\n  ],\n  \"archive_url\": \"https://is.pend.example/th/1/\",\n  \"files\": [],\n  \"note\": \"the thesis is not defended yet, so the school publishes no files\",\n  \"pending_defense\": true\n}"
+   },
+   {
+    "error": false,
+    "text": "{\n  \"url\": \"https://theses.cz/id/res001/\",\n  \"access\": [\n    \"světu\"\n  ],\n  \"archive_url\": \"https://is.pend.example/th/2/\",\n  \"files\": [],\n  \"note\": \"no public files listed; access is likely restricted\"\n}"
+   },
+   {
+    "error": false,
+    "text": "{\n  \"url\": \"https://theses.cz/id/unr001/\",\n  \"access\": [\n    \"světu\"\n  ],\n  \"archive_url\": \"https://down.example/th/3/\",\n  \"files\": [],\n  \"note\": \"school repository unreachable: ConnectionError\"\n}"
+   },
+   {
+    "error": false,
+    "text": "{\n  \"url\": \"https://theses.cz/id/noa001/\",\n  \"access\": [\n    \"světu\"\n  ],\n  \"archive_url\": null,\n  \"files\": [],\n  \"note\": \"no school repository link in the record\"\n}"
+   }
+  ],
+  "requests": [
+   "https://theses.cz/id/pen001/",
+   "https://is.pend.example/th/1/ [range]",
+   "https://is.pend.example/th/1/",
+   "https://theses.cz/id/res001/",
+   "https://is.pend.example/th/2/ [range]",
+   "https://is.pend.example/th/2/",
+   "https://theses.cz/id/unr001/",
+   "https://down.example/th/3/ [range]",
+   "https://down.example/th/3/",
+   "https://dspace.cuni.cz/rest/filtered-items?expand=bitstreams&limit=5&query_field[]=dc.title&query_op[]=contains&query_val[]=Návrh systému řízení",
+   "https://theses.cz/id/noa001/",
+   "https://theses.cz/vyhledavani/?search=Návrh systému řízení&start=1"
+  ],
+  "saved_after": null,
+  "authenticated": []
+ }
+}

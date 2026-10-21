@@ -1,0 +1,98 @@
+{
+ "name": "fulltext_labels",
+ "env": {},
+ "saved": null,
+ "calls": [
+  {
+   "tool": "fulltext",
+   "args": {
+    "id_or_url": "czu001"
+   }
+  }
+ ],
+ "responses": [
+  {
+   "key": "https://theses.cz/id/czu001/",
+   "status": 200,
+   "url": "https://theses.cz/id/czu001/",
+   "headers": {
+    "Content-Type": "text/html; charset=utf-8"
+   },
+   "body": "<!DOCTYPE html><html><head><title>Návrh systému řízení</title></head><body><main>\n<div id=\"metadata\"><h3 class=\"th-autor\"><b>Jana Nováková</b></h3><h5 class=\"typ-prace\">Diplomová práce</h5>\n<h2 class=\"th-title\">Návrh systému řízení</h2><h5 class=\"transl\">Design of a control system</h5>\n<div class=\"anotace\"><h5>Anotace:</h5>Česká anotace <a class=\"rozbal\">více</a></div>\n<div class=\"anotace\"><h5>Abstract:</h5>English abstract <a class=\"sbal\">less</a></div>\n<div class=\"klslova\"><h3>Klíčová slova</h3><a><span class=\"tg4\">řízení</span></a><a><span class=\"tg4\">systém</span></a></div>\n<div class=\"servis_info\"><div>Jazyk práce: čeština</div><div>Datum vytvoření / odevzdání či podání práce:\t1. 2. 2024</div><div>Bez dvojtečky</div></div>\n<div></div></div>\n<div class=\"plny_text_th\"><h5>Obsah</h5><ul id=\"th-obsah\"><li>světu</ul></div><div class=\"plny_text_ext\"><h5>Jak jinak</h5>Instituce: Česká zemědělská univerzita<br/><div class=\"ext_prez\"><a href=\"https://repo.czu.example/th/42/\">https://repo.czu.example/th/42/</a></div></div>\n<div id=\"th-sloupec\"><div class=\"oddil\"><h4>Česká zemědělská univerzita</h4></div>\n<div class=\"oddil\"><a href=\"/id/rel001/\">Příbuzná <b>práce</b></a><a href=\"/other\">ne</a></div></div>\n</main></body></html>"
+  },
+  {
+   "key": "https://repo.czu.example/th/42/ [range]",
+   "status": 200,
+   "url": "https://repo.czu.example/th/42/",
+   "headers": {
+    "Content-Type": "text/html; charset=utf-8"
+   },
+   "body": "<html><body><a href=\"mailto:a@b.cz\">kontakt thesis.pdf</a>\n<a href=\"/download/1\">Final thesis</a><a href=\"/download/2\">Supervisor's review</a><a href=\"/download/3\">Příloha práce</a>\n<a href=\"dl/4.pdf?x=1\">Hlavní práce</a><a href=\"/download/5\">Opponent review (oponent)</a><a href=\"/download/1\">Final thesis</a>\n<a href=\"/back\">Back</a><a href=\"/files/Dlouhý název práce.docx\">Dlouhý název práce.docx</a></body></html>"
+  },
+  {
+   "key": "https://repo.czu.example/th/42/",
+   "status": 200,
+   "url": "https://repo.czu.example/th/42/",
+   "headers": {
+    "Content-Type": "text/html; charset=utf-8"
+   },
+   "body": "<html><body><a href=\"mailto:a@b.cz\">kontakt thesis.pdf</a>\n<a href=\"/download/1\">Final thesis</a><a href=\"/download/2\">Supervisor's review</a><a href=\"/download/3\">Příloha práce</a>\n<a href=\"dl/4.pdf?x=1\">Hlavní práce</a><a href=\"/download/5\">Opponent review (oponent)</a><a href=\"/download/1\">Final thesis</a>\n<a href=\"/back\">Back</a><a href=\"/files/Dlouhý název práce.docx\">Dlouhý název práce.docx</a></body></html>"
+  },
+  {
+   "key": "https://repo.czu.example/download/1 [range]",
+   "status": 200,
+   "url": "https://repo.czu.example/download/1",
+   "headers": {
+    "Content-Type": "application/pdf",
+    "Content-Disposition": "attachment; filename=\"thesis_final.pdf\""
+   },
+   "body_b64": "JVBERi0xLjcKJeLjz9MK"
+  },
+  {
+   "key": "https://repo.czu.example/download/2 [range]",
+   "status": 200,
+   "url": "https://repo.czu.example/download/2",
+   "headers": {
+    "Content-Type": "application/pdf"
+   },
+   "body_b64": "JVBERi0xLjcKJeLjz9MK"
+  },
+  {
+   "key": "https://repo.czu.example/download/3 [range]",
+   "status": 200,
+   "url": "https://repo.czu.example/download/3",
+   "headers": {
+    "Content-Type": "text/html; charset=utf-8"
+   },
+   "body": "<html>landing</html>"
+  },
+  {
+   "key": "https://repo.czu.example/download/5 [range]",
+   "status": 200,
+   "url": "https://repo.czu.example/download/5",
+   "headers": {
+    "Content-Type": "application/pdf"
+   },
+   "body_b64": "JVBERi0xLjcKJeLjz9MK"
+  }
+ ],
+ "expected": {
+  "results": [
+   {
+    "error": false,
+    "text": "{\n  \"url\": \"https://theses.cz/id/czu001/\",\n  \"access\": [\n    \"světu\"\n  ],\n  \"archive_url\": \"https://repo.czu.example/th/42/\",\n  \"files\": [\n    {\n      \"label\": \"Hlavní práce\",\n      \"filename\": \"4.pdf?x=1\",\n      \"url\": \"https://repo.czu.example/th/42/dl/4.pdf?x=1\"\n    },\n    {\n      \"label\": \"Dlouhý název práce.docx\",\n      \"filename\": \"Dlouhý název práce.docx\",\n      \"url\": \"https://repo.czu.example/files/Dlouhý název práce.docx\"\n    },\n    {\n      \"label\": \"Final thesis\",\n      \"filename\": \"thesis_final.pdf\",\n      \"url\": \"https://repo.czu.example/download/1\",\n      \"confirmed\": true\n    },\n    {\n      \"label\": \"Supervisor's review\",\n      \"filename\": \"2.pdf\",\n      \"url\": \"https://repo.czu.example/download/2\",\n      \"confirmed\": true\n    },\n    {\n      \"label\": \"Opponent review (oponent)\",\n      \"filename\": \"5.pdf\",\n      \"url\": \"https://repo.czu.example/download/5\",\n      \"confirmed\": true\n    }\n  ]\n}"
+   }
+  ],
+  "requests": [
+   "https://theses.cz/id/czu001/",
+   "https://repo.czu.example/th/42/ [range]",
+   "https://repo.czu.example/th/42/",
+   "https://repo.czu.example/download/1 [range]",
+   "https://repo.czu.example/download/2 [range]",
+   "https://repo.czu.example/download/3 [range]",
+   "https://repo.czu.example/download/5 [range]"
+  ],
+  "saved_after": null,
+  "authenticated": []
+ }
+}

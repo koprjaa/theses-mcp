@@ -1,0 +1,61 @@
+{
+ "name": "fulltext_gated_authenticated_host",
+ "env": {
+  "THESES_COOKIES": "{\"is.gated.example\": \"sess=abc; other=def\"}"
+ },
+ "saved": null,
+ "calls": [
+  {
+   "tool": "fulltext",
+   "args": {
+    "id_or_url": "gat003"
+   }
+  }
+ ],
+ "responses": [
+  {
+   "key": "https://theses.cz/id/gat003/",
+   "status": 200,
+   "url": "https://theses.cz/id/gat003/",
+   "headers": {
+    "Content-Type": "text/html; charset=utf-8"
+   },
+   "body": "<!DOCTYPE html><html><head><title>Návrh systému řízení</title></head><body><main>\n<div id=\"metadata\"><h3 class=\"th-autor\"><b>Jana Nováková</b></h3><h5 class=\"typ-prace\">Diplomová práce</h5>\n<h2 class=\"th-title\">Návrh systému řízení</h2><h5 class=\"transl\">Design of a control system</h5>\n<div class=\"anotace\"><h5>Anotace:</h5>Česká anotace <a class=\"rozbal\">více</a></div>\n<div class=\"anotace\"><h5>Abstract:</h5>English abstract <a class=\"sbal\">less</a></div>\n<div class=\"klslova\"><h3>Klíčová slova</h3><a><span class=\"tg4\">řízení</span></a><a><span class=\"tg4\">systém</span></a></div>\n<div class=\"servis_info\"><div>Jazyk práce: čeština</div><div>Datum vytvoření / odevzdání či podání práce:\t1. 2. 2024</div><div>Bez dvojtečky</div></div>\n<div></div></div>\n<div class=\"plny_text_th\"><h5>Obsah</h5><ul id=\"th-obsah\"><li>světu</ul></div><div class=\"plny_text_ext\"><h5>Jak jinak</h5>Instituce: Vysoká škola testovací v Praze<br/><div class=\"ext_prez\"><a href=\"https://is.gated.example/th/3/\">https://is.gated.example/th/3/</a></div></div>\n<div id=\"th-sloupec\"><div class=\"oddil\"><h4>Vysoká škola testovací v Praze</h4></div>\n<div class=\"oddil\"><a href=\"/id/rel001/\">Příbuzná <b>práce</b></a><a href=\"/other\">ne</a></div></div>\n</main></body></html>"
+  },
+  {
+   "key": "https://is.gated.example/th/3/ [range]",
+   "status": 200,
+   "url": "https://is.gated.example/th/3/",
+   "headers": {
+    "Content-Type": "text/html; charset=utf-8"
+   },
+   "body": "<html><body>Závěrečné práce. Pro ověření opište prosíme tento kód: 1234. Odeslat</body></html>"
+  },
+  {
+   "key": "https://is.gated.example/th/3/",
+   "status": 200,
+   "url": "https://is.gated.example/th/3/",
+   "headers": {
+    "Content-Type": "text/html; charset=utf-8"
+   },
+   "body": "<html><body>Závěrečné práce. Pro ověření opište prosíme tento kód: 1234. Odeslat</body></html>"
+  }
+ ],
+ "expected": {
+  "results": [
+   {
+    "error": false,
+    "text": "{\n  \"url\": \"https://theses.cz/id/gat003/\",\n  \"access\": [\n    \"světu\"\n  ],\n  \"archive_url\": \"https://is.gated.example/th/3/\",\n  \"files\": [],\n  \"note\": \"thesis is public, but the repository gates anonymous access with a CAPTCHA/login\"\n}"
+   }
+  ],
+  "requests": [
+   "https://theses.cz/id/gat003/",
+   "https://is.gated.example/th/3/ [range]",
+   "https://is.gated.example/th/3/"
+  ],
+  "saved_after": null,
+  "authenticated": [
+   "is.gated.example"
+  ]
+ }
+}

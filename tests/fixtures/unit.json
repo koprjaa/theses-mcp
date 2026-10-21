@@ -1,0 +1,616 @@
+{
+ "norm": [
+  {
+   "in": "Vliv AI na autorské právo: analýza",
+   "out": "vlivainaautorsképrávoanalýza"
+  },
+  {
+   "in": "ŠKODA Čeština",
+   "out": "škodačeština"
+  },
+  {
+   "in": "",
+   "out": ""
+  },
+  {
+   "in": null,
+   "out": ""
+  },
+  {
+   "in": "Analýza dat, 2. vydání",
+   "out": "analýzadat2vydání"
+  },
+  {
+   "in": "Ž ž Á á ÷ × ø ß ĺ ŀ ſ Ŀ",
+   "out": "žžáá÷×øßĺŀŀ"
+  },
+  {
+   "in": "Ábc",
+   "out": "abc"
+  },
+  {
+   "in": "İstanbul",
+   "out": "i̇stanbul"
+  },
+  {
+   "in": "Ǆ ǆ ǅ",
+   "out": ""
+  },
+  {
+   "in": "a-b_c d9 ů ě",
+   "out": "abcd9ůě"
+  },
+  {
+   "in": "ÿ ÿ Ÿ",
+   "out": "ÿÿÿ"
+  },
+  {
+   "in": "ĳ Ĳ",
+   "out": "ĳĳ"
+  },
+  {
+   "in": "ΑΒΓ",
+   "out": ""
+  }
+ ],
+ "urljoin": [
+  {
+   "base": "https://a.cz/x/y.html",
+   "href": "z.pdf",
+   "out": "https://a.cz/x/z.pdf"
+  },
+  {
+   "base": "https://a.cz/x/y/",
+   "href": "z.pdf",
+   "out": "https://a.cz/x/y/z.pdf"
+  },
+  {
+   "base": "https://a.cz/x/y/",
+   "href": "../z.pdf",
+   "out": "https://a.cz/x/z.pdf"
+  },
+  {
+   "base": "https://a.cz/x/y/",
+   "href": "../../../z.pdf",
+   "out": "https://a.cz/z.pdf"
+  },
+  {
+   "base": "https://a.cz/x/y/",
+   "href": "/abs/z.pdf",
+   "out": "https://a.cz/abs/z.pdf"
+  },
+  {
+   "base": "https://a.cz/x/y/",
+   "href": "//b.cz/z.pdf",
+   "out": "https://b.cz/z.pdf"
+  },
+  {
+   "base": "https://a.cz/x/y/",
+   "href": "https://c.cz/q?x=1#f",
+   "out": "https://c.cz/q?x=1#f"
+  },
+  {
+   "base": "https://a.cz",
+   "href": "/q",
+   "out": "https://a.cz/q"
+  },
+  {
+   "base": "https://a.cz",
+   "href": "q",
+   "out": "https://a.cz/q"
+  },
+  {
+   "base": "https://a.cz/x/y?a=1",
+   "href": "?b=2",
+   "out": "https://a.cz/x/y?b=2"
+  },
+  {
+   "base": "https://a.cz/x/y?a=1",
+   "href": "#frag",
+   "out": "https://a.cz/x/y?a=1#frag"
+  },
+  {
+   "base": "https://a.cz/x/y?a=1",
+   "href": "",
+   "out": "https://a.cz/x/y?a=1"
+  },
+  {
+   "base": "https://a.cz/x/",
+   "href": "./a/./b/../c.pdf",
+   "out": "https://a.cz/x/a/c.pdf"
+  },
+  {
+   "base": "https://a.cz/x/",
+   "href": "mailto:a@b.cz",
+   "out": "mailto:a@b.cz"
+  },
+  {
+   "base": "https://a.cz/x/",
+   "href": "javascript:void(0)",
+   "out": "javascript:void(0)"
+  },
+  {
+   "base": "https://a.cz/x/",
+   "href": "files/Dlouhý název.docx",
+   "out": "https://a.cz/x/files/Dlouhý název.docx"
+  },
+  {
+   "base": "https://a.cz/x/",
+   "href": "a b.pdf",
+   "out": "https://a.cz/x/a b.pdf"
+  },
+  {
+   "base": "https://a.cz/x/y.html",
+   "href": ".",
+   "out": "https://a.cz/x/"
+  },
+  {
+   "base": "https://a.cz/x/y.html",
+   "href": "..",
+   "out": "https://a.cz/"
+  },
+  {
+   "base": "https://a.cz/x//y/",
+   "href": "z",
+   "out": "https://a.cz/x/y/z"
+  },
+  {
+   "base": "https://a.cz/x/",
+   "href": "//b.cz",
+   "out": "https://b.cz"
+  },
+  {
+   "base": "https://a.cz/p?q=1",
+   "href": "r?s=2",
+   "out": "https://a.cz/r?s=2"
+  },
+  {
+   "base": "https://insis.vse.cz/zp/100002",
+   "href": "/zp/100002/posudek/vedouci",
+   "out": "https://insis.vse.cz/zp/100002/posudek/vedouci"
+  },
+  {
+   "base": "https://vskp.vse.cz/100001",
+   "href": "https://insis.vse.cz/zp/100002",
+   "out": "https://insis.vse.cz/zp/100002"
+  },
+  {
+   "base": "https://a.cz/x/",
+   "href": "HTTP://B.CZ/Z",
+   "out": "HTTP://B.CZ/Z"
+  },
+  {
+   "base": "https://a.cz/x/",
+   "href": "a.pdf;jsessionid=1?x=2",
+   "out": "https://a.cz/x/a.pdf;jsessionid=1?x=2"
+  },
+  {
+   "base": "https://a.cz/x;p=1/y",
+   "href": "z",
+   "out": "https://a.cz/x;p=1/z"
+  },
+  {
+   "base": "https://a.cz/x/",
+   "href": "http:z.pdf",
+   "out": "http:z.pdf"
+  },
+  {
+   "base": "https://a.cz/x/",
+   "href": "https:z.pdf",
+   "out": "https://a.cz/x/z.pdf"
+  }
+ ],
+ "urlparse": [
+  {
+   "in": "https://stag.example.cz/StagPortletsJSR168/CleanUrl?urlid=a&praceIdno=1",
+   "scheme": "https",
+   "netloc": "stag.example.cz"
+  },
+  {
+   "in": "http://u:p@Host.CZ:8080/x",
+   "scheme": "http",
+   "netloc": "u:p@Host.CZ:8080"
+  },
+  {
+   "in": "//x.cz/a",
+   "scheme": "",
+   "netloc": "x.cz"
+  },
+  {
+   "in": "is.muni.cz/th/1",
+   "scheme": "",
+   "netloc": ""
+  },
+  {
+   "in": "https://a.cz",
+   "scheme": "https",
+   "netloc": "a.cz"
+  }
+ ],
+ "quote": [
+  {
+   "in": "synthetic",
+   "out": "synthetic"
+  },
+  {
+   "in": "zlatý řez",
+   "out": "zlat%C3%BD%20%C5%99ez"
+  },
+  {
+   "in": "\"a b\" AND c/d",
+   "out": "%22a%20b%22%20AND%20c/d"
+  },
+  {
+   "in": "a&b=c#d",
+   "out": "a%26b%3Dc%23d"
+  },
+  {
+   "in": "~tilde-_.",
+   "out": "~tilde-_."
+  },
+  {
+   "in": "100% 'q'",
+   "out": "100%25%20%27q%27"
+  },
+  {
+   "in": "a+b",
+   "out": "a%2Bb"
+  },
+  {
+   "in": "ěščř ŽÝÁ",
+   "out": "%C4%9B%C5%A1%C4%8D%C5%99%20%C5%BD%C3%9D%C3%81"
+  },
+  {
+   "in": "x\ty\nz",
+   "out": "x%09y%0Az"
+  },
+  {
+   "in": "(a OR b)",
+   "out": "%28a%20OR%20b%29"
+  }
+ ],
+ "doc_re": [
+  {
+   "in": "Hlavní práce 73157_vala07.pdf, 1.5 MB Stáhnout",
+   "out": "73157_vala07.pdf"
+  },
+  {
+   "in": "Oponentura 69167_Havelka.pdf, 500 kB Stáhnout",
+   "out": "69167_Havelka.pdf"
+  },
+  {
+   "in": "priloha.docx",
+   "out": "priloha.docx"
+  },
+  {
+   "in": "data.zip",
+   "out": "data.zip"
+  },
+  {
+   "in": "text.rtf",
+   "out": "text.rtf"
+  },
+  {
+   "in": "Stáhnout",
+   "out": null
+  },
+  {
+   "in": "Zpět na výpis",
+   "out": null
+  },
+  {
+   "in": "1.5 MB",
+   "out": null
+  },
+  {
+   "in": "A.PDF",
+   "out": "A.PDF"
+  },
+  {
+   "in": "x.docxx",
+   "out": null
+  },
+  {
+   "in": "thesis.pdf.exe",
+   "out": "thesis.pdf"
+  },
+  {
+   "in": "file.doc!",
+   "out": "file.doc"
+  },
+  {
+   "in": "Atestační práce Nováková.pdf",
+   "out": "Nováková.pdf"
+  },
+  {
+   "in": "a.b.txt, 3 kB",
+   "out": "a.b.txt"
+  },
+  {
+   "in": "no.pdfs",
+   "out": null
+  },
+  {
+   "in": "(x.odt)",
+   "out": "(x.odt"
+  },
+  {
+   "in": "report_final.PDF.",
+   "out": "report_final.PDF"
+  },
+  {
+   "in": "vše.TXT",
+   "out": "vše.TXT"
+  }
+ ],
+ "doc_label": [
+  {
+   "in": "Plný text práce",
+   "out": true
+  },
+  {
+   "in": "Final thesis",
+   "out": true
+  },
+  {
+   "in": "Posudek vedoucího",
+   "out": true
+  },
+  {
+   "in": "Supervisor's review",
+   "out": true
+  },
+  {
+   "in": "Příloha",
+   "out": true
+  },
+  {
+   "in": "Zpět",
+   "out": false
+  },
+  {
+   "in": "Available here",
+   "out": true
+  },
+  {
+   "in": "k dispozici",
+   "out": true
+  },
+  {
+   "in": "Hlavní práce",
+   "out": true
+  },
+  {
+   "in": "FULL TEXT",
+   "out": true
+  },
+  {
+   "in": "Oponent",
+   "out": true
+  },
+  {
+   "in": "Nic",
+   "out": false
+  }
+ ],
+ "not_yet": [
+  {
+   "in": "Soubory budou k dispozici až po obhajobě práce.",
+   "out": true
+  },
+  {
+   "in": "Files will be available after the defence of the thesis.",
+   "out": true
+  },
+  {
+   "in": "after the defense",
+   "out": true
+  },
+  {
+   "in": "Plný text je přístupný pouze autentizovaným uživatelům.",
+   "out": false
+  },
+  {
+   "in": "po obhajobě práce",
+   "out": true
+  },
+  {
+   "in": "AFTER THE DEFENCE",
+   "out": true
+  },
+  {
+   "in": "Pro ověření opište prosíme tento kód",
+   "out": false
+  }
+ ],
+ "refresh": [
+  {
+   "in": "<meta http-equiv=\"refresh\" content=\"2\">",
+   "out": 2
+  },
+  {
+   "in": "<META HTTP-EQUIV=\"refresh\" CONTENT=\"0\">",
+   "out": 0
+  },
+  {
+   "in": "<meta http-equiv=\"refresh\" content=\"12; url=/x\">",
+   "out": 12
+  },
+  {
+   "in": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx<meta http-equiv=\"refresh\" content=\"5\">",
+   "out": null
+  },
+  {
+   "in": "<meta http-equiv=\"refresh\" content=\"abc\">",
+   "out": null
+  },
+  {
+   "in": "plain",
+   "out": null
+  }
+ ],
+ "session": [
+  {
+   "in": "Theses.cz Odevzdej.cz PravyDiplom.cz Repozitar.cz Vyhledávání Nápověda Zapojené školy Správci zapojených škol Soukromí Přístupnost Provozuje Fakulta informatiky MU Potřebujete poradit Často kladené dotazy Vysokoškolské kvalifikační práce Domů Odhlášení ze systému Theses.cz Odevzdej.cz PravyDiplom.cz Repozitar.cz Vyhledávání Nápověda Zapojené školy Správci zapojených škol Soukromí Přístupnost Provozuje Fakulta informatiky MU Potřebujete poradit Často kladené dotazy Vysokoškolské kvalifikační práce Domů Odhlášení ze systému Přihlásit se Přihlásit se (EduID)",
+   "signed_in": false,
+   "gated": false
+  },
+  {
+   "in": "Theses.cz Odevzdej.cz PravyDiplom.cz Repozitar.cz Vyhledávání Nápověda Zapojené školy Správci zapojených škol Soukromí Přístupnost Provozuje Fakulta informatiky MU Potřebujete poradit Často kladené dotazy Vysokoškolské kvalifikační práce Domů Odhlášení ze systému Theses.cz Odevzdej.cz PravyDiplom.cz Repozitar.cz Vyhledávání Nápověda Zapojené školy Správci zapojených škol Soukromí Přístupnost Provozuje Fakulta informatiky MU Potřebujete poradit Často kladené dotazy Vysokoškolské kvalifikační práce Domů Odhlášení ze systému Moje studium Jan Novák",
+   "signed_in": true,
+   "gated": false
+  },
+  {
+   "in": "",
+   "signed_in": false,
+   "gated": false
+  },
+  {
+   "in": "   ",
+   "signed_in": false,
+   "gated": false
+  },
+  {
+   "in": "<html><body></body></html>",
+   "signed_in": false,
+   "gated": false
+  },
+  {
+   "in": "404 Not Found",
+   "signed_in": false,
+   "gated": false
+  },
+  {
+   "in": "Závěrečné práce Pro ověření opište prosíme tento kód Odeslat IS VŠFS",
+   "signed_in": false,
+   "gated": true
+  },
+  {
+   "in": "Theses.cz Odevzdej.cz PravyDiplom.cz Repozitar.cz Vyhledávání Nápověda Zapojené školy Správci zapojených škol Soukromí Přístupnost Provozuje Fakulta informatiky MU Potřebujete poradit Často kladené dotazy Vysokoškolské kvalifikační práce Domů Odhlášení ze systému Theses.cz Odevzdej.cz PravyDiplom.cz Repozitar.cz Vyhledávání Nápověda Zapojené školy Správci zapojených škol Soukromí Přístupnost Provozuje Fakulta informatiky MU Potřebujete poradit Často kladené dotazy Vysokoškolské kvalifikační práce Domů Odhlášení ze systému Přihlásit sa",
+   "signed_in": false,
+   "gated": false
+  },
+  {
+   "in": "Theses.cz Odevzdej.cz PravyDiplom.cz Repozitar.cz Vyhledávání Nápověda Zapojené školy Správci zapojených škol Soukromí Přístupnost Provozuje Fakulta informatiky MU Potřebujete poradit Často kladené dotazy Vysokoškolské kvalifikační práce Domů Odhlášení ze systému Theses.cz Odevzdej.cz PravyDiplom.cz Repozitar.cz Vyhledávání Nápověda Zapojené školy Správci zapojených škol Soukromí Přístupnost Provozuje Fakulta informatiky MU Potřebujete poradit Často kladené dotazy Vysokoškolské kvalifikační práce Domů Odhlášení ze systému Log in",
+   "signed_in": false,
+   "gated": false
+  },
+  {
+   "in": "Theses.cz Odevzdej.cz PravyDiplom.cz Repozitar.cz Vyhledávání Nápověda Zapojené školy Správci zapojených škol Soukromí Přístupnost Provozuje Fakulta informatiky MU Potřebujete poradit Často kladené dotazy Vysokoškolské kvalifikační práce Domů Odhlášení ze systému Theses.cz Odevzdej.cz PravyDiplom.cz Repozitar.cz Vyhledávání Nápověda Zapojené školy Správci zapojených škol Soukromí Přístupnost Provozuje Fakulta informatiky MU Potřebujete poradit Často kladené dotazy Vysokoškolské kvalifikační práce Domů Odhlášení ze systému Login",
+   "signed_in": false,
+   "gated": false
+  },
+  {
+   "in": "Theses.cz Odevzdej.cz PravyDiplom.cz Repozitar.cz Vyhledávání Nápověda Zapojené školy Správci zapojených škol Soukromí Přístupnost Provozuje Fakulta informatiky MU Potřebujete poradit Často kladené dotazy Vysokoškolské kvalifikační práce Domů Odhlášení ze systému Theses.cz Odevzdej.cz PravyDiplom.cz Repozitar.cz Vyhledávání Nápověda Zapojené školy Správci zapojených škol Soukromí Přístupnost Provozuje Fakulta informatiky MU Potřebujete poradit Často kladené dotazy Vysokoškolské kvalifikační práce Domů Odhlášení ze systému Captcha please",
+   "signed_in": false,
+   "gated": true
+  },
+  {
+   "in": "Theses.cz Odevzdej.cz PravyDiplom.cz Repozitar.cz Vyhledávání Nápověda Zapojené školy Správci zapojených škol Soukromí Přístupnost Provozuje Fakulta informatiky MU Potřebujete poradit Často kladené dotazy Vysokoškolské kvalifikační práce Domů Odhlášení ze systému Theses.cz Odevzdej.cz PravyDiplom.cz Repozitar.cz Vyhledávání Nápověda Zapojené školy Správci zapojených škol Soukromí Přístupnost Provozuje Fakulta informatiky MU Potřebujete poradit Často kladené dotazy Vysokoškolské kvalifikační práce Domů Odhlášení ze systému CAPTCHA",
+   "signed_in": false,
+   "gated": true
+  },
+  {
+   "in": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+   "signed_in": false,
+   "gated": false
+  },
+  {
+   "in": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+   "signed_in": true,
+   "gated": false
+  },
+  {
+   "in": "  yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy  ",
+   "signed_in": false,
+   "gated": false
+  },
+  {
+   "in": "Theses.cz Odevzdej.cz PravyDiplom.cz Repozitar.cz Vyhledávání Nápověda Zapojené školy Správci zapojených škol Soukromí Přístupnost Provozuje Fakulta informatiky MU Potřebujete poradit Často kladené dotazy Vysokoškolské kvalifikační práce Domů Odhlášení ze systému Theses.cz Odevzdej.cz PravyDiplom.cz Repozitar.cz Vyhledávání Nápověda Zapojené školy Správci zapojených škol Soukromí Přístupnost Provozuje Fakulta informatiky MU Potřebujete poradit Často kladené dotazy Vysokoškolské kvalifikační práce Domů Odhlášení ze systému Přihlášení",
+   "signed_in": true,
+   "gated": false
+  }
+ ],
+ "txt": [
+  {
+   "html": "<p>Vysoká   škola\n\n ekonomická</p>",
+   "sel": "p",
+   "drop": [],
+   "out": "Vysoká škola ekonomická"
+  },
+  {
+   "html": "<div>Anotace <a class=\"rozbal\">více</a><a class=\"sbal\">méně</a></div>",
+   "sel": "div",
+   "drop": [],
+   "out": "Anotace"
+  },
+  {
+   "html": "<div><h3>Klíčová slova</h3><h5>cs</h5>právo, smlouva</div>",
+   "sel": "div",
+   "drop": [],
+   "out": "právo, smlouva"
+  },
+  {
+   "html": "<div>keep<span class=\"skip\">drop</span></div>",
+   "sel": "div",
+   "drop": [
+    "span.skip"
+   ],
+   "out": "keep"
+  },
+  {
+   "html": "<div>a<b>b</b>c <i> d </i></div>",
+   "sel": "div",
+   "drop": [],
+   "out": "a b c d"
+  },
+  {
+   "html": "<div>x<script>var a=1;</script>y<style>p{}</style>z</div>",
+   "sel": "div",
+   "drop": [],
+   "out": "x y z"
+  },
+  {
+   "html": "<div>a<!-- hidden -->b</div>",
+   "sel": "div",
+   "drop": [],
+   "out": "a b"
+  },
+  {
+   "html": "<div><p>one<p>two<ul><li>x<li>y</ul></div>",
+   "sel": "div",
+   "drop": [],
+   "out": "one two x y"
+  },
+  {
+   "html": "<div> nbsp  and &nbsp; here</div>",
+   "sel": "div",
+   "drop": [],
+   "out": "nbsp and here"
+  },
+  {
+   "html": "<h3 class='x'>skip me</h3>",
+   "sel": "h3",
+   "drop": [],
+   "out": "skip me"
+  },
+  {
+   "html": "<div><div class='rozbal'><a class='rozbal'>x</a>ok</div></div>",
+   "sel": "div",
+   "drop": [],
+   "out": "ok"
+  },
+  {
+   "html": "<table><tr><td>a<td>b</table>",
+   "sel": "table",
+   "drop": [],
+   "out": "a b"
+  },
+  {
+   "html": "<div>řádek<br>druhý<br/>třetí</div>",
+   "sel": "div",
+   "drop": [],
+   "out": "řádek druhý třetí"
+  }
+ ]
+}

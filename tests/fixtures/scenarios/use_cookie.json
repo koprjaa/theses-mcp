@@ -1,0 +1,186 @@
+{
+ "name": "use_cookie",
+ "env": {},
+ "saved": {
+  "old.example": [
+   {
+    "name": "k",
+    "value": "v",
+    "domain": ".old.example"
+   }
+  ]
+ },
+ "calls": [
+  {
+   "tool": "use_cookie",
+   "args": {
+    "host": "good.example",
+    "cookie": "__Host-issession=abc123"
+   }
+  },
+  {
+   "tool": "use_cookie",
+   "args": {
+    "host": "multi.example",
+    "cookie": "a=1; b = 2 ;c=x=y"
+   }
+  },
+  {
+   "tool": "use_cookie",
+   "args": {
+    "host": "bare.example",
+    "cookie": "  rawvalue  "
+   }
+  },
+  {
+   "tool": "use_cookie",
+   "args": {
+    "host": "stale.example",
+    "cookie": "a=1"
+   }
+  },
+  {
+   "tool": "use_cookie",
+   "args": {
+    "host": "down.example",
+    "cookie": "a=1"
+   }
+  },
+  {
+   "tool": "whoami",
+   "args": {}
+  }
+ ],
+ "responses": [
+  {
+   "key": "https://good.example/",
+   "status": 200,
+   "url": "https://good.example/",
+   "headers": {
+    "Content-Type": "text/html; charset=utf-8"
+   },
+   "body": "<html><body>Theses.cz Odevzdej.cz Vyhledávání Nápověda Zapojené školy Soukromí Přístupnost Provozuje Fakulta informatiky MU Potřebujete poradit Často kladené dotazy Vysokoškolské kvalifikační práce Domů Odhlášení ze systému Theses.cz Odevzdej.cz Vyhledávání Nápověda Zapojené školy Soukromí Přístupnost Provozuje Fakulta informatiky MU Potřebujete poradit Často kladené dotazy Vysokoškolské kvalifikační práce Domů Odhlášení ze systému Theses.cz Odevzdej.cz Vyhledávání Nápověda Zapojené školy Soukromí Přístupnost Provozuje Fakulta informatiky MU Potřebujete poradit Často kladené dotazy Vysokoškolské kvalifikační práce Domů Odhlášení ze systému  Moje studium Jan Novák</body></html>"
+  },
+  {
+   "key": "https://multi.example/",
+   "status": 200,
+   "url": "https://multi.example/",
+   "headers": {
+    "Content-Type": "text/html; charset=utf-8"
+   },
+   "body": "<html><body>Theses.cz Odevzdej.cz Vyhledávání Nápověda Zapojené školy Soukromí Přístupnost Provozuje Fakulta informatiky MU Potřebujete poradit Často kladené dotazy Vysokoškolské kvalifikační práce Domů Odhlášení ze systému Theses.cz Odevzdej.cz Vyhledávání Nápověda Zapojené školy Soukromí Přístupnost Provozuje Fakulta informatiky MU Potřebujete poradit Často kladené dotazy Vysokoškolské kvalifikační práce Domů Odhlášení ze systému Theses.cz Odevzdej.cz Vyhledávání Nápověda Zapojené školy Soukromí Přístupnost Provozuje Fakulta informatiky MU Potřebujete poradit Často kladené dotazy Vysokoškolské kvalifikační práce Domů Odhlášení ze systému  Moje studium Jan Novák</body></html>"
+  },
+  {
+   "key": "https://bare.example/",
+   "status": 200,
+   "url": "https://bare.example/",
+   "headers": {
+    "Content-Type": "text/html; charset=utf-8"
+   },
+   "body": "<html><body>Theses.cz Odevzdej.cz Vyhledávání Nápověda Zapojené školy Soukromí Přístupnost Provozuje Fakulta informatiky MU Potřebujete poradit Často kladené dotazy Vysokoškolské kvalifikační práce Domů Odhlášení ze systému Theses.cz Odevzdej.cz Vyhledávání Nápověda Zapojené školy Soukromí Přístupnost Provozuje Fakulta informatiky MU Potřebujete poradit Často kladené dotazy Vysokoškolské kvalifikační práce Domů Odhlášení ze systému Theses.cz Odevzdej.cz Vyhledávání Nápověda Zapojené školy Soukromí Přístupnost Provozuje Fakulta informatiky MU Potřebujete poradit Často kladené dotazy Vysokoškolské kvalifikační práce Domů Odhlášení ze systému  Moje studium Jan Novák</body></html>"
+  },
+  {
+   "key": "https://stale.example/",
+   "status": 200,
+   "url": "https://stale.example/",
+   "headers": {
+    "Content-Type": "text/html; charset=utf-8"
+   },
+   "body": "<html><body>Theses.cz Odevzdej.cz Vyhledávání Nápověda Zapojené školy Soukromí Přístupnost Provozuje Fakulta informatiky MU Potřebujete poradit Často kladené dotazy Vysokoškolské kvalifikační práce Domů Odhlášení ze systému Theses.cz Odevzdej.cz Vyhledávání Nápověda Zapojené školy Soukromí Přístupnost Provozuje Fakulta informatiky MU Potřebujete poradit Často kladené dotazy Vysokoškolské kvalifikační práce Domů Odhlášení ze systému Theses.cz Odevzdej.cz Vyhledávání Nápověda Zapojené školy Soukromí Přístupnost Provozuje Fakulta informatiky MU Potřebujete poradit Často kladené dotazy Vysokoškolské kvalifikační práce Domů Odhlášení ze systému  Přihlásit se (EduID)</body></html>"
+  },
+  {
+   "key": "https://good.example/",
+   "status": 200,
+   "url": "https://good.example/",
+   "headers": {
+    "Content-Type": "text/html; charset=utf-8"
+   },
+   "body": "<html><body>Theses.cz Odevzdej.cz Vyhledávání Nápověda Zapojené školy Soukromí Přístupnost Provozuje Fakulta informatiky MU Potřebujete poradit Často kladené dotazy Vysokoškolské kvalifikační práce Domů Odhlášení ze systému Theses.cz Odevzdej.cz Vyhledávání Nápověda Zapojené školy Soukromí Přístupnost Provozuje Fakulta informatiky MU Potřebujete poradit Často kladené dotazy Vysokoškolské kvalifikační práce Domů Odhlášení ze systému Theses.cz Odevzdej.cz Vyhledávání Nápověda Zapojené školy Soukromí Přístupnost Provozuje Fakulta informatiky MU Potřebujete poradit Často kladené dotazy Vysokoškolské kvalifikační práce Domů Odhlášení ze systému  Moje studium Jan Novák</body></html>"
+  }
+ ],
+ "expected": {
+  "results": [
+   {
+    "error": false,
+    "text": "{\n  \"host\": \"good.example\",\n  \"result\": \"signed in\",\n  \"stored\": \"<HOME>/.theses-mcp/cookies.json\"\n}"
+   },
+   {
+    "error": false,
+    "text": "{\n  \"host\": \"multi.example\",\n  \"result\": \"signed in\",\n  \"stored\": \"<HOME>/.theses-mcp/cookies.json\"\n}"
+   },
+   {
+    "error": false,
+    "text": "{\n  \"host\": \"bare.example\",\n  \"result\": \"signed in\",\n  \"stored\": \"<HOME>/.theses-mcp/cookies.json\"\n}"
+   },
+   {
+    "error": false,
+    "text": "{\n  \"host\": \"stale.example\",\n  \"result\": \"that cookie does not sign you in\",\n  \"hint\": \"copy it again from a tab where you are signed in\"\n}"
+   },
+   {
+    "error": false,
+    "text": "{\n  \"error\": \"could not reach down.example: ConnectionError\"\n}"
+   },
+   {
+    "error": false,
+    "text": "{\n  \"authenticated\": {\n    \"old.example\": \"unreachable: ConnectionError\",\n    \"good.example\": \"logged in\",\n    \"multi.example\": \"logged in\",\n    \"bare.example\": \"logged in\"\n  }\n}"
+   }
+  ],
+  "requests": [
+   "https://good.example/ cookies=__Host-issession=abc123@good.example",
+   "https://multi.example/ cookies=a=1@multi.example,b=2@multi.example,c=x=y@multi.example",
+   "https://bare.example/ cookies=__Host-issession=rawvalue@bare.example",
+   "https://stale.example/ cookies=a=1@stale.example",
+   "https://down.example/ cookies=a=1@down.example",
+   "https://old.example/",
+   "https://good.example/",
+   "https://multi.example/",
+   "https://bare.example/"
+  ],
+  "saved_after": {
+   "old.example": [
+    {
+     "name": "k",
+     "value": "v",
+     "domain": ".old.example"
+    }
+   ],
+   "good.example": [
+    {
+     "name": "__Host-issession",
+     "value": "abc123",
+     "domain": "good.example"
+    }
+   ],
+   "multi.example": [
+    {
+     "name": "a",
+     "value": "1",
+     "domain": "multi.example"
+    },
+    {
+     "name": "b",
+     "value": "2",
+     "domain": "multi.example"
+    },
+    {
+     "name": "c",
+     "value": "x=y",
+     "domain": "multi.example"
+    }
+   ],
+   "bare.example": [
+    {
+     "name": "__Host-issession",
+     "value": "rawvalue",
+     "domain": "bare.example"
+    }
+   ]
+  },
+  "authenticated": [
+   "old.example",
+   "good.example",
+   "multi.example",
+   "bare.example"
+  ]
+ }
+}

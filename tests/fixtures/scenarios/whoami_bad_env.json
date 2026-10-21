@@ -1,0 +1,25 @@
+{
+ "name": "whoami_bad_env",
+ "env": {
+  "THESES_COOKIES": "{not json"
+ },
+ "saved": null,
+ "calls": [
+  {
+   "tool": "whoami",
+   "args": {}
+  }
+ ],
+ "responses": [],
+ "expected": {
+  "results": [
+   {
+    "error": false,
+    "text": "{\n  \"authenticated\": [],\n  \"hint\": \"set THESES_COOKIES to use your own login; see the README section on authenticated access\"\n}"
+   }
+  ],
+  "requests": [],
+  "saved_after": null,
+  "authenticated": []
+ }
+}

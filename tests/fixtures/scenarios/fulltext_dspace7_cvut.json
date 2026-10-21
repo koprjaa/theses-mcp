@@ -1,0 +1,79 @@
+{
+ "name": "fulltext_dspace7_cvut",
+ "env": {},
+ "saved": null,
+ "calls": [
+  {
+   "tool": "fulltext",
+   "args": {
+    "id_or_url": "cvu001"
+   }
+  }
+ ],
+ "responses": [
+  {
+   "key": "https://theses.cz/id/cvu001/",
+   "status": 200,
+   "url": "https://theses.cz/id/cvu001/",
+   "headers": {
+    "Content-Type": "text/html; charset=utf-8"
+   },
+   "body": "<!DOCTYPE html><html><head><title>Návrh systému řízení</title></head><body><main>\n<div id=\"metadata\"><h3 class=\"th-autor\"><b>Jana Nováková</b></h3><h5 class=\"typ-prace\">Diplomová práce</h5>\n<h2 class=\"th-title\">Návrh systému řízení</h2><h5 class=\"transl\">Design of a control system</h5>\n<div class=\"anotace\"><h5>Anotace:</h5>Česká anotace <a class=\"rozbal\">více</a></div>\n<div class=\"anotace\"><h5>Abstract:</h5>English abstract <a class=\"sbal\">less</a></div>\n<div class=\"klslova\"><h3>Klíčová slova</h3><a><span class=\"tg4\">řízení</span></a><a><span class=\"tg4\">systém</span></a></div>\n<div class=\"servis_info\"><div>Jazyk práce: čeština</div><div>Datum vytvoření / odevzdání či podání práce:\t1. 2. 2024</div><div>Bez dvojtečky</div></div>\n<div></div></div>\n<div class=\"plny_text_th\"><h5>Obsah</h5><ul id=\"th-obsah\"><li>světu</ul></div>\n<div id=\"th-sloupec\"><div class=\"oddil\"><h4>České vysoké učení technické v Praze</h4></div>\n<div class=\"oddil\"><a href=\"/id/rel001/\">Příbuzná <b>práce</b></a><a href=\"/other\">ne</a></div></div>\n</main></body></html>"
+  },
+  {
+   "key": "https://theses.cz/vyhledavani/?search=Návrh systému řízení&start=1",
+   "status": 200,
+   "url": "https://theses.cz/vyhledavani/",
+   "headers": {
+    "Content-Type": "text/html; charset=utf-8"
+   },
+   "body": "<html><body><p>Výsledky 1 &ndash; 10 z 1 234 <span>(0,1 s)</span></p><div id=\"vysledky_vyhledavani\"><div class=\"vyh_polozka \" data-agenda=\"T\"><h4><a href=\"/id/cvu001/?isshlret=a;zpet=%2Fvyhledavani%2F\">Návrh systému řízení</a></h4>\n&nbsp;(Autor)\n<div class=\"vyh_hlavicky\"><p>Diplomová práce, Test, 2024</p><h5>skryto</h5></div><div class=\"vyh_text\">úryvek <a class=\"rozbal\">+</a></div></div></div></body></html>"
+  },
+  {
+   "key": "https://dspace.cvut.cz/server/api/discover/search/objects?dsoType=item&query=Návrh systému řízení&size=5",
+   "status": 200,
+   "url": "https://dspace.cvut.cz/server/api/discover/search/objects",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "body": "{\"_embedded\": {\"searchResult\": {\"_embedded\": {\"objects\": [{\"_embedded\": {\"indexableObject\": {\"name\": \"Jiný název\", \"uuid\": \"uuid-1\"}}}, {\"_embedded\": {\"indexableObject\": {\"name\": \"Návrh systému řízení.\", \"uuid\": \"uuid-2\"}}}, {\"nothing\": 1}]}}}}"
+  },
+  {
+   "key": "https://dspace.cvut.cz/items/uuid-2",
+   "status": 200,
+   "url": "https://dspace.cvut.cz/items/uuid-2",
+   "headers": {
+    "Content-Type": "text/html; charset=utf-8"
+   },
+   "body": "<html><body><a href=\"/bitstreams/b1/download\">thesis.pdf</a><a href=\"/bitstreams/b2/download\">Final thesis</a>\n<a href=\"https://other.example/x.zip\">Příloha.zip</a><a href=\"/home\">Home</a></body></html>"
+  },
+  {
+   "key": "https://dspace.cvut.cz/bitstreams/b2/download [range]",
+   "status": 200,
+   "url": "https://dspace.cvut.cz/bitstreams/b2/download",
+   "headers": {
+    "Content-Type": "application/pdf",
+    "Content-Disposition": "attachment; filename=final.pdf"
+   },
+   "body_b64": "JVBERi0xLjcKJeLjz9MK"
+  }
+ ],
+ "expected": {
+  "results": [
+   {
+    "error": false,
+    "text": "{\n  \"url\": \"https://theses.cz/id/cvu001/\",\n  \"access\": [\n    \"světu\"\n  ],\n  \"archive_url\": \"https://dspace.cvut.cz/items/uuid-2\",\n  \"files\": [\n    {\n      \"label\": \"thesis.pdf\",\n      \"filename\": \"thesis.pdf\",\n      \"url\": \"https://dspace.cvut.cz/bitstreams/b1/download\",\n      \"confirmed\": false\n    },\n    {\n      \"label\": \"Příloha.zip\",\n      \"filename\": \"Příloha.zip\",\n      \"url\": \"https://other.example/x.zip\"\n    },\n    {\n      \"label\": \"Final thesis\",\n      \"filename\": \"final.pdf\",\n      \"url\": \"https://dspace.cvut.cz/bitstreams/b2/download\",\n      \"confirmed\": true\n    }\n  ]\n}"
+   }
+  ],
+  "requests": [
+   "https://theses.cz/id/cvu001/",
+   "https://theses.cz/vyhledavani/?search=Návrh systému řízení&start=1",
+   "https://dspace.cvut.cz/server/api/discover/search/objects?dsoType=item&query=Návrh systému řízení&size=5",
+   "https://dspace.cvut.cz/items/uuid-2",
+   "https://dspace.cvut.cz/bitstreams/b1/download [range]",
+   "https://dspace.cvut.cz/bitstreams/b2/download [range]"
+  ],
+  "saved_after": null,
+  "authenticated": []
+ }
+}

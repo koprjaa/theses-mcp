@@ -1,0 +1,6 @@
+# Project: theses-mcp
+# File: .gitattributes
+# Description: Preserve exact fixture bytes across platforms.
+# Author: Jan Alexandr Kopřiva
+# License: MIT
+tests/fixtures/** -text

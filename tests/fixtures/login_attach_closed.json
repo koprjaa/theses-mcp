@@ -1,0 +1,10 @@
+{
+ "error": "no browser is listening on port 1",
+ "how": [
+  "quit the browser completely, including any tray icon",
+  "start it once with --remote-debugging-port=1",
+  "run login again, then restart it normally to close the port"
+ ],
+ "command": "\"browser.exe\" --remote-debugging-port=1",
+ "simpler": "drop attach and sign in once in the window login opens"
+}

@@ -1,0 +1,38 @@
+{
+ "name": "search_odd_items",
+ "env": {},
+ "saved": null,
+ "calls": [
+  {
+   "tool": "search",
+   "args": {
+    "query": "\"a/b\" AND č&d",
+    "limit": 10
+   }
+  }
+ ],
+ "responses": [
+  {
+   "key": "https://theses.cz/vyhledavani/?search=\"a/b\" AND č&d&start=1",
+   "status": 200,
+   "url": "https://theses.cz/vyhledavani/",
+   "headers": {
+    "Content-Type": "text/html; charset=utf-8"
+   },
+   "body": "<html><body><p>Výsledky 1 &ndash; 10 z 7 <span>(0,1 s)</span></p><div id=\"vysledky_vyhledavani\"><div class=\"vyh_polozka \" data-agenda=\"T\"><h4><a href=\"/id/odd001/?isshlret=a;zpet=%2Fvyhledavani%2F\">Bez autora</a></h4>\n<div class=\"vyh_hlavicky\"><p>Diplomová práce, Test, 2024</p><h5>skryto</h5></div><div class=\"vyh_text\">úryvek <a class=\"rozbal\">+</a></div></div><div class=\"vyh_polozka \" data-agenda=\"T\"><h4><a href=\"/files/x.pdf?y=1\">Cesta</a></h4>\n&nbsp;(A)\n<div class=\"vyh_hlavicky\"><p>Diplomová práce, Test, 2024</p><h5>skryto</h5></div><div class=\"vyh_text\">úryvek <a class=\"rozbal\">+</a></div></div><div class=\"vyh_polozka\"><p>no h4</p></div><div class=\"vyh_polozka\" data-agenda=\"T\"><h4><a href=\"/id/odd003/\">Element sibling</a></h4><span> (Ctrl)</span><div class=\"vyh_text\">t</div></div><div class=\"vyh_polozka\" data-agenda=\"T\"><h4><a href=\"/id/odd004/\">Comment sibling</a></h4><!-- (x) --></div></div></body></html>"
+  }
+ ],
+ "expected": {
+  "results": [
+   {
+    "error": false,
+    "text": "{\n  \"total\": 7,\n  \"returned\": 4,\n  \"results\": [\n    {\n      \"kind\": \"record\",\n      \"title\": \"Bez autora\",\n      \"author\": null,\n      \"meta\": \"Diplomová práce, Test, 2024\",\n      \"snippet\": \"úryvek\",\n      \"url\": \"https://theses.cz/id/odd001/\"\n    },\n    {\n      \"kind\": \"record\",\n      \"title\": \"Cesta\",\n      \"author\": \"A\",\n      \"meta\": \"Diplomová práce, Test, 2024\",\n      \"snippet\": \"úryvek\",\n      \"url\": \"https://theses.cz/files/x.pdf\"\n    },\n    {\n      \"kind\": \"record\",\n      \"title\": \"Element sibling\",\n      \"author\": \"(Ctrl)\",\n      \"meta\": \"\",\n      \"snippet\": \"t\",\n      \"url\": \"https://theses.cz/id/odd003/\"\n    },\n    {\n      \"kind\": \"record\",\n      \"title\": \"Comment sibling\",\n      \"author\": \"x\",\n      \"meta\": \"\",\n      \"snippet\": \"\",\n      \"url\": \"https://theses.cz/id/odd004/\"\n    }\n  ]\n}"
+   }
+  ],
+  "requests": [
+   "https://theses.cz/vyhledavani/?search=\"a/b\" AND č&d&start=1"
+  ],
+  "saved_after": null,
+  "authenticated": []
+ }
+}

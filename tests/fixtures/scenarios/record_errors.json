@@ -1,0 +1,90 @@
+{
+ "name": "record_errors",
+ "env": {},
+ "saved": null,
+ "calls": [
+  {
+   "tool": "detail",
+   "args": {
+    "id_or_url": "hid001"
+   }
+  },
+  {
+   "tool": "detail",
+   "args": {
+    "id_or_url": "https://theses.cz/id/mis001/"
+   }
+  },
+  {
+   "tool": "fulltext",
+   "args": {
+    "id_or_url": "/id/hid001/"
+   }
+  },
+  {
+   "tool": "fulltext",
+   "args": {
+    "id_or_url": "mis001"
+   }
+  },
+  {
+   "tool": "detail",
+   "args": {
+    "id_or_url": " /id/hid001/ "
+   }
+  }
+ ],
+ "responses": [
+  {
+   "key": "https://theses.cz/id/hid001/",
+   "status": 200,
+   "url": "https://theses.cz/id/hid001/",
+   "headers": {
+    "Content-Type": "text/html; charset=utf-8"
+   },
+   "body": "<html><body><div class='error'>Chybná adresa v ISu</div></body></html>"
+  },
+  {
+   "key": "https://theses.cz/id/mis001/",
+   "status": 200,
+   "url": "https://theses.cz/id/mis001/",
+   "headers": {
+    "Content-Type": "text/html; charset=utf-8"
+   },
+   "body": "<html><body><div class='error'>nic</div></body></html>"
+  }
+ ],
+ "expected": {
+  "results": [
+   {
+    "error": false,
+    "text": "{\n  \"error\": \"record hid001 is not publicly viewable on theses.cz\"\n}"
+   },
+   {
+    "error": false,
+    "text": "{\n  \"error\": \"record mis001 not found\"\n}"
+   },
+   {
+    "error": false,
+    "text": "{\n  \"error\": \"record hid001 is not publicly viewable on theses.cz\"\n}"
+   },
+   {
+    "error": false,
+    "text": "{\n  \"error\": \"record mis001 not found\"\n}"
+   },
+   {
+    "error": false,
+    "text": "{\n  \"error\": \"record hid001 is not publicly viewable on theses.cz\"\n}"
+   }
+  ],
+  "requests": [
+   "https://theses.cz/id/hid001/",
+   "https://theses.cz/id/mis001/",
+   "https://theses.cz/id/hid001/",
+   "https://theses.cz/id/mis001/",
+   "https://theses.cz/id/hid001/"
+  ],
+  "saved_after": null,
+  "authenticated": []
+ }
+}

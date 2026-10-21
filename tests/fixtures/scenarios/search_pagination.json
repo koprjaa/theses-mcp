@@ -1,0 +1,92 @@
+{
+ "name": "search_pagination",
+ "env": {},
+ "saved": null,
+ "calls": [
+  {
+   "tool": "search",
+   "args": {
+    "query": "zlatý řez",
+    "limit": 25
+   }
+  },
+  {
+   "tool": "search",
+   "args": {
+    "query": "zlatý řez",
+    "limit": 3
+   }
+  },
+  {
+   "tool": "search",
+   "args": {
+    "query": "zlatý řez",
+    "limit": 0
+   }
+  },
+  {
+   "tool": "search",
+   "args": {
+    "query": "zlatý řez",
+    "limit": -4
+   }
+  }
+ ],
+ "responses": [
+  {
+   "key": "https://theses.cz/vyhledavani/?search=zlatý řez&start=1",
+   "status": 200,
+   "url": "https://theses.cz/vyhledavani/",
+   "headers": {
+    "Content-Type": "text/html; charset=utf-8"
+   },
+   "body": "<html><body><p>Výsledky 1 &ndash; 10 z 1 234 <span>(0,1 s)</span></p><div id=\"vysledky_vyhledavani\"><div class=\"vyh_polozka \" data-agenda=\"1\"><h4><a href=\"https://repo.example/th/1/file1.pdf?x=1;y=2\">Práce 1</a></h4>\n&nbsp;(Autor 1)\n<div class=\"vyh_hlavicky\"><p>Diplomová práce, Test, 2024<span class=\"archiv\"><a href=\"/id/r0001\">Práce 1</a></span></p><h5>skryto</h5></div><div class=\"vyh_text\">úryvek <a class=\"rozbal\">+</a></div></div><div class=\"vyh_polozka \" data-agenda=\"T\"><h4><a href=\"/id/r0002/?isshlret=a;zpet=%2Fvyhledavani%2F\">Práce 2</a></h4>\n&nbsp;(Autor 2)\n<div class=\"vyh_hlavicky\"><p>Diplomová práce, Test, 2024</p><h5>skryto</h5></div><div class=\"vyh_text\">úryvek <a class=\"rozbal\">+</a></div></div><div class=\"vyh_polozka \" data-agenda=\"1\"><h4><a href=\"https://repo.example/th/3/file3.pdf?x=1;y=2\">Práce 3</a></h4>\n&nbsp;(Autor 3)\n<div class=\"vyh_hlavicky\"><p>Diplomová práce, Test, 2024<span class=\"archiv\"><a href=\"/id/r0003\">Práce 3</a></span></p><h5>skryto</h5></div><div class=\"vyh_text\">úryvek <a class=\"rozbal\">+</a></div></div><div class=\"vyh_polozka \" data-agenda=\"T\"><h4><a href=\"/id/r0004/?isshlret=a;zpet=%2Fvyhledavani%2F\">Práce 4</a></h4>\n&nbsp;(Autor 4)\n<div class=\"vyh_hlavicky\"><p>Diplomová práce, Test, 2024</p><h5>skryto</h5></div><div class=\"vyh_text\">úryvek <a class=\"rozbal\">+</a></div></div><div class=\"vyh_polozka \" data-agenda=\"1\"><h4><a href=\"https://repo.example/th/5/file5.pdf?x=1;y=2\">Práce 5</a></h4>\n&nbsp;(Autor 5)\n<div class=\"vyh_hlavicky\"><p>Diplomová práce, Test, 2024<span class=\"archiv\"><a href=\"/id/r0005\">Práce 5</a></span></p><h5>skryto</h5></div><div class=\"vyh_text\">úryvek <a class=\"rozbal\">+</a></div></div><div class=\"vyh_polozka \" data-agenda=\"T\"><h4><a href=\"/id/r0006/?isshlret=a;zpet=%2Fvyhledavani%2F\">Práce 6</a></h4>\n&nbsp;(Autor 6)\n<div class=\"vyh_hlavicky\"><p>Diplomová práce, Test, 2024</p><h5>skryto</h5></div><div class=\"vyh_text\">úryvek <a class=\"rozbal\">+</a></div></div><div class=\"vyh_polozka \" data-agenda=\"1\"><h4><a href=\"https://repo.example/th/7/file7.pdf?x=1;y=2\">Práce 7</a></h4>\n&nbsp;(Autor 7)\n<div class=\"vyh_hlavicky\"><p>Diplomová práce, Test, 2024<span class=\"archiv\"><a href=\"/id/r0007\">Práce 7</a></span></p><h5>skryto</h5></div><div class=\"vyh_text\">úryvek <a class=\"rozbal\">+</a></div></div><div class=\"vyh_polozka \" data-agenda=\"T\"><h4><a href=\"/id/r0008/?isshlret=a;zpet=%2Fvyhledavani%2F\">Práce 8</a></h4>\n&nbsp;(Autor 8)\n<div class=\"vyh_hlavicky\"><p>Diplomová práce, Test, 2024</p><h5>skryto</h5></div><div class=\"vyh_text\">úryvek <a class=\"rozbal\">+</a></div></div><div class=\"vyh_polozka \" data-agenda=\"1\"><h4><a href=\"https://repo.example/th/9/file9.pdf?x=1;y=2\">Práce 9</a></h4>\n&nbsp;(Autor 9)\n<div class=\"vyh_hlavicky\"><p>Diplomová práce, Test, 2024<span class=\"archiv\"><a href=\"/id/r0009\">Práce 9</a></span></p><h5>skryto</h5></div><div class=\"vyh_text\">úryvek <a class=\"rozbal\">+</a></div></div><div class=\"vyh_polozka \" data-agenda=\"T\"><h4><a href=\"/id/r0010/?isshlret=a;zpet=%2Fvyhledavani%2F\">Práce 10</a></h4>\n&nbsp;(Autor 10)\n<div class=\"vyh_hlavicky\"><p>Diplomová práce, Test, 2024</p><h5>skryto</h5></div><div class=\"vyh_text\">úryvek <a class=\"rozbal\">+</a></div></div></div></body></html>"
+  },
+  {
+   "key": "https://theses.cz/vyhledavani/?search=zlatý řez&start=11",
+   "status": 200,
+   "url": "https://theses.cz/vyhledavani/",
+   "headers": {
+    "Content-Type": "text/html; charset=utf-8"
+   },
+   "body": "<html><body><p>Výsledky 1 &ndash; 10 z 1 234 <span>(0,1 s)</span></p><div id=\"vysledky_vyhledavani\"><div class=\"vyh_polozka \" data-agenda=\"1\"><h4><a href=\"https://repo.example/th/11/file11.pdf?x=1;y=2\">Práce 11</a></h4>\n&nbsp;(Autor 11)\n<div class=\"vyh_hlavicky\"><p>Diplomová práce, Test, 2024<span class=\"archiv\"><a href=\"/id/r0011\">Práce 11</a></span></p><h5>skryto</h5></div><div class=\"vyh_text\">úryvek <a class=\"rozbal\">+</a></div></div><div class=\"vyh_polozka \" data-agenda=\"T\"><h4><a href=\"/id/r0012/?isshlret=a;zpet=%2Fvyhledavani%2F\">Práce 12</a></h4>\n&nbsp;(Autor 12)\n<div class=\"vyh_hlavicky\"><p>Diplomová práce, Test, 2024</p><h5>skryto</h5></div><div class=\"vyh_text\">úryvek <a class=\"rozbal\">+</a></div></div><div class=\"vyh_polozka \" data-agenda=\"1\"><h4><a href=\"https://repo.example/th/13/file13.pdf?x=1;y=2\">Práce 13</a></h4>\n&nbsp;(Autor 13)\n<div class=\"vyh_hlavicky\"><p>Diplomová práce, Test, 2024<span class=\"archiv\"><a href=\"/id/r0013\">Práce 13</a></span></p><h5>skryto</h5></div><div class=\"vyh_text\">úryvek <a class=\"rozbal\">+</a></div></div><div class=\"vyh_polozka \" data-agenda=\"T\"><h4><a href=\"/id/r0014/?isshlret=a;zpet=%2Fvyhledavani%2F\">Práce 14</a></h4>\n&nbsp;(Autor 14)\n<div class=\"vyh_hlavicky\"><p>Diplomová práce, Test, 2024</p><h5>skryto</h5></div><div class=\"vyh_text\">úryvek <a class=\"rozbal\">+</a></div></div><div class=\"vyh_polozka \" data-agenda=\"1\"><h4><a href=\"https://repo.example/th/15/file15.pdf?x=1;y=2\">Práce 15</a></h4>\n&nbsp;(Autor 15)\n<div class=\"vyh_hlavicky\"><p>Diplomová práce, Test, 2024<span class=\"archiv\"><a href=\"/id/r0015\">Práce 15</a></span></p><h5>skryto</h5></div><div class=\"vyh_text\">úryvek <a class=\"rozbal\">+</a></div></div><div class=\"vyh_polozka \" data-agenda=\"T\"><h4><a href=\"/id/r0016/?isshlret=a;zpet=%2Fvyhledavani%2F\">Práce 16</a></h4>\n&nbsp;(Autor 16)\n<div class=\"vyh_hlavicky\"><p>Diplomová práce, Test, 2024</p><h5>skryto</h5></div><div class=\"vyh_text\">úryvek <a class=\"rozbal\">+</a></div></div><div class=\"vyh_polozka \" data-agenda=\"1\"><h4><a href=\"https://repo.example/th/17/file17.pdf?x=1;y=2\">Práce 17</a></h4>\n&nbsp;(Autor 17)\n<div class=\"vyh_hlavicky\"><p>Diplomová práce, Test, 2024<span class=\"archiv\"><a href=\"/id/r0017\">Práce 17</a></span></p><h5>skryto</h5></div><div class=\"vyh_text\">úryvek <a class=\"rozbal\">+</a></div></div><div class=\"vyh_polozka \" data-agenda=\"T\"><h4><a href=\"/id/r0018/?isshlret=a;zpet=%2Fvyhledavani%2F\">Práce 18</a></h4>\n&nbsp;(Autor 18)\n<div class=\"vyh_hlavicky\"><p>Diplomová práce, Test, 2024</p><h5>skryto</h5></div><div class=\"vyh_text\">úryvek <a class=\"rozbal\">+</a></div></div><div class=\"vyh_polozka \" data-agenda=\"1\"><h4><a href=\"https://repo.example/th/19/file19.pdf?x=1;y=2\">Práce 19</a></h4>\n&nbsp;(Autor 19)\n<div class=\"vyh_hlavicky\"><p>Diplomová práce, Test, 2024<span class=\"archiv\"><a href=\"/id/r0019\">Práce 19</a></span></p><h5>skryto</h5></div><div class=\"vyh_text\">úryvek <a class=\"rozbal\">+</a></div></div><div class=\"vyh_polozka \" data-agenda=\"T\"><h4><a href=\"/id/r0020/?isshlret=a;zpet=%2Fvyhledavani%2F\">Práce 20</a></h4>\n&nbsp;(Autor 20)\n<div class=\"vyh_hlavicky\"><p>Diplomová práce, Test, 2024</p><h5>skryto</h5></div><div class=\"vyh_text\">úryvek <a class=\"rozbal\">+</a></div></div></div></body></html>"
+  },
+  {
+   "key": "https://theses.cz/vyhledavani/?search=zlatý řez&start=21",
+   "status": 200,
+   "url": "https://theses.cz/vyhledavani/",
+   "headers": {
+    "Content-Type": "text/html; charset=utf-8"
+   },
+   "body": "<html><body><p>Výsledky 1 &ndash; 10 z 1 234 <span>(0,1 s)</span></p><div id=\"vysledky_vyhledavani\"><div class=\"vyh_polozka \" data-agenda=\"1\"><h4><a href=\"https://repo.example/th/21/file21.pdf?x=1;y=2\">Práce 21</a></h4>\n&nbsp;(Autor 21)\n<div class=\"vyh_hlavicky\"><p>Diplomová práce, Test, 2024<span class=\"archiv\"><a href=\"/id/r0021\">Práce 21</a></span></p><h5>skryto</h5></div><div class=\"vyh_text\">úryvek <a class=\"rozbal\">+</a></div></div><div class=\"vyh_polozka \" data-agenda=\"T\"><h4><a href=\"/id/r0022/?isshlret=a;zpet=%2Fvyhledavani%2F\">Práce 22</a></h4>\n&nbsp;(Autor 22)\n<div class=\"vyh_hlavicky\"><p>Diplomová práce, Test, 2024</p><h5>skryto</h5></div><div class=\"vyh_text\">úryvek <a class=\"rozbal\">+</a></div></div><div class=\"vyh_polozka \" data-agenda=\"1\"><h4><a href=\"https://repo.example/th/23/file23.pdf?x=1;y=2\">Práce 23</a></h4>\n&nbsp;(Autor 23)\n<div class=\"vyh_hlavicky\"><p>Diplomová práce, Test, 2024<span class=\"archiv\"><a href=\"/id/r0023\">Práce 23</a></span></p><h5>skryto</h5></div><div class=\"vyh_text\">úryvek <a class=\"rozbal\">+</a></div></div></div></body></html>"
+  }
+ ],
+ "expected": {
+  "results": [
+   {
+    "error": false,
+    "text": "{\n  \"total\": 1234,\n  \"returned\": 23,\n  \"results\": [\n    {\n      \"kind\": \"fulltext\",\n      \"title\": \"Práce 1\",\n      \"author\": \"Autor 1\",\n      \"meta\": \"Diplomová práce, Test, 2024 Práce 1\",\n      \"snippet\": \"úryvek\",\n      \"pdf_url\": \"https://repo.example/th/1/file1.pdf\",\n      \"url\": \"https://theses.cz/id/r0001\"\n    },\n    {\n      \"kind\": \"record\",\n      \"title\": \"Práce 2\",\n      \"author\": \"Autor 2\",\n      \"meta\": \"Diplomová práce, Test, 2024\",\n      \"snippet\": \"úryvek\",\n      \"url\": \"https://theses.cz/id/r0002/\"\n    },\n    {\n      \"kind\": \"fulltext\",\n      \"title\": \"Práce 3\",\n      \"author\": \"Autor 3\",\n      \"meta\": \"Diplomová práce, Test, 2024 Práce 3\",\n      \"snippet\": \"úryvek\",\n      \"pdf_url\": \"https://repo.example/th/3/file3.pdf\",\n      \"url\": \"https://theses.cz/id/r0003\"\n    },\n    {\n      \"kind\": \"record\",\n      \"title\": \"Práce 4\",\n      \"author\": \"Autor 4\",\n      \"meta\": \"Diplomová práce, Test, 2024\",\n      \"snippet\": \"úryvek\",\n      \"url\": \"https://theses.cz/id/r0004/\"\n    },\n    {\n      \"kind\": \"fulltext\",\n      \"title\": \"Práce 5\",\n      \"author\": \"Autor 5\",\n      \"meta\": \"Diplomová práce, Test, 2024 Práce 5\",\n      \"snippet\": \"úryvek\",\n      \"pdf_url\": \"https://repo.example/th/5/file5.pdf\",\n      \"url\": \"https://theses.cz/id/r0005\"\n    },\n    {\n      \"kind\": \"record\",\n      \"title\": \"Práce 6\",\n      \"author\": \"Autor 6\",\n      \"meta\": \"Diplomová práce, Test, 2024\",\n      \"snippet\": \"úryvek\",\n      \"url\": \"https://theses.cz/id/r0006/\"\n    },\n    {\n      \"kind\": \"fulltext\",\n      \"title\": \"Práce 7\",\n      \"author\": \"Autor 7\",\n      \"meta\": \"Diplomová práce, Test, 2024 Práce 7\",\n      \"snippet\": \"úryvek\",\n      \"pdf_url\": \"https://repo.example/th/7/file7.pdf\",\n      \"url\": \"https://theses.cz/id/r0007\"\n    },\n    {\n      \"kind\": \"record\",\n      \"title\": \"Práce 8\",\n      \"author\": \"Autor 8\",\n      \"meta\": \"Diplomová práce, Test, 2024\",\n      \"snippet\": \"úryvek\",\n      \"url\": \"https://theses.cz/id/r0008/\"\n    },\n    {\n      \"kind\": \"fulltext\",\n      \"title\": \"Práce 9\",\n      \"author\": \"Autor 9\",\n      \"meta\": \"Diplomová práce, Test, 2024 Práce 9\",\n      \"snippet\": \"úryvek\",\n      \"pdf_url\": \"https://repo.example/th/9/file9.pdf\",\n      \"url\": \"https://theses.cz/id/r0009\"\n    },\n    {\n      \"kind\": \"record\",\n      \"title\": \"Práce 10\",\n      \"author\": \"Autor 10\",\n      \"meta\": \"Diplomová práce, Test, 2024\",\n      \"snippet\": \"úryvek\",\n      \"url\": \"https://theses.cz/id/r0010/\"\n    },\n    {\n      \"kind\": \"fulltext\",\n      \"title\": \"Práce 11\",\n      \"author\": \"Autor 11\",\n      \"meta\": \"Diplomová práce, Test, 2024 Práce 11\",\n      \"snippet\": \"úryvek\",\n      \"pdf_url\": \"https://repo.example/th/11/file11.pdf\",\n      \"url\": \"https://theses.cz/id/r0011\"\n    },\n    {\n      \"kind\": \"record\",\n      \"title\": \"Práce 12\",\n      \"author\": \"Autor 12\",\n      \"meta\": \"Diplomová práce, Test, 2024\",\n      \"snippet\": \"úryvek\",\n      \"url\": \"https://theses.cz/id/r0012/\"\n    },\n    {\n      \"kind\": \"fulltext\",\n      \"title\": \"Práce 13\",\n      \"author\": \"Autor 13\",\n      \"meta\": \"Diplomová práce, Test, 2024 Práce 13\",\n      \"snippet\": \"úryvek\",\n      \"pdf_url\": \"https://repo.example/th/13/file13.pdf\",\n      \"url\": \"https://theses.cz/id/r0013\"\n    },\n    {\n      \"kind\": \"record\",\n      \"title\": \"Práce 14\",\n      \"author\": \"Autor 14\",\n      \"meta\": \"Diplomová práce, Test, 2024\",\n      \"snippet\": \"úryvek\",\n      \"url\": \"https://theses.cz/id/r0014/\"\n    },\n    {\n      \"kind\": \"fulltext\",\n      \"title\": \"Práce 15\",\n      \"author\": \"Autor 15\",\n      \"meta\": \"Diplomová práce, Test, 2024 Práce 15\",\n      \"snippet\": \"úryvek\",\n      \"pdf_url\": \"https://repo.example/th/15/file15.pdf\",\n      \"url\": \"https://theses.cz/id/r0015\"\n    },\n    {\n      \"kind\": \"record\",\n      \"title\": \"Práce 16\",\n      \"author\": \"Autor 16\",\n      \"meta\": \"Diplomová práce, Test, 2024\",\n      \"snippet\": \"úryvek\",\n      \"url\": \"https://theses.cz/id/r0016/\"\n    },\n    {\n      \"kind\": \"fulltext\",\n      \"title\": \"Práce 17\",\n      \"author\": \"Autor 17\",\n      \"meta\": \"Diplomová práce, Test, 2024 Práce 17\",\n      \"snippet\": \"úryvek\",\n      \"pdf_url\": \"https://repo.example/th/17/file17.pdf\",\n      \"url\": \"https://theses.cz/id/r0017\"\n    },\n    {\n      \"kind\": \"record\",\n      \"title\": \"Práce 18\",\n      \"author\": \"Autor 18\",\n      \"meta\": \"Diplomová práce, Test, 2024\",\n      \"snippet\": \"úryvek\",\n      \"url\": \"https://theses.cz/id/r0018/\"\n    },\n    {\n      \"kind\": \"fulltext\",\n      \"title\": \"Práce 19\",\n      \"author\": \"Autor 19\",\n      \"meta\": \"Diplomová práce, Test, 2024 Práce 19\",\n      \"snippet\": \"úryvek\",\n      \"pdf_url\": \"https://repo.example/th/19/file19.pdf\",\n      \"url\": \"https://theses.cz/id/r0019\"\n    },\n    {\n      \"kind\": \"record\",\n      \"title\": \"Práce 20\",\n      \"author\": \"Autor 20\",\n      \"meta\": \"Diplomová práce, Test, 2024\",\n      \"snippet\": \"úryvek\",\n      \"url\": \"https://theses.cz/id/r0020/\"\n    },\n    {\n      \"kind\": \"fulltext\",\n      \"title\": \"Práce 21\",\n      \"author\": \"Autor 21\",\n      \"meta\": \"Diplomová práce, Test, 2024 Práce 21\",\n      \"snippet\": \"úryvek\",\n      \"pdf_url\": \"https://repo.example/th/21/file21.pdf\",\n      \"url\": \"https://theses.cz/id/r0021\"\n    },\n    {\n      \"kind\": \"record\",\n      \"title\": \"Práce 22\",\n      \"author\": \"Autor 22\",\n      \"meta\": \"Diplomová práce, Test, 2024\",\n      \"snippet\": \"úryvek\",\n      \"url\": \"https://theses.cz/id/r0022/\"\n    },\n    {\n      \"kind\": \"fulltext\",\n      \"title\": \"Práce 23\",\n      \"author\": \"Autor 23\",\n      \"meta\": \"Diplomová práce, Test, 2024 Práce 23\",\n      \"snippet\": \"úryvek\",\n      \"pdf_url\": \"https://repo.example/th/23/file23.pdf\",\n      \"url\": \"https://theses.cz/id/r0023\"\n    }\n  ]\n}"
+   },
+   {
+    "error": false,
+    "text": "{\n  \"total\": 1234,\n  \"returned\": 3,\n  \"results\": [\n    {\n      \"kind\": \"fulltext\",\n      \"title\": \"Práce 1\",\n      \"author\": \"Autor 1\",\n      \"meta\": \"Diplomová práce, Test, 2024 Práce 1\",\n      \"snippet\": \"úryvek\",\n      \"pdf_url\": \"https://repo.example/th/1/file1.pdf\",\n      \"url\": \"https://theses.cz/id/r0001\"\n    },\n    {\n      \"kind\": \"record\",\n      \"title\": \"Práce 2\",\n      \"author\": \"Autor 2\",\n      \"meta\": \"Diplomová práce, Test, 2024\",\n      \"snippet\": \"úryvek\",\n      \"url\": \"https://theses.cz/id/r0002/\"\n    },\n    {\n      \"kind\": \"fulltext\",\n      \"title\": \"Práce 3\",\n      \"author\": \"Autor 3\",\n      \"meta\": \"Diplomová práce, Test, 2024 Práce 3\",\n      \"snippet\": \"úryvek\",\n      \"pdf_url\": \"https://repo.example/th/3/file3.pdf\",\n      \"url\": \"https://theses.cz/id/r0003\"\n    }\n  ]\n}"
+   },
+   {
+    "error": false,
+    "text": "{\n  \"total\": null,\n  \"returned\": 0,\n  \"results\": []\n}"
+   },
+   {
+    "error": false,
+    "text": "{\n  \"total\": null,\n  \"returned\": 0,\n  \"results\": []\n}"
+   }
+  ],
+  "requests": [
+   "https://theses.cz/vyhledavani/?search=zlatý řez&start=1",
+   "https://theses.cz/vyhledavani/?search=zlatý řez&start=11",
+   "https://theses.cz/vyhledavani/?search=zlatý řez&start=21",
+   "https://theses.cz/vyhledavani/?search=zlatý řez&start=1"
+  ],
+  "saved_after": null,
+  "authenticated": []
+ }
+}
