@@ -103,7 +103,7 @@ fn host_cookies(
     host: &str,
 ) -> Vec<Cookie> {
     all.into_iter()
-        .filter(|c| host.ends_with(c.domain.trim_start_matches('.')))
+        .filter(|c| crate::http::domain_matches(host, &c.domain))
         .map(|c| Cookie {
             name: c.name,
             value: c.value,

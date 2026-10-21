@@ -124,7 +124,8 @@ pub trait Transport: Send + Sync {
     }
 }
 
-fn domain_matches(host: &str, domain: &str) -> bool {
+/// Whether a cookie of `domain` goes to `host`: the host itself or a subdomain, not a mere suffix.
+pub fn domain_matches(host: &str, domain: &str) -> bool {
     let domain = domain.trim_start_matches('.').to_lowercase();
     let host = host.to_lowercase();
     host == domain || host.ends_with(&format!(".{domain}"))
@@ -135,6 +136,8 @@ fn domain_matches(host: &str, domain: &str) -> bool {
 #[derive(Default)]
 pub struct Jar {
     cookies: Mutex<Vec<Cookie>>,
+    /// `(name, domain)` of cookies the server marked `Secure`.
+    secure: Mutex<Vec<(String, String)>>,
     overlay: Mutex<Vec<Cookie>>,
 }
 
@@ -151,11 +154,20 @@ impl Jar {
 
     /// The `Cookie` header value this host would receive.
     pub fn header_for(&self, host: &str) -> Option<String> {
+        self.header(host, true)
+    }
+
+    /// Same, but a cookie that must not travel in clear text stays home on `http`.
+    fn header(&self, host: &str, https: bool) -> Option<String> {
         let jar = self.cookies.lock().expect("jar lock");
         let overlay = self.overlay.lock().expect("jar lock");
+        let secure = self.secure.lock().expect("jar lock");
         let mut pairs: Vec<(String, String)> = Vec::new();
         for c in jar.iter().chain(overlay.iter()) {
-            if domain_matches(host, &c.domain) {
+            let only_https = c.name.starts_with("__Host-")
+                || c.name.starts_with("__Secure-")
+                || secure.iter().any(|(n, d)| *n == c.name && *d == c.domain);
+            if domain_matches(host, &c.domain) && (https || !only_https) {
                 pairs.retain(|(n, _)| *n != c.name);
                 pairs.push((c.name.clone(), c.value.clone()));
             }
@@ -182,6 +194,7 @@ impl reqwest::cookie::CookieStore for Jar {
             let mut domain = host.clone();
             let mut expired = false;
             let mut refused = false;
+            let mut secure = false;
             for attr in parts {
                 let attr = attr.trim();
                 let lower = attr.to_lowercase();
@@ -193,6 +206,8 @@ impl reqwest::cookie::CookieStore for Jar {
                     } else if domain_matches(&host, d) {
                         domain = d.trim_start_matches('.').to_string();
                     }
+                } else if lower == "secure" {
+                    secure = true;
                 } else if lower == "max-age=0" || lower.starts_with("max-age=-") {
                     expired = true;
                 }
@@ -205,6 +220,15 @@ impl reqwest::cookie::CookieStore for Jar {
                 value: value.trim().to_string(),
                 domain,
             };
+            if secure {
+                let mut flagged = self.secure.lock().expect("jar lock");
+                if !flagged
+                    .iter()
+                    .any(|(n, d)| *n == cookie.name && *d == cookie.domain)
+                {
+                    flagged.push((cookie.name.clone(), cookie.domain.clone()));
+                }
+            }
             if expired {
                 self.cookies
                     .lock()
@@ -217,7 +241,11 @@ impl reqwest::cookie::CookieStore for Jar {
     }
 
     fn cookies(&self, url: &url::Url) -> Option<HeaderValue> {
-        let header = self.header_for(url.host_str()?)?;
+        let host = url.host_str()?;
+        // browsers treat loopback as a secure context, and so do the tests' local servers
+        let private =
+            url.scheme() == "https" || ["localhost", "127.0.0.1", "[::1]"].contains(&host);
+        let header = self.header(host, private)?;
         HeaderValue::from_str(&header).ok()
     }
 }

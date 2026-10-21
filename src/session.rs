@@ -122,27 +122,39 @@ impl Theses {
 
     /// Write the session for `host` into `cookies.json` (mode 0600) and attach it.
     pub fn store_session(&self, host: &str, cookies: &[Cookie]) -> Result<()> {
-        let mut saved: Map<String, Value> = std::fs::read_to_string(self.cookie_file())
-            .ok()
-            .and_then(|t| serde_json::from_str::<Value>(&t).ok())
-            .and_then(|v| {
-                if let Value::Object(o) = v {
-                    Some(o)
-                } else {
-                    None
-                }
-            })
-            .unwrap_or_default();
         let io = |e: std::io::Error| crate::error::Error::new("OSError", e.to_string());
+        let existing = std::fs::read_to_string(self.cookie_file()).ok();
+        let mut saved: Map<String, Value> =
+            match existing.as_deref().map(serde_json::from_str::<Value>) {
+                None => Map::new(),
+                Some(Ok(Value::Object(o))) => o,
+                // keep what cannot be read; overwriting it would lose every other host's session
+                Some(_) => {
+                    let broken = self.store.join("cookies.json.bad");
+                    std::fs::copy(self.cookie_file(), broken).map_err(io)?;
+                    Map::new()
+                }
+            };
         std::fs::create_dir_all(&self.store).map_err(io)?;
         saved.insert(host.to_string(), json!(cookies));
-        std::fs::write(self.cookie_file(), Value::Object(saved).to_string()).map_err(io)?;
-        #[cfg(unix)]
+        // written beside the file with the final mode, then renamed: never half-written,
+        // never readable by others
+        let temp = self.store.join("cookies.json.tmp");
         {
-            use std::os::unix::fs::PermissionsExt;
-            std::fs::set_permissions(self.cookie_file(), std::fs::Permissions::from_mode(0o600))
+            use std::io::Write;
+            let mut options = std::fs::OpenOptions::new();
+            options.write(true).create(true).truncate(true);
+            #[cfg(unix)]
+            {
+                use std::os::unix::fs::OpenOptionsExt;
+                options.mode(0o600);
+            }
+            let mut file = options.open(&temp).map_err(io)?;
+            file.write_all(Value::Object(saved).to_string().as_bytes())
                 .map_err(io)?;
+            file.sync_all().map_err(io)?;
         }
+        std::fs::rename(&temp, self.cookie_file()).map_err(io)?;
         self.attach(host, cookies);
         Ok(())
     }
