@@ -75,8 +75,12 @@ const STAG_PAGES: [(&str, Option<&str>); 4] = [
     ),
 ];
 
+/// Most files one page may make us fetch to confirm; a page of hundreds of links must not
+/// hold the call for minutes.
+const MAX_PROBES: usize = 25;
+
 static RESULTS: LazyLock<Regex> =
-    LazyLock::new(|| Regex::new(r"Výsledky\s+\d+\s*–\s*\d+\s+z\s+([\d\s]+)").expect("static"));
+    LazyLock::new(|| Regex::new(r"Výsledky\s+\d+\s*–\s*\d+\s+z\s+(\d[\d\s]*)").expect("static"));
 static STAHNOUT: LazyLock<Regex> =
     LazyLock::new(|| Regex::new(r"\s*St[áa]hnout\s*$").expect("static"));
 static ID_PREFIX: LazyLock<Regex> = LazyLock::new(|| Regex::new(r"^/id/(\w+)").expect("static"));
@@ -111,7 +115,9 @@ pub fn stub_delay(head: &str) -> Option<u64> {
 
 /// Code of a record from a code, `/id/<code>/` or a URL.
 pub fn record_code(id_or_url: &str) -> String {
-    let trimmed = strip_chars(id_or_url, &['/', ' ']);
+    // a URL pasted from the browser may carry a query or a fragment
+    let bare = id_or_url.split(['?', '#']).next().unwrap_or("");
+    let trimmed = strip_chars(bare, &['/', ' ']);
     last_segment(trimmed).to_string()
 }
 
@@ -184,7 +190,9 @@ impl Theses {
                 let Some(a) = it.select(&sel("h4 a")).next() else {
                     continue;
                 };
-                let href = attr(a, "href")?;
+                let Some(href) = a.value().attr("href").map(String::from) else {
+                    continue;
+                };
                 let fulltext = it.value().attr("data-agenda") != Some("T");
                 let rec = it.select(&sel(".archiv a")).next();
                 let h4 = it.select(&sel("h4")).next();
@@ -417,14 +425,16 @@ impl Theses {
                 probe.push((label, href));
             }
         }
+        let mut budget = MAX_PROBES;
         for f in out.iter_mut() {
             let url = f["url"].as_str().unwrap_or("").to_string();
-            if has_doc_ext(url.split('?').next().unwrap_or("")) {
+            if has_doc_ext(url.split('?').next().unwrap_or("")) || budget == 0 {
                 continue;
             }
+            budget -= 1;
             f.insert("confirmed".into(), json!(self.as_document(&url).is_some()));
         }
-        for (label, href) in probe {
+        for (label, href) in probe.into_iter().take(budget) {
             if let Some(mut doc) = self.as_document(&href) {
                 doc.insert("label".into(), json!(label));
                 out.push(doc);
@@ -631,14 +641,15 @@ impl Theses {
 
     /// Find the thesis in the school's own repository and list its files. Only an exact title
     /// match is accepted, because a near miss would attach someone else's PDF to this record.
-    pub fn repository_lookup(&self, school: &str, title: &str) -> Vec<Obj> {
+    pub fn repository_lookup(&self, school: &str, title: &str) -> Result<Vec<Obj>> {
         let hay = norm(school);
         let Some((_, host, flavour)) = REPOSITORY.iter().find(|(k, _, _)| hay.contains(&norm(k)))
         else {
-            return Vec::new();
+            return Ok(Vec::new());
         };
-        if title.is_empty() {
-            return Vec::new();
+        // a title with no Latin letters or digits normalises to "" and would match any such hit
+        if norm(title).is_empty() {
+            return Ok(Vec::new());
         }
         let found = match *flavour {
             "dspace7" => self.dspace7(host, title),
@@ -646,13 +657,13 @@ impl Theses {
             "dspace5" => self.dspace5(host, title),
             _ => self.invenio(host, title),
         };
-        let Ok(Some((page, mut files))) = found else {
-            return Vec::new();
+        let Some((page, mut files)) = found? else {
+            return Ok(Vec::new());
         };
         for f in files.iter_mut() {
             f.insert("source".into(), json!(page));
         }
-        files
+        Ok(files)
     }
 
     /// Files theses.cz serves itself, from the file manager on the record page.
@@ -850,8 +861,16 @@ impl Theses {
                 .iter()
                 .find(|(k, _, _)| norm(&school).contains(&norm(k)))
                 .map(|(_, h, _)| *h);
-            let mut found =
-                self.repository_lookup(&school, &node_text(page.select_one(".th-title"), &[]));
+            let mut found = match self
+                .repository_lookup(&school, &node_text(page.select_one(".th-title"), &[]))
+            {
+                Ok(found) => found,
+                Err(e) => {
+                    // an unreachable repository is not an empty one
+                    note = Some(format!("school repository unreachable: {}", e.class));
+                    Vec::new()
+                }
+            };
             if !found.is_empty() {
                 if let Some(src) = found[0].shift_remove("source") {
                     archive = src.as_str().map(String::from);

@@ -159,13 +159,20 @@ fn every_scenario_matches_python() {
 }
 
 #[test]
-fn the_javascript_challenge_is_the_one_intentional_difference() {
+fn only_the_listed_scenarios_differ_from_python_on_purpose() {
     let intentional: Vec<String> = scenarios()
         .into_iter()
         .filter(|(_, s)| s.get("intentional").is_some())
         .map(|(n, _)| n)
         .collect();
-    assert_eq!(intentional, ["challenge_stub_page_shim_off"]);
+    assert_eq!(
+        intentional,
+        [
+            "audit_detail_odd",
+            "challenge_stub_page_shim_off",
+            "fulltext_dspace7_badjson"
+        ]
+    );
 }
 
 #[test]

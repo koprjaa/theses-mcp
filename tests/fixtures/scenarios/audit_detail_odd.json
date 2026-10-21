@@ -146,5 +146,54 @@
   ],
   "saved_after": null,
   "authenticated": []
- }
+ },
+ "fixed": {
+  "results": [
+   {
+    "error": false,
+    "text": "{\n  \"url\": \"https://theses.cz/id/d1/\",\n  \"author\": \"Jan Novák (student)\",\n  \"type\": \"Diplomová práce\",\n  \"title\": \"T i x\",\n  \"title_translated\": \"Tr\",\n  \"abstract_cs\": \"A b text hidden\",\n  \"abstract_en\": \"E\",\n  \"keywords\": {\n    \"Klíčová slova\": [\n      \"second same label\"\n    ],\n    \"?\": [\n      \"no label\"\n    ]\n  },\n  \"defense\": [\n    \"Obhajoba proběhla 1. 2. 2020\",\n    \"Vedoucí: A\",\n    \"Oponent: B\"\n  ],\n  \"language\": \"angličtina\",\n  \"submitted\": \"3. 5. 2023\",\n  \"school\": \"Škola Bakalářský: Obor\",\n  \"fulltext_access\": \"Zveřejněno: světu druhé\",\n  \"archive_url\": \"https://arch.example/1\",\n  \"related\": [\n    {\n      \"title\": \"Rel one\",\n      \"url\": \"https://theses.cz/id/r1/\"\n    },\n    {\n      \"title\": \"Rel 2\",\n      \"url\": \"https://theses.cz/id/r2\"\n    },\n    {\n      \"title\": \"empty code\",\n      \"url\": \"https://theses.cz/id/\"\n    }\n  ]\n}"
+   },
+   {
+    "error": false,
+    "text": "{\n  \"url\": \"https://theses.cz/id/d2/\",\n  \"author\": \"X\",\n  \"type\": \"div in p\",\n  \"title\": \"in table\",\n  \"title_translated\": \"nested form\",\n  \"abstract_cs\": \"p1 p2\",\n  \"abstract_en\": \"\",\n  \"keywords\": {},\n  \"defense\": [],\n  \"language\": null,\n  \"submitted\": null,\n  \"school\": \"\",\n  \"fulltext_access\": \"\",\n  \"archive_url\": null,\n  \"related\": []\n}"
+   },
+   {
+    "error": false,
+    "text": "{\n  \"url\": \"https://theses.cz/id/u1/\",\n  \"author\": \"Jan Novák (student)\",\n  \"type\": \"Diplomová práce\",\n  \"title\": \"T i x\",\n  \"title_translated\": \"Tr\",\n  \"abstract_cs\": \"A b text hidden\",\n  \"abstract_en\": \"E\",\n  \"keywords\": {\n    \"Klíčová slova\": [\n      \"second same label\"\n    ],\n    \"?\": [\n      \"no label\"\n    ]\n  },\n  \"defense\": [\n    \"Obhajoba proběhla 1. 2. 2020\",\n    \"Vedoucí: A\",\n    \"Oponent: B\"\n  ],\n  \"language\": \"angličtina\",\n  \"submitted\": \"3. 5. 2023\",\n  \"school\": \"Škola Bakalářský: Obor\",\n  \"fulltext_access\": \"Zveřejněno: světu druhé\",\n  \"archive_url\": \"https://arch.example/1\",\n  \"related\": [\n    {\n      \"title\": \"Rel one\",\n      \"url\": \"https://theses.cz/id/r1/\"\n    },\n    {\n      \"title\": \"Rel 2\",\n      \"url\": \"https://theses.cz/id/r2\"\n    },\n    {\n      \"title\": \"empty code\",\n      \"url\": \"https://theses.cz/id/\"\n    }\n  ]\n}"
+   },
+   {
+    "error": false,
+    "text": "{\n  \"url\": \"https://theses.cz/id/u1/\",\n  \"author\": \"Jan Novák (student)\",\n  \"type\": \"Diplomová práce\",\n  \"title\": \"T i x\",\n  \"title_translated\": \"Tr\",\n  \"abstract_cs\": \"A b text hidden\",\n  \"abstract_en\": \"E\",\n  \"keywords\": {\n    \"Klíčová slova\": [\n      \"second same label\"\n    ],\n    \"?\": [\n      \"no label\"\n    ]\n  },\n  \"defense\": [\n    \"Obhajoba proběhla 1. 2. 2020\",\n    \"Vedoucí: A\",\n    \"Oponent: B\"\n  ],\n  \"language\": \"angličtina\",\n  \"submitted\": \"3. 5. 2023\",\n  \"school\": \"Škola Bakalářský: Obor\",\n  \"fulltext_access\": \"Zveřejněno: světu druhé\",\n  \"archive_url\": \"https://arch.example/1\",\n  \"related\": [\n    {\n      \"title\": \"Rel one\",\n      \"url\": \"https://theses.cz/id/r1/\"\n    },\n    {\n      \"title\": \"Rel 2\",\n      \"url\": \"https://theses.cz/id/r2\"\n    },\n    {\n      \"title\": \"empty code\",\n      \"url\": \"https://theses.cz/id/\"\n    }\n  ]\n}"
+   },
+   {
+    "error": false,
+    "text": "{\n  \"url\": \"https://theses.cz/id/u1/\",\n  \"author\": \"Jan Novák (student)\",\n  \"type\": \"Diplomová práce\",\n  \"title\": \"T i x\",\n  \"title_translated\": \"Tr\",\n  \"abstract_cs\": \"A b text hidden\",\n  \"abstract_en\": \"E\",\n  \"keywords\": {\n    \"Klíčová slova\": [\n      \"second same label\"\n    ],\n    \"?\": [\n      \"no label\"\n    ]\n  },\n  \"defense\": [\n    \"Obhajoba proběhla 1. 2. 2020\",\n    \"Vedoucí: A\",\n    \"Oponent: B\"\n  ],\n  \"language\": \"angličtina\",\n  \"submitted\": \"3. 5. 2023\",\n  \"school\": \"Škola Bakalářský: Obor\",\n  \"fulltext_access\": \"Zveřejněno: světu druhé\",\n  \"archive_url\": \"https://arch.example/1\",\n  \"related\": [\n    {\n      \"title\": \"Rel one\",\n      \"url\": \"https://theses.cz/id/r1/\"\n    },\n    {\n      \"title\": \"Rel 2\",\n      \"url\": \"https://theses.cz/id/r2\"\n    },\n    {\n      \"title\": \"empty code\",\n      \"url\": \"https://theses.cz/id/\"\n    }\n  ]\n}"
+   },
+   {
+    "error": false,
+    "text": "{\n  \"url\": \"https://theses.cz/id/u1/\",\n  \"author\": \"Jan Novák (student)\",\n  \"type\": \"Diplomová práce\",\n  \"title\": \"T i x\",\n  \"title_translated\": \"Tr\",\n  \"abstract_cs\": \"A b text hidden\",\n  \"abstract_en\": \"E\",\n  \"keywords\": {\n    \"Klíčová slova\": [\n      \"second same label\"\n    ],\n    \"?\": [\n      \"no label\"\n    ]\n  },\n  \"defense\": [\n    \"Obhajoba proběhla 1. 2. 2020\",\n    \"Vedoucí: A\",\n    \"Oponent: B\"\n  ],\n  \"language\": \"angličtina\",\n  \"submitted\": \"3. 5. 2023\",\n  \"school\": \"Škola Bakalářský: Obor\",\n  \"fulltext_access\": \"Zveřejněno: světu druhé\",\n  \"archive_url\": \"https://arch.example/1\",\n  \"related\": [\n    {\n      \"title\": \"Rel one\",\n      \"url\": \"https://theses.cz/id/r1/\"\n    },\n    {\n      \"title\": \"Rel 2\",\n      \"url\": \"https://theses.cz/id/r2\"\n    },\n    {\n      \"title\": \"empty code\",\n      \"url\": \"https://theses.cz/id/\"\n    }\n  ]\n}"
+   },
+   {
+    "error": false,
+    "text": "{\n  \"error\": \"record gone is not publicly viewable on theses.cz\"\n}"
+   },
+   {
+    "error": false,
+    "text": "{\n  \"error\": \"record gone is not publicly viewable on theses.cz\"\n}"
+   }
+  ],
+  "requests": [
+   "https://theses.cz/id/d1/",
+   "https://theses.cz/id/d2/",
+   "https://theses.cz/id/u1/",
+   "https://theses.cz/id/u1/",
+   "https://theses.cz/id/u1/",
+   "https://theses.cz/id/u1/",
+   "https://theses.cz/id/gone/",
+   "https://theses.cz/id/gone/"
+  ],
+  "saved_after": null,
+  "authenticated": []
+ },
+ "intentional": "a URL with a query string named the record '?lang=en' in Python; Rust drops query and fragment first"
 }

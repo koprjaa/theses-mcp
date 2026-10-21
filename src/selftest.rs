@@ -151,15 +151,19 @@ pub fn run() -> Check<String> {
         &zcu,
     )?;
     // UTB is checked at the lookup, not through a record: its DSpace 5 has no searchable API
-    let utb = t.repository_lookup(
-        "Univerzita Tomáše Bati ve Zlíně",
-        "Korupce a její vliv na společnost",
-    );
+    let utb = t
+        .repository_lookup(
+            "Univerzita Tomáše Bati ve Zlíně",
+            "Korupce a její vliv na společnost",
+        )
+        .map_err(e)?;
     ensure(utb.len() == 3, "UTB", &serde_json::json!(utb.len()))?;
-    let vscht = t.repository_lookup(
-        "Vysoká škola chemicko-technologická v Praze",
-        "Wikipedia v chemii, chemie na Wikipedii",
-    );
+    let vscht = t
+        .repository_lookup(
+            "Vysoká škola chemicko-technologická v Praze",
+            "Wikipedia v chemii, chemie na Wikipedii",
+        )
+        .map_err(e)?;
     ensure(
         !vscht.is_empty() && vscht.iter().all(|f| f["confirmed"] == true),
         "VŠCHT",

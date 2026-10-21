@@ -53,5 +53,21 @@
   ],
   "saved_after": null,
   "authenticated": []
- }
+ },
+ "fixed": {
+  "results": [
+   {
+    "error": false,
+    "text": "{\n  \"url\": \"https://theses.cz/id/bad001/\",\n  \"access\": [\n    \"světu\"\n  ],\n  \"archive_url\": null,\n  \"files\": [],\n  \"note\": \"school repository unreachable: JSONDecodeError\"\n}"
+   }
+  ],
+  "requests": [
+   "https://theses.cz/id/bad001/",
+   "https://theses.cz/vyhledavani/?search=Návrh systému řízení&start=1",
+   "https://dspace.vutbr.cz/server/api/discover/search/objects?dsoType=item&query=Návrh systému řízení&size=5"
+  ],
+  "saved_after": null,
+  "authenticated": []
+ },
+ "intentional": "Python reported a repository that failed to answer as one that holds no such thesis; Rust says the repository was unreachable"
 }
