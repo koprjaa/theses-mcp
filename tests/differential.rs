@@ -40,6 +40,25 @@ fn scenarios() -> Vec<(String, Value)> {
     out
 }
 
+/// Replaces the temporary home with `<HOME>`, also in its JSON-escaped form,
+/// and writes the rest of such a path with `/` so Windows paths compare equal.
+fn mask_home(text: &str, home: &str) -> String {
+    let escaped = serde_json::to_string(home).unwrap();
+    let escaped = &escaped[1..escaped.len() - 1];
+    let text = text.replace(escaped, "<HOME>").replace(home, "<HOME>");
+    let mut out = String::with_capacity(text.len());
+    let mut rest = text.as_str();
+    while let Some(at) = rest.find("<HOME>") {
+        out.push_str(&rest[..at]);
+        let tail = &rest[at..];
+        let end = tail.find(['"', '\n', ' ']).unwrap_or(tail.len());
+        out.push_str(&tail[..end].replace("\\\\", "/").replace('\\', "/"));
+        rest = &tail[end..];
+    }
+    out.push_str(rest);
+    out
+}
+
 struct Observed {
     results: Vec<(bool, String)>,
     requests: Vec<String>,
@@ -67,7 +86,7 @@ fn run(sc: &Value) -> Observed {
         .iter()
         .map(|c| {
             let reply = call_blocking(&app, c["tool"].as_str().unwrap(), &args_of(&c["args"]));
-            (reply.is_error, reply.text.replace(&home_text, "<HOME>"))
+            (reply.is_error, mask_home(&reply.text, &home_text))
         })
         .collect();
     let saved_after = fs::read_to_string(store.join("cookies.json"))
