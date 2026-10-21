@@ -24,20 +24,54 @@ fn arg_opt_str(args: &Map<String, Value>, key: &str) -> Result<Option<String>, S
     }
 }
 
+/// What pydantic's lax mode made of a JSON value for an `int` field: whole numbers sent as
+/// floats or text ("5", " 5 ", "5.0"), and booleans, are accepted.
+fn lax_int(v: &Value) -> Option<i64> {
+    let whole = |f: f64| (f.fract() == 0.0 && f.abs() < 9.0e18).then_some(f as i64);
+    match v {
+        Value::Number(n) => n.as_i64().or_else(|| n.as_f64().and_then(whole)),
+        Value::Bool(b) => Some(i64::from(*b)),
+        Value::String(s) => {
+            let t = s.trim();
+            t.parse::<i64>().ok().or_else(|| {
+                let (int, frac) = t.split_once('.')?;
+                (!frac.is_empty() && frac.bytes().all(|b| b == b'0'))
+                    .then(|| int.parse::<i64>().ok())?
+            })
+        }
+        _ => None,
+    }
+}
+
+/// Likewise for `bool`: 0 and 1, and the words pydantic knows.
+fn lax_bool(v: &Value) -> Option<bool> {
+    match v {
+        Value::Bool(b) => Some(*b),
+        Value::Number(n) => match n.as_f64()? {
+            0.0 => Some(false),
+            1.0 => Some(true),
+            _ => None,
+        },
+        Value::String(s) => match s.to_lowercase().as_str() {
+            "1" | "on" | "t" | "true" | "y" | "yes" => Some(true),
+            "0" | "off" | "f" | "false" | "n" | "no" => Some(false),
+            _ => None,
+        },
+        _ => None,
+    }
+}
+
 fn arg_int(args: &Map<String, Value>, key: &str, default: i64) -> Result<i64, String> {
     match args.get(key) {
         None => Ok(default),
-        Some(v) => v
-            .as_i64()
-            .ok_or_else(|| format!("{key}\n  Input should be a valid integer")),
+        Some(v) => lax_int(v).ok_or_else(|| format!("{key}\n  Input should be a valid integer")),
     }
 }
 
 fn arg_bool(args: &Map<String, Value>, key: &str, default: bool) -> Result<bool, String> {
     match args.get(key) {
         None => Ok(default),
-        Some(Value::Bool(b)) => Ok(*b),
-        Some(_) => Err(format!("{key}\n  Input should be a valid boolean")),
+        Some(v) => lax_bool(v).ok_or_else(|| format!("{key}\n  Input should be a valid boolean")),
     }
 }
 

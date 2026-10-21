@@ -112,6 +112,13 @@ fn host_cookies(
         .collect()
 }
 
+/// When the wait for the user to sign in runs out.
+pub fn deadline(wait_seconds: i64) -> Instant {
+    // a year is as good as forever, and Instant + Duration panics when it overflows
+    const YEAR: i64 = 365 * 24 * 3600;
+    Instant::now() + Duration::from_secs(wait_seconds.clamp(0, YEAR) as u64)
+}
+
 async fn blocking<T: Send + 'static>(f: impl FnOnce() -> T + Send + 'static) -> T {
     tokio::task::spawn_blocking(f).await.expect("worker thread")
 }
@@ -265,7 +272,7 @@ async fn drive(
         }
     }
 
-    let deadline = Instant::now() + Duration::from_secs(p.wait_seconds.max(0) as u64);
+    let deadline = deadline(p.wait_seconds);
     let mut signed_in = false;
     while Instant::now() < deadline {
         // closing the window is a normal way to end this, and a navigation in flight

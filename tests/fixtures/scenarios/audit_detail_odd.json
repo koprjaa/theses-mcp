@@ -1,0 +1,150 @@
+{
+ "name": "audit_detail_odd",
+ "env": {},
+ "saved": null,
+ "calls": [
+  {
+   "tool": "detail",
+   "args": {
+    "id_or_url": "d1"
+   }
+  },
+  {
+   "tool": "detail",
+   "args": {
+    "id_or_url": "d2"
+   }
+  },
+  {
+   "tool": "detail",
+   "args": {
+    "id_or_url": "https://theses.cz/id/u1/"
+   }
+  },
+  {
+   "tool": "detail",
+   "args": {
+    "id_or_url": "/id/u1/ "
+   }
+  },
+  {
+   "tool": "detail",
+   "args": {
+    "id_or_url": " u1"
+   }
+  },
+  {
+   "tool": "detail",
+   "args": {
+    "id_or_url": "https://theses.cz/id/u1/?lang=en"
+   }
+  },
+  {
+   "tool": "detail",
+   "args": {
+    "id_or_url": "gone"
+   }
+  },
+  {
+   "tool": "fulltext",
+   "args": {
+    "id_or_url": "gone"
+   }
+  }
+ ],
+ "responses": [
+  {
+   "key": "https://theses.cz/id/d1/",
+   "status": 200,
+   "url": "https://theses.cz/id/d1/",
+   "headers": {
+    "Content-Type": "text/html; charset=utf-8"
+   },
+   "body": "<html><head><title>t</title></head><body><div id=\"app\"><div id=\"metadata\"><h3 class=\"th-autor\"><b>Jan&nbsp;Novák</b> <small>(student)</small></h3><h5 class=\"typ-prace\">Diplomová práce</h5><h2 class=\"th-title\">T <i>i</i><br>x</h2>\n<h5 class=\"transl\">Tr</h5><div class=\"row\"><div class=\"anotace\"><h5>Anotace:</h5>A <b>b</b> text<a class=\"rozbal\">více</a><span style=\"display:none\"> hidden</span><a class=\"sbal\">méně</a></div><div class=\"anotace\"><h5>Abstract:</h5>E</div><div class=\"anotace\">third</div></div>\n<div class=\"klslova klicova-slova\"><h3>Klíčová slova</h3> <a><span class=\"tg4\"> a </span></a><a><span class=\"tg4\">b <i>c</i></span></a></div>\n<div class=\"klslova\"><span class=\"tg4\">no label</span></div>\n<div class=\"klslova klicova-slova\"><h3>Klíčová slova</h3> <span class=\"tg4\">second same label</span></div>\n<div class=\"servis_info nedurazne\"><div>Jazyk práce: čeština</div><div>no colon here</div><div>Identifikátor: https://x.cz/a:b</div><div>Jazyk práce: angličtina</div><div>Datum vytvoření / odevzdání či podání práce:\t3. 5. 2023</div><div><span>Nested: <b>value</b></span></div></div>\n<div class=\"row\"><div><h3>Obhajoba <small>závěrečné práce</small></h3><ul><li>Obhajoba proběhla <b>1. 2. 2020</b><li> Vedoucí: A<li> Oponent: B <li></ul></div></div>\n<h3>Obhajoba druhá</h3><ul><li>never</li></ul></div><div class=\"plny_text_th medium-6 columns\"><h5>Obsah</h5>Zveřejněno: <ul id=\"th-obsah\"><li>světu</li><li> druhé </li></ul></div><div class=\"plny_text_ext\"><a href=\"https://arch.example/1\">link</a></div>\n<div id=\"th-sloupec\"><div class=\"oddil\"><h4>Škola</h4><p>Bakalářský: <em>Obor</em></p></div><div class=\"oddil\"><ul><li><a href=\"/id/r1/\"> <span>Rel</span> one</a><br><span class=\"nedurazne\">Aut</span></li><li><a href=\"/id/r2\">Rel 2</a></li><li><a href=\"https://theses.cz/id/r3/\">abs</a></li><li><a href=\"/id/\">empty code</a></li><li><a>no href</a></li></ul></div></div></div></body></html>"
+  },
+  {
+   "key": "https://theses.cz/id/d2/",
+   "status": 200,
+   "url": "https://theses.cz/id/d2/",
+   "headers": {
+    "Content-Type": "text/html; charset=utf-8"
+   },
+   "body": "<html><head><title>t</title></head><body><div id=\"app\"><div id=\"metadata\"><h3 class=\"th-autor\">X</h3><table><tr><td class=\"th-title\">in table</td></tr></table><p>para<div class=\"typ-prace\">div in p</div></p><div class=\"anotace\"><p>p1<p>p2</div><form><form><div class=\"transl\">nested form</div></form></form></div></div></body></html>"
+  },
+  {
+   "key": "https://theses.cz/id/u1/",
+   "status": 200,
+   "url": "https://theses.cz/id/u1/",
+   "headers": {
+    "Content-Type": "text/html; charset=utf-8"
+   },
+   "body": "<html><head><title>t</title></head><body><div id=\"app\"><div id=\"metadata\"><h3 class=\"th-autor\"><b>Jan&nbsp;Novák</b> <small>(student)</small></h3><h5 class=\"typ-prace\">Diplomová práce</h5><h2 class=\"th-title\">T <i>i</i><br>x</h2>\n<h5 class=\"transl\">Tr</h5><div class=\"row\"><div class=\"anotace\"><h5>Anotace:</h5>A <b>b</b> text<a class=\"rozbal\">více</a><span style=\"display:none\"> hidden</span><a class=\"sbal\">méně</a></div><div class=\"anotace\"><h5>Abstract:</h5>E</div><div class=\"anotace\">third</div></div>\n<div class=\"klslova klicova-slova\"><h3>Klíčová slova</h3> <a><span class=\"tg4\"> a </span></a><a><span class=\"tg4\">b <i>c</i></span></a></div>\n<div class=\"klslova\"><span class=\"tg4\">no label</span></div>\n<div class=\"klslova klicova-slova\"><h3>Klíčová slova</h3> <span class=\"tg4\">second same label</span></div>\n<div class=\"servis_info nedurazne\"><div>Jazyk práce: čeština</div><div>no colon here</div><div>Identifikátor: https://x.cz/a:b</div><div>Jazyk práce: angličtina</div><div>Datum vytvoření / odevzdání či podání práce:\t3. 5. 2023</div><div><span>Nested: <b>value</b></span></div></div>\n<div class=\"row\"><div><h3>Obhajoba <small>závěrečné práce</small></h3><ul><li>Obhajoba proběhla <b>1. 2. 2020</b><li> Vedoucí: A<li> Oponent: B <li></ul></div></div>\n<h3>Obhajoba druhá</h3><ul><li>never</li></ul></div><div class=\"plny_text_th medium-6 columns\"><h5>Obsah</h5>Zveřejněno: <ul id=\"th-obsah\"><li>světu</li><li> druhé </li></ul></div><div class=\"plny_text_ext\"><a href=\"https://arch.example/1\">link</a></div>\n<div id=\"th-sloupec\"><div class=\"oddil\"><h4>Škola</h4><p>Bakalářský: <em>Obor</em></p></div><div class=\"oddil\"><ul><li><a href=\"/id/r1/\"> <span>Rel</span> one</a><br><span class=\"nedurazne\">Aut</span></li><li><a href=\"/id/r2\">Rel 2</a></li><li><a href=\"https://theses.cz/id/r3/\">abs</a></li><li><a href=\"/id/\">empty code</a></li><li><a>no href</a></li></ul></div></div></div></body></html>"
+  },
+  {
+   "key": "https://theses.cz/id/?lang=en/",
+   "status": 200,
+   "url": "https://theses.cz/id/?lang=en/",
+   "headers": {
+    "Content-Type": "text/html; charset=utf-8"
+   },
+   "body": "<html>x</html>"
+  },
+  {
+   "key": "https://theses.cz/id/gone/",
+   "status": 200,
+   "url": "https://theses.cz/id/gone/",
+   "headers": {
+    "Content-Type": "text/html; charset=utf-8"
+   },
+   "body": "<html><body>Chybná adresa v ISu</body></html>"
+  }
+ ],
+ "expected": {
+  "results": [
+   {
+    "error": false,
+    "text": "{\n  \"url\": \"https://theses.cz/id/d1/\",\n  \"author\": \"Jan Novák (student)\",\n  \"type\": \"Diplomová práce\",\n  \"title\": \"T i x\",\n  \"title_translated\": \"Tr\",\n  \"abstract_cs\": \"A b text hidden\",\n  \"abstract_en\": \"E\",\n  \"keywords\": {\n    \"Klíčová slova\": [\n      \"second same label\"\n    ],\n    \"?\": [\n      \"no label\"\n    ]\n  },\n  \"defense\": [\n    \"Obhajoba proběhla 1. 2. 2020\",\n    \"Vedoucí: A\",\n    \"Oponent: B\"\n  ],\n  \"language\": \"angličtina\",\n  \"submitted\": \"3. 5. 2023\",\n  \"school\": \"Škola Bakalářský: Obor\",\n  \"fulltext_access\": \"Zveřejněno: světu druhé\",\n  \"archive_url\": \"https://arch.example/1\",\n  \"related\": [\n    {\n      \"title\": \"Rel one\",\n      \"url\": \"https://theses.cz/id/r1/\"\n    },\n    {\n      \"title\": \"Rel 2\",\n      \"url\": \"https://theses.cz/id/r2\"\n    },\n    {\n      \"title\": \"empty code\",\n      \"url\": \"https://theses.cz/id/\"\n    }\n  ]\n}"
+   },
+   {
+    "error": false,
+    "text": "{\n  \"url\": \"https://theses.cz/id/d2/\",\n  \"author\": \"X\",\n  \"type\": \"div in p\",\n  \"title\": \"in table\",\n  \"title_translated\": \"nested form\",\n  \"abstract_cs\": \"p1 p2\",\n  \"abstract_en\": \"\",\n  \"keywords\": {},\n  \"defense\": [],\n  \"language\": null,\n  \"submitted\": null,\n  \"school\": \"\",\n  \"fulltext_access\": \"\",\n  \"archive_url\": null,\n  \"related\": []\n}"
+   },
+   {
+    "error": false,
+    "text": "{\n  \"url\": \"https://theses.cz/id/u1/\",\n  \"author\": \"Jan Novák (student)\",\n  \"type\": \"Diplomová práce\",\n  \"title\": \"T i x\",\n  \"title_translated\": \"Tr\",\n  \"abstract_cs\": \"A b text hidden\",\n  \"abstract_en\": \"E\",\n  \"keywords\": {\n    \"Klíčová slova\": [\n      \"second same label\"\n    ],\n    \"?\": [\n      \"no label\"\n    ]\n  },\n  \"defense\": [\n    \"Obhajoba proběhla 1. 2. 2020\",\n    \"Vedoucí: A\",\n    \"Oponent: B\"\n  ],\n  \"language\": \"angličtina\",\n  \"submitted\": \"3. 5. 2023\",\n  \"school\": \"Škola Bakalářský: Obor\",\n  \"fulltext_access\": \"Zveřejněno: světu druhé\",\n  \"archive_url\": \"https://arch.example/1\",\n  \"related\": [\n    {\n      \"title\": \"Rel one\",\n      \"url\": \"https://theses.cz/id/r1/\"\n    },\n    {\n      \"title\": \"Rel 2\",\n      \"url\": \"https://theses.cz/id/r2\"\n    },\n    {\n      \"title\": \"empty code\",\n      \"url\": \"https://theses.cz/id/\"\n    }\n  ]\n}"
+   },
+   {
+    "error": false,
+    "text": "{\n  \"url\": \"https://theses.cz/id/u1/\",\n  \"author\": \"Jan Novák (student)\",\n  \"type\": \"Diplomová práce\",\n  \"title\": \"T i x\",\n  \"title_translated\": \"Tr\",\n  \"abstract_cs\": \"A b text hidden\",\n  \"abstract_en\": \"E\",\n  \"keywords\": {\n    \"Klíčová slova\": [\n      \"second same label\"\n    ],\n    \"?\": [\n      \"no label\"\n    ]\n  },\n  \"defense\": [\n    \"Obhajoba proběhla 1. 2. 2020\",\n    \"Vedoucí: A\",\n    \"Oponent: B\"\n  ],\n  \"language\": \"angličtina\",\n  \"submitted\": \"3. 5. 2023\",\n  \"school\": \"Škola Bakalářský: Obor\",\n  \"fulltext_access\": \"Zveřejněno: světu druhé\",\n  \"archive_url\": \"https://arch.example/1\",\n  \"related\": [\n    {\n      \"title\": \"Rel one\",\n      \"url\": \"https://theses.cz/id/r1/\"\n    },\n    {\n      \"title\": \"Rel 2\",\n      \"url\": \"https://theses.cz/id/r2\"\n    },\n    {\n      \"title\": \"empty code\",\n      \"url\": \"https://theses.cz/id/\"\n    }\n  ]\n}"
+   },
+   {
+    "error": false,
+    "text": "{\n  \"url\": \"https://theses.cz/id/u1/\",\n  \"author\": \"Jan Novák (student)\",\n  \"type\": \"Diplomová práce\",\n  \"title\": \"T i x\",\n  \"title_translated\": \"Tr\",\n  \"abstract_cs\": \"A b text hidden\",\n  \"abstract_en\": \"E\",\n  \"keywords\": {\n    \"Klíčová slova\": [\n      \"second same label\"\n    ],\n    \"?\": [\n      \"no label\"\n    ]\n  },\n  \"defense\": [\n    \"Obhajoba proběhla 1. 2. 2020\",\n    \"Vedoucí: A\",\n    \"Oponent: B\"\n  ],\n  \"language\": \"angličtina\",\n  \"submitted\": \"3. 5. 2023\",\n  \"school\": \"Škola Bakalářský: Obor\",\n  \"fulltext_access\": \"Zveřejněno: světu druhé\",\n  \"archive_url\": \"https://arch.example/1\",\n  \"related\": [\n    {\n      \"title\": \"Rel one\",\n      \"url\": \"https://theses.cz/id/r1/\"\n    },\n    {\n      \"title\": \"Rel 2\",\n      \"url\": \"https://theses.cz/id/r2\"\n    },\n    {\n      \"title\": \"empty code\",\n      \"url\": \"https://theses.cz/id/\"\n    }\n  ]\n}"
+   },
+   {
+    "error": false,
+    "text": "{\n  \"error\": \"record ?lang=en not found\"\n}"
+   },
+   {
+    "error": false,
+    "text": "{\n  \"error\": \"record gone is not publicly viewable on theses.cz\"\n}"
+   },
+   {
+    "error": false,
+    "text": "{\n  \"error\": \"record gone is not publicly viewable on theses.cz\"\n}"
+   }
+  ],
+  "requests": [
+   "https://theses.cz/id/d1/",
+   "https://theses.cz/id/d2/",
+   "https://theses.cz/id/u1/",
+   "https://theses.cz/id/u1/",
+   "https://theses.cz/id/u1/",
+   "https://theses.cz/id/?lang=en/",
+   "https://theses.cz/id/gone/",
+   "https://theses.cz/id/gone/"
+  ],
+  "saved_after": null,
+  "authenticated": []
+ }
+}

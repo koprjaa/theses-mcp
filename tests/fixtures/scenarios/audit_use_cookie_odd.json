@@ -1,0 +1,268 @@
+{
+ "name": "audit_use_cookie_odd",
+ "env": {
+  "THESES_COOKIES": "{\"env.example\": \"s=1; t = 2;bad;u=3=4\", \"ok.example\": \"q=1\"}"
+ },
+ "saved": {
+  "old.example": [
+   {
+    "name": "n",
+    "value": "v",
+    "domain": ".old.example"
+   }
+  ],
+  "ok.example": [
+   {
+    "name": "stale",
+    "value": "1",
+    "domain": "ok.example"
+   }
+  ]
+ },
+ "calls": [
+  {
+   "tool": "use_cookie",
+   "args": {
+    "host": "ok.example",
+    "cookie": "a=b; c"
+   }
+  },
+  {
+   "tool": "use_cookie",
+   "args": {
+    "host": "ok.example",
+    "cookie": "=v"
+   }
+  },
+  {
+   "tool": "use_cookie",
+   "args": {
+    "host": "ok.example",
+    "cookie": "  ; "
+   }
+  },
+  {
+   "tool": "use_cookie",
+   "args": {
+    "host": "ok.example",
+    "cookie": "x==y;  name = v ;z"
+   }
+  },
+  {
+   "tool": "use_cookie",
+   "args": {
+    "host": "ok.example",
+    "cookie": "sessvalue=="
+   }
+  },
+  {
+   "tool": "use_cookie",
+   "args": {
+    "host": "ok.example",
+    "cookie": ""
+   }
+  },
+  {
+   "tool": "use_cookie",
+   "args": {
+    "host": "out.example",
+    "cookie": "a=b"
+   }
+  },
+  {
+   "tool": "use_cookie",
+   "args": {
+    "host": "tiny.example",
+    "cookie": "a=b"
+   }
+  },
+  {
+   "tool": "use_cookie",
+   "args": {
+    "host": "cap.example",
+    "cookie": "a=b"
+   }
+  },
+  {
+   "tool": "use_cookie",
+   "args": {
+    "host": "upper.example",
+    "cookie": "a=b"
+   }
+  },
+  {
+   "tool": "use_cookie",
+   "args": {
+    "host": "nowhere.example",
+    "cookie": "a=b"
+   }
+  },
+  {
+   "tool": "whoami",
+   "args": {}
+  }
+ ],
+ "responses": [
+  {
+   "key": "https://ok.example/",
+   "status": 200,
+   "url": "https://ok.example/",
+   "headers": {
+    "Content-Type": "text/html; charset=utf-8"
+   },
+   "body": "<html><body>Obsah stránky pro přihlášeného. Obsah stránky pro přihlášeného. Obsah stránky pro přihlášeného. Obsah stránky pro přihlášeného. Obsah stránky pro přihlášeného. Obsah stránky pro přihlášeného. Obsah stránky pro přihlášeného. Obsah stránky pro přihlášeného. Obsah stránky pro přihlášeného. Obsah stránky pro přihlášeného. Obsah stránky pro přihlášeného. Obsah stránky pro přihlášeného. Obsah stránky pro přihlášeného. Obsah stránky pro přihlášeného. Obsah stránky pro přihlášeného. Obsah stránky pro přihlášeného. Obsah stránky pro přihlášeného. Obsah stránky pro přihlášeného. Obsah stránky pro přihlášeného. Obsah stránky pro přihlášeného. Obsah stránky pro přihlášeného. Obsah stránky pro přihlášeného. Obsah stránky pro přihlášeného. Obsah stránky pro přihlášeného. Obsah stránky pro přihlášeného. Obsah stránky pro přihlášeného. Obsah stránky pro přihlášeného. Obsah stránky pro přihlášeného. Obsah stránky pro přihlášeného. Obsah stránky pro přihlášeného. </body></html>"
+  },
+  {
+   "key": "https://out.example/",
+   "status": 200,
+   "url": "https://out.example/",
+   "headers": {
+    "Content-Type": "text/html; charset=utf-8"
+   },
+   "body": "<html><body>Obsah stránky. Obsah stránky. Obsah stránky. Obsah stránky. Obsah stránky. Obsah stránky. Obsah stránky. Obsah stránky. Obsah stránky. Obsah stránky. Obsah stránky. Obsah stránky. Obsah stránky. Obsah stránky. Obsah stránky. Obsah stránky. Obsah stránky. Obsah stránky. Obsah stránky. Obsah stránky. Obsah stránky. Obsah stránky. Obsah stránky. Obsah stránky. Obsah stránky. Obsah stránky. Obsah stránky. Obsah stránky. Obsah stránky. Obsah stránky. <a>Přihlásit se</a></body></html>"
+  },
+  {
+   "key": "https://tiny.example/",
+   "status": 200,
+   "url": "https://tiny.example/",
+   "headers": {
+    "Content-Type": "text/html; charset=utf-8"
+   },
+   "body": "<html><body>tiny</body></html>"
+  },
+  {
+   "key": "https://cap.example/",
+   "status": 200,
+   "url": "https://cap.example/",
+   "headers": {
+    "Content-Type": "text/html; charset=utf-8"
+   },
+   "body": "<html><body>Obsah stránky pro přihlášeného. Obsah stránky pro přihlášeného. Obsah stránky pro přihlášeného. Obsah stránky pro přihlášeného. Obsah stránky pro přihlášeného. Obsah stránky pro přihlášeného. Obsah stránky pro přihlášeného. Obsah stránky pro přihlášeného. Obsah stránky pro přihlášeného. Obsah stránky pro přihlášeného. Obsah stránky pro přihlášeného. Obsah stránky pro přihlášeného. Obsah stránky pro přihlášeného. Obsah stránky pro přihlášeného. Obsah stránky pro přihlášeného. Obsah stránky pro přihlášeného. Obsah stránky pro přihlášeného. Obsah stránky pro přihlášeného. Obsah stránky pro přihlášeného. Obsah stránky pro přihlášeného. Obsah stránky pro přihlášeného. Obsah stránky pro přihlášeného. Obsah stránky pro přihlášeného. Obsah stránky pro přihlášeného. Obsah stránky pro přihlášeného. Obsah stránky pro přihlášeného. Obsah stránky pro přihlášeného. Obsah stránky pro přihlášeného. Obsah stránky pro přihlášeného. Obsah stránky pro přihlášeného. </body></html>captcha"
+  },
+  {
+   "key": "https://upper.example/",
+   "status": 200,
+   "url": "https://upper.example/",
+   "headers": {
+    "Content-Type": "text/html; charset=utf-8"
+   },
+   "body": "<html><body>Obsah stránky pro přihlášeného. Obsah stránky pro přihlášeného. Obsah stránky pro přihlášeného. Obsah stránky pro přihlášeného. Obsah stránky pro přihlášeného. Obsah stránky pro přihlášeného. Obsah stránky pro přihlášeného. Obsah stránky pro přihlášeného. Obsah stránky pro přihlášeného. Obsah stránky pro přihlášeného. Obsah stránky pro přihlášeného. Obsah stránky pro přihlášeného. Obsah stránky pro přihlášeného. Obsah stránky pro přihlášeného. Obsah stránky pro přihlášeného. Obsah stránky pro přihlášeného. Obsah stránky pro přihlášeného. Obsah stránky pro přihlášeného. Obsah stránky pro přihlášeného. Obsah stránky pro přihlášeného. Obsah stránky pro přihlášeného. Obsah stránky pro přihlášeného. Obsah stránky pro přihlášeného. Obsah stránky pro přihlášeného. Obsah stránky pro přihlášeného. Obsah stránky pro přihlášeného. Obsah stránky pro přihlášeného. Obsah stránky pro přihlášeného. Obsah stránky pro přihlášeného. Obsah stránky pro přihlášeného. </body></html>"
+  },
+  {
+   "key": "https://old.example/",
+   "status": 200,
+   "url": "https://old.example/",
+   "headers": {
+    "Content-Type": "text/html; charset=utf-8"
+   },
+   "body": "<html><body>Obsah stránky pro přihlášeného. Obsah stránky pro přihlášeného. Obsah stránky pro přihlášeného. Obsah stránky pro přihlášeného. Obsah stránky pro přihlášeného. Obsah stránky pro přihlášeného. Obsah stránky pro přihlášeného. Obsah stránky pro přihlášeného. Obsah stránky pro přihlášeného. Obsah stránky pro přihlášeného. Obsah stránky pro přihlášeného. Obsah stránky pro přihlášeného. Obsah stránky pro přihlášeného. Obsah stránky pro přihlášeného. Obsah stránky pro přihlášeného. Obsah stránky pro přihlášeného. Obsah stránky pro přihlášeného. Obsah stránky pro přihlášeného. Obsah stránky pro přihlášeného. Obsah stránky pro přihlášeného. Obsah stránky pro přihlášeného. Obsah stránky pro přihlášeného. Obsah stránky pro přihlášeného. Obsah stránky pro přihlášeného. Obsah stránky pro přihlášeného. Obsah stránky pro přihlášeného. Obsah stránky pro přihlášeného. Obsah stránky pro přihlášeného. Obsah stránky pro přihlášeného. Obsah stránky pro přihlášeného. </body></html>"
+  },
+  {
+   "key": "https://env.example/",
+   "status": 200,
+   "url": "https://env.example/",
+   "headers": {
+    "Content-Type": "text/html; charset=utf-8"
+   },
+   "body": "<html><body>Obsah stránky pro přihlášeného. Obsah stránky pro přihlášeného. Obsah stránky pro přihlášeného. Obsah stránky pro přihlášeného. Obsah stránky pro přihlášeného. Obsah stránky pro přihlášeného. Obsah stránky pro přihlášeného. Obsah stránky pro přihlášeného. Obsah stránky pro přihlášeného. Obsah stránky pro přihlášeného. Obsah stránky pro přihlášeného. Obsah stránky pro přihlášeného. Obsah stránky pro přihlášeného. Obsah stránky pro přihlášeného. Obsah stránky pro přihlášeného. Obsah stránky pro přihlášeného. Obsah stránky pro přihlášeného. Obsah stránky pro přihlášeného. Obsah stránky pro přihlášeného. Obsah stránky pro přihlášeného. Obsah stránky pro přihlášeného. Obsah stránky pro přihlášeného. Obsah stránky pro přihlášeného. Obsah stránky pro přihlášeného. Obsah stránky pro přihlášeného. Obsah stránky pro přihlášeného. Obsah stránky pro přihlášeného. Obsah stránky pro přihlášeného. Obsah stránky pro přihlášeného. Obsah stránky pro přihlášeného. </body></html>"
+  }
+ ],
+ "expected": {
+  "results": [
+   {
+    "error": false,
+    "text": "{\n  \"host\": \"ok.example\",\n  \"result\": \"signed in\",\n  \"stored\": \"<HOME>/.theses-mcp/cookies.json\"\n}"
+   },
+   {
+    "error": false,
+    "text": "{\n  \"host\": \"ok.example\",\n  \"result\": \"signed in\",\n  \"stored\": \"<HOME>/.theses-mcp/cookies.json\"\n}"
+   },
+   {
+    "error": false,
+    "text": "{\n  \"host\": \"ok.example\",\n  \"result\": \"signed in\",\n  \"stored\": \"<HOME>/.theses-mcp/cookies.json\"\n}"
+   },
+   {
+    "error": false,
+    "text": "{\n  \"host\": \"ok.example\",\n  \"result\": \"signed in\",\n  \"stored\": \"<HOME>/.theses-mcp/cookies.json\"\n}"
+   },
+   {
+    "error": false,
+    "text": "{\n  \"host\": \"ok.example\",\n  \"result\": \"signed in\",\n  \"stored\": \"<HOME>/.theses-mcp/cookies.json\"\n}"
+   },
+   {
+    "error": false,
+    "text": "{\n  \"host\": \"ok.example\",\n  \"result\": \"signed in\",\n  \"stored\": \"<HOME>/.theses-mcp/cookies.json\"\n}"
+   },
+   {
+    "error": false,
+    "text": "{\n  \"host\": \"out.example\",\n  \"result\": \"that cookie does not sign you in\",\n  \"hint\": \"copy it again from a tab where you are signed in\"\n}"
+   },
+   {
+    "error": false,
+    "text": "{\n  \"host\": \"tiny.example\",\n  \"result\": \"that cookie does not sign you in\",\n  \"hint\": \"copy it again from a tab where you are signed in\"\n}"
+   },
+   {
+    "error": false,
+    "text": "{\n  \"host\": \"cap.example\",\n  \"result\": \"that cookie does not sign you in\",\n  \"hint\": \"copy it again from a tab where you are signed in\"\n}"
+   },
+   {
+    "error": false,
+    "text": "{\n  \"host\": \"upper.example\",\n  \"result\": \"signed in\",\n  \"stored\": \"<HOME>/.theses-mcp/cookies.json\"\n}"
+   },
+   {
+    "error": false,
+    "text": "{\n  \"error\": \"could not reach nowhere.example: ConnectionError\"\n}"
+   },
+   {
+    "error": false,
+    "text": "{\n  \"authenticated\": {\n    \"env.example\": \"logged in\",\n    \"ok.example\": \"logged in\",\n    \"old.example\": \"logged in\",\n    \"upper.example\": \"logged in\"\n  }\n}"
+   }
+  ],
+  "requests": [
+   "https://ok.example/ cookies=a=b@ok.example",
+   "https://ok.example/ cookies==v@ok.example",
+   "https://ok.example/ cookies=__Host-issession=;@ok.example",
+   "https://ok.example/ cookies=name=v@ok.example,x==y@ok.example",
+   "https://ok.example/ cookies=sessvalue==@ok.example",
+   "https://ok.example/ cookies=__Host-issession=@ok.example",
+   "https://out.example/ cookies=a=b@out.example",
+   "https://tiny.example/ cookies=a=b@tiny.example",
+   "https://cap.example/ cookies=a=b@cap.example",
+   "https://upper.example/ cookies=a=b@upper.example",
+   "https://nowhere.example/ cookies=a=b@nowhere.example",
+   "https://env.example/",
+   "https://ok.example/",
+   "https://old.example/",
+   "https://upper.example/"
+  ],
+  "saved_after": {
+   "old.example": [
+    {
+     "name": "n",
+     "value": "v",
+     "domain": ".old.example"
+    }
+   ],
+   "ok.example": [
+    {
+     "name": "__Host-issession",
+     "value": "",
+     "domain": "ok.example"
+    }
+   ],
+   "upper.example": [
+    {
+     "name": "a",
+     "value": "b",
+     "domain": "upper.example"
+    }
+   ]
+  },
+  "authenticated": [
+   "env.example",
+   "ok.example",
+   "old.example",
+   "upper.example"
+  ]
+ }
+}

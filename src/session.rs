@@ -166,7 +166,7 @@ impl Theses {
                 ..c.clone()
             })
             .collect();
-        let Ok(resp) = self.http.get(&req) else {
+        let Ok(resp) = self.get_waiting(&req) else {
             return false;
         };
         let text = Page::parse(&resp.text(), &resp.url).text();
@@ -192,7 +192,7 @@ impl Theses {
         }
         let mut req = Request::get(format!("https://{host}/"), 30);
         req.overlay = parsed.clone();
-        let probe = match self.http.get(&req) {
+        let probe = match self.get_waiting(&req) {
             Ok(p) => p,
             Err(e) => return Ok(json!({"error": format!("could not reach {host}: {}", e.class)})),
         };

@@ -1,0 +1,102 @@
+{
+ "name": "audit_search_pages",
+ "env": {},
+ "saved": null,
+ "calls": [
+  {
+   "tool": "search",
+   "args": {
+    "query": "q",
+    "limit": 25
+   }
+  },
+  {
+   "tool": "search",
+   "args": {
+    "query": "q",
+    "limit": 1
+   }
+  },
+  {
+   "tool": "search",
+   "args": {
+    "query": "q",
+    "limit": -3
+   }
+  },
+  {
+   "tool": "search",
+   "args": {
+    "query": "",
+    "limit": 10
+   }
+  }
+ ],
+ "responses": [
+  {
+   "key": "https://theses.cz/vyhledavani/?search=q&start=1",
+   "status": 200,
+   "url": "https://theses.cz/vyhledavani/?search=q&start=1",
+   "headers": {
+    "Content-Type": "text/html; charset=utf-8"
+   },
+   "body": "<html><body><div class=\"vyh_polozka\" data-agenda=\"T\"><h4><a href=\"/id/p1/\">P1</a></h4>&nbsp;(A1)<div class=\"vyh_hlavicky\">h</div></div></body></html>"
+  },
+  {
+   "key": "https://theses.cz/vyhledavani/?search=q&start=11",
+   "status": 200,
+   "url": "https://theses.cz/vyhledavani/?search=q&start=11",
+   "headers": {
+    "Content-Type": "text/html; charset=utf-8"
+   },
+   "body": "<html><body><div class=\"vyh_polozka\" data-agenda=\"T\"><h4><a href=\"/id/p2/\">P2</a></h4>&nbsp;(A2)<div class=\"vyh_hlavicky\">h</div></div></body></html>"
+  },
+  {
+   "key": "https://theses.cz/vyhledavani/?search=q&start=21",
+   "status": 200,
+   "url": "https://theses.cz/vyhledavani/?search=q&start=21",
+   "headers": {
+    "Content-Type": "text/html; charset=utf-8"
+   },
+   "body": "<html><body>nothing</body></html>"
+  },
+  {
+   "key": "https://theses.cz/vyhledavani/?search=&start=1",
+   "status": 200,
+   "url": "https://theses.cz/vyhledavani/?search=&start=1",
+   "headers": {
+    "Content-Type": "text/html; charset=utf-8"
+   },
+   "body": "<html><body><div class=\"vyh_polozka\" data-agenda=\"T\"><h4><a href=\"/id/p9/\">P9</a></h4>&nbsp;(A9)<div class=\"vyh_hlavicky\">h</div></div></body></html>"
+  }
+ ],
+ "expected": {
+  "results": [
+   {
+    "error": false,
+    "text": "{\n  \"total\": null,\n  \"returned\": 2,\n  \"results\": [\n    {\n      \"kind\": \"record\",\n      \"title\": \"P1\",\n      \"author\": \"A1\",\n      \"meta\": \"h\",\n      \"snippet\": \"\",\n      \"url\": \"https://theses.cz/id/p1/\"\n    },\n    {\n      \"kind\": \"record\",\n      \"title\": \"P2\",\n      \"author\": \"A2\",\n      \"meta\": \"h\",\n      \"snippet\": \"\",\n      \"url\": \"https://theses.cz/id/p2/\"\n    }\n  ]\n}"
+   },
+   {
+    "error": false,
+    "text": "{\n  \"total\": null,\n  \"returned\": 1,\n  \"results\": [\n    {\n      \"kind\": \"record\",\n      \"title\": \"P1\",\n      \"author\": \"A1\",\n      \"meta\": \"h\",\n      \"snippet\": \"\",\n      \"url\": \"https://theses.cz/id/p1/\"\n    }\n  ]\n}"
+   },
+   {
+    "error": false,
+    "text": "{\n  \"total\": null,\n  \"returned\": 0,\n  \"results\": []\n}"
+   },
+   {
+    "error": false,
+    "text": "{\n  \"total\": null,\n  \"returned\": 1,\n  \"results\": [\n    {\n      \"kind\": \"record\",\n      \"title\": \"P9\",\n      \"author\": \"A9\",\n      \"meta\": \"h\",\n      \"snippet\": \"\",\n      \"url\": \"https://theses.cz/id/p9/\"\n    }\n  ]\n}"
+   }
+  ],
+  "requests": [
+   "https://theses.cz/vyhledavani/?search=q&start=1",
+   "https://theses.cz/vyhledavani/?search=q&start=11",
+   "https://theses.cz/vyhledavani/?search=q&start=21",
+   "https://theses.cz/vyhledavani/?search=q&start=1",
+   "https://theses.cz/vyhledavani/?search=&start=1"
+  ],
+  "saved_after": null,
+  "authenticated": []
+ }
+}

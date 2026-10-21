@@ -1,0 +1,234 @@
+{
+ "name": "audit_documents_odd",
+ "env": {},
+ "saved": null,
+ "calls": [
+  {
+   "tool": "fulltext",
+   "args": {
+    "id_or_url": "odd001"
+   }
+  }
+ ],
+ "responses": [
+  {
+   "key": "https://theses.cz/id/odd001/",
+   "status": 200,
+   "url": "https://theses.cz/id/odd001/",
+   "headers": {
+    "Content-Type": "text/html; charset=utf-8"
+   },
+   "body": "<html><head><title>t</title></head><body><div id=\"metadata\"><h3 class=\"th-autor\">A</h3><h2 class=\"th-title\">Title odd001</h2></div><div class=\"plny_text_th\"><ul id=\"th-obsah\"><li>světu</li></ul></div><div class=\"plny_text_ext\"><div class=\"ext_prez\"><a href=\"https://school.example/th/1/\">x</a></div></div><div id=\"th-sloupec\"><div class=\"oddil\"><h4>Škola testovací</h4></div></div></body></html>"
+  },
+  {
+   "key": "https://school.example/th/1/",
+   "status": 200,
+   "url": "https://school.example/th/1/",
+   "headers": {
+    "Content-Type": "text/html; charset=utf-8"
+   },
+   "body": "<html><body>\n<a href=\"\">empty.pdf</a>\n<a href=\"#\">hash.pdf</a>\n<a href=\"mailto:x@y.cz\">mail.pdf</a>\n<a href=\"/files/A.PDF?dl=1\">UPPER</a>\n<a href=\"get.php?file=thesis.pdf\">label</a>\n<a href=\"/dl/1\">Hlavní práce</a>\n<a href=\"/dl/2\">Plný&nbsp;text   práce</a>\n<a href=\"/dl/3\">ŘÍZENÍ.PDF</a>\n<a href=\"/dl/4\">příloha.docx, 1 MB Stáhnout</a>\n<a href=\"/dl/5\">file.pdf Stáhnout Stáhnout</a>\n<a href=\"/dl/6\"><img alt=\"x\"></a>\n<a href=\"/my file.pdf\">spaced</a>\n<a href=\"/práce.pdf\">unicode</a>\n<a href=\"https://other.example/o.txt\">abs</a>\n<a href=\"//cdn.example/x.pdf\">proto-relative</a>\n<a href=\"../up/y.odt\">rel up</a>\n<a href=\"/dup.pdf\">dup1</a><a href=\"/dup.pdf\">dup2</a>\n<a href=\"/dl/7\">Stáhnout</a>\n<a href=\"/dl/8\">   </a>\n<a href=\"/dl/9\">Final thesis (see: a.b.c.pdf).</a>\n<a href=\"/dl/10\">a.pdf b.zip</a>\n<a href=\"/dl/11\">oponent</a>\n<a href=\"/dl/12\">VEDOUCÍ posudek</a>\n<a href=\"/f.pdf;jsessionid=1?x=2\">sess</a>\n<a href=\"/dl/13\">x.doc.</a>\n<a href=\"/dl/14\">name with spaces.pdf</a>\n<a href=\"/dl/15\">  Atestační práce Nováková.PDF  </a>\n<a href=\"/dl/16\">readme.TXT</a>\n<a href=\"/dl/17\">archive.zip, 2 MB Stahnout</a>\n</body></html>"
+  },
+  {
+   "key": "https://school.example/dl/1 [range]",
+   "status": 200,
+   "url": "https://school.example/dl/1",
+   "headers": {
+    "Content-Type": "application/pdf",
+    "Content-Disposition": "attachment; filename=\"Posudek č.1.pdf\""
+   },
+   "body": "%PDF-1.4 x"
+  },
+  {
+   "key": "https://school.example/dl/2 [range]",
+   "status": 200,
+   "url": "https://school.example/dl/2",
+   "headers": {
+    "Content-Type": "application/zip",
+    "Content-Disposition": "attachment; filename*=UTF-8''p%C5%99%C3%ADloha.zip"
+   },
+   "body": "PK\u0003\u0004abc"
+  },
+  {
+   "key": "https://school.example/dl/3 [range]",
+   "status": 200,
+   "url": "https://school.example/dl/3",
+   "headers": {
+    "Content-Type": "application/rtf"
+   },
+   "body": "{\\rtf1 x}"
+  },
+  {
+   "key": "https://school.example/dl/4 [range]",
+   "status": 200,
+   "url": "https://school.example/dl/4",
+   "headers": {
+    "Content-Type": "text/html"
+   },
+   "body": "<html>no</html>"
+  },
+  {
+   "key": "https://school.example/dl/5 [range]",
+   "status": 200,
+   "url": "https://school.example/dl/5",
+   "headers": {
+    "Content-Type": "application/pdf",
+    "Content-Disposition": "attachment; filename=\"Posudek č.5.pdf\""
+   },
+   "body": "%PDF-1.4 x"
+  },
+  {
+   "key": "https://school.example/dl/6 [range]",
+   "status": 200,
+   "url": "https://school.example/dl/6",
+   "headers": {
+    "Content-Type": "application/zip",
+    "Content-Disposition": "attachment; filename*=UTF-8''p%C5%99%C3%ADloha.zip"
+   },
+   "body": "PK\u0003\u0004abc"
+  },
+  {
+   "key": "https://school.example/dl/7 [range]",
+   "status": 200,
+   "url": "https://school.example/dl/7",
+   "headers": {
+    "Content-Type": "application/rtf"
+   },
+   "body": "{\\rtf1 x}"
+  },
+  {
+   "key": "https://school.example/dl/8 [range]",
+   "status": 200,
+   "url": "https://school.example/dl/8",
+   "headers": {
+    "Content-Type": "text/html"
+   },
+   "body": "<html>no</html>"
+  },
+  {
+   "key": "https://school.example/dl/9 [range]",
+   "status": 200,
+   "url": "https://school.example/dl/9",
+   "headers": {
+    "Content-Type": "application/pdf",
+    "Content-Disposition": "attachment; filename=\"Posudek č.9.pdf\""
+   },
+   "body": "%PDF-1.4 x"
+  },
+  {
+   "key": "https://school.example/dl/10 [range]",
+   "status": 200,
+   "url": "https://school.example/dl/10",
+   "headers": {
+    "Content-Type": "application/zip",
+    "Content-Disposition": "attachment; filename*=UTF-8''p%C5%99%C3%ADloha.zip"
+   },
+   "body": "PK\u0003\u0004abc"
+  },
+  {
+   "key": "https://school.example/dl/11 [range]",
+   "status": 200,
+   "url": "https://school.example/dl/11",
+   "headers": {
+    "Content-Type": "application/rtf"
+   },
+   "body": "{\\rtf1 x}"
+  },
+  {
+   "key": "https://school.example/dl/12 [range]",
+   "status": 200,
+   "url": "https://school.example/dl/12",
+   "headers": {
+    "Content-Type": "text/html"
+   },
+   "body": "<html>no</html>"
+  },
+  {
+   "key": "https://school.example/dl/13 [range]",
+   "status": 200,
+   "url": "https://school.example/dl/13",
+   "headers": {
+    "Content-Type": "application/pdf",
+    "Content-Disposition": "attachment; filename=\"Posudek č.13.pdf\""
+   },
+   "body": "%PDF-1.4 x"
+  },
+  {
+   "key": "https://school.example/dl/14 [range]",
+   "status": 200,
+   "url": "https://school.example/dl/14",
+   "headers": {
+    "Content-Type": "application/zip",
+    "Content-Disposition": "attachment; filename*=UTF-8''p%C5%99%C3%ADloha.zip"
+   },
+   "body": "PK\u0003\u0004abc"
+  },
+  {
+   "key": "https://school.example/dl/15 [range]",
+   "status": 200,
+   "url": "https://school.example/dl/15",
+   "headers": {
+    "Content-Type": "application/rtf"
+   },
+   "body": "{\\rtf1 x}"
+  },
+  {
+   "key": "https://school.example/dl/16 [range]",
+   "status": 200,
+   "url": "https://school.example/dl/16",
+   "headers": {
+    "Content-Type": "text/html"
+   },
+   "body": "<html>no</html>"
+  },
+  {
+   "key": "https://school.example/dl/17 [range]",
+   "status": 200,
+   "url": "https://school.example/dl/17",
+   "headers": {
+    "Content-Type": "application/pdf",
+    "Content-Disposition": "attachment; filename=\"Posudek č.17.pdf\""
+   },
+   "body": "%PDF-1.4 x"
+  },
+  {
+   "key": "https://school.example/th/1/ [range]",
+   "status": 200,
+   "url": "https://school.example/th/1/",
+   "headers": {
+    "Content-Type": "text/html; charset=utf-8"
+   },
+   "body": "<html>not a file</html>"
+  }
+ ],
+ "expected": {
+  "results": [
+   {
+    "error": false,
+    "text": "{\n  \"url\": \"https://theses.cz/id/odd001/\",\n  \"access\": [\n    \"světu\"\n  ],\n  \"archive_url\": \"https://school.example/th/1/\",\n  \"files\": [\n    {\n      \"label\": \"empty.pdf\",\n      \"filename\": \"empty.pdf\",\n      \"url\": \"https://school.example/th/1/\",\n      \"confirmed\": false\n    },\n    {\n      \"label\": \"UPPER\",\n      \"filename\": \"A.PDF?dl=1\",\n      \"url\": \"https://school.example/files/A.PDF?dl=1\"\n    },\n    {\n      \"label\": \"ŘÍZENÍ.PDF\",\n      \"filename\": \"ŘÍZENÍ.PDF\",\n      \"url\": \"https://school.example/dl/3\",\n      \"confirmed\": true\n    },\n    {\n      \"label\": \"příloha.docx, 1 MB\",\n      \"filename\": \"příloha.docx\",\n      \"url\": \"https://school.example/dl/4\",\n      \"confirmed\": false\n    },\n    {\n      \"label\": \"file.pdf Stáhnout\",\n      \"filename\": \"file.pdf\",\n      \"url\": \"https://school.example/dl/5\",\n      \"confirmed\": true\n    },\n    {\n      \"label\": \"spaced\",\n      \"filename\": \"my file.pdf\",\n      \"url\": \"https://school.example/my file.pdf\"\n    },\n    {\n      \"label\": \"unicode\",\n      \"filename\": \"práce.pdf\",\n      \"url\": \"https://school.example/práce.pdf\"\n    },\n    {\n      \"label\": \"abs\",\n      \"filename\": \"o.txt\",\n      \"url\": \"https://other.example/o.txt\"\n    },\n    {\n      \"label\": \"proto-relative\",\n      \"filename\": \"x.pdf\",\n      \"url\": \"https://cdn.example/x.pdf\"\n    },\n    {\n      \"label\": \"rel up\",\n      \"filename\": \"y.odt\",\n      \"url\": \"https://school.example/th/up/y.odt\"\n    },\n    {\n      \"label\": \"dup1\",\n      \"filename\": \"dup.pdf\",\n      \"url\": \"https://school.example/dup.pdf\"\n    },\n    {\n      \"label\": \"Final thesis (see: a.b.c.pdf).\",\n      \"filename\": \"a.b.c.pdf\",\n      \"url\": \"https://school.example/dl/9\",\n      \"confirmed\": true\n    },\n    {\n      \"label\": \"a.pdf b.zip\",\n      \"filename\": \"a.pdf b.zip\",\n      \"url\": \"https://school.example/dl/10\",\n      \"confirmed\": true\n    },\n    {\n      \"label\": \"x.doc.\",\n      \"filename\": \"x.doc\",\n      \"url\": \"https://school.example/dl/13\",\n      \"confirmed\": true\n    },\n    {\n      \"label\": \"name with spaces.pdf\",\n      \"filename\": \"name with spaces.pdf\",\n      \"url\": \"https://school.example/dl/14\",\n      \"confirmed\": true\n    },\n    {\n      \"label\": \"Atestační práce Nováková.PDF\",\n      \"filename\": \"Atestační práce Nováková.PDF\",\n      \"url\": \"https://school.example/dl/15\",\n      \"confirmed\": true\n    },\n    {\n      \"label\": \"readme.TXT\",\n      \"filename\": \"readme.TXT\",\n      \"url\": \"https://school.example/dl/16\",\n      \"confirmed\": false\n    },\n    {\n      \"label\": \"archive.zip, 2 MB\",\n      \"filename\": \"archive.zip\",\n      \"url\": \"https://school.example/dl/17\",\n      \"confirmed\": true\n    },\n    {\n      \"label\": \"Hlavní práce\",\n      \"filename\": \"Posudek č.1.pdf\",\n      \"url\": \"https://school.example/dl/1\",\n      \"confirmed\": true\n    },\n    {\n      \"label\": \"Plný text práce\",\n      \"filename\": \"p%C5%99%C3%ADloha.zip\",\n      \"url\": \"https://school.example/dl/2\",\n      \"confirmed\": true\n    },\n    {\n      \"label\": \"oponent\",\n      \"filename\": \"11.rtf\",\n      \"url\": \"https://school.example/dl/11\",\n      \"confirmed\": true\n    }\n  ]\n}"
+   }
+  ],
+  "requests": [
+   "https://theses.cz/id/odd001/",
+   "https://school.example/th/1/ [range]",
+   "https://school.example/th/1/",
+   "https://school.example/th/1/ [range]",
+   "https://school.example/dl/3 [range]",
+   "https://school.example/dl/4 [range]",
+   "https://school.example/dl/5 [range]",
+   "https://school.example/dl/9 [range]",
+   "https://school.example/dl/10 [range]",
+   "https://school.example/dl/13 [range]",
+   "https://school.example/dl/14 [range]",
+   "https://school.example/dl/15 [range]",
+   "https://school.example/dl/16 [range]",
+   "https://school.example/dl/17 [range]",
+   "https://school.example/dl/1 [range]",
+   "https://school.example/dl/2 [range]",
+   "https://school.example/dl/11 [range]",
+   "https://school.example/dl/12 [range]"
+  ],
+  "saved_after": null,
+  "authenticated": []
+ }
+}

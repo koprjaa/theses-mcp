@@ -8,8 +8,12 @@ use crate::error::{Error, Result};
 use reqwest::header::HeaderValue;
 use serde::{Deserialize, Serialize};
 use std::io::Read;
-use std::sync::{Arc, Mutex};
+use std::sync::{Arc, Mutex, RwLock};
 use std::time::Duration;
+
+/// The most of a page that is read. A school link that turns out to be a multi-gigabyte file
+/// must not be pulled into memory; no page or JSON listing the server parses comes close.
+pub const MAX_BODY: u64 = 16 * 1024 * 1024;
 
 pub const USER_AGENT: &str = "theses-mcp (+https://github.com/koprjaa/theses-mcp)";
 
@@ -177,16 +181,24 @@ impl reqwest::cookie::CookieStore for Jar {
             };
             let mut domain = host.clone();
             let mut expired = false;
+            let mut refused = false;
             for attr in parts {
                 let attr = attr.trim();
                 let lower = attr.to_lowercase();
                 if let Some(d) = lower.strip_prefix("domain=") {
-                    if domain_matches(&host, d) {
+                    // like http.cookiejar: no cookie for a Domain without an embedded dot
+                    // ("cz"), which would reach every host under it
+                    if !d.trim_start_matches('.').contains('.') {
+                        refused = true;
+                    } else if domain_matches(&host, d) {
                         domain = d.trim_start_matches('.').to_string();
                     }
                 } else if lower == "max-age=0" || lower.starts_with("max-age=-") {
                     expired = true;
                 }
+            }
+            if refused {
+                continue;
             }
             let cookie = Cookie {
                 name: name.trim().to_string(),
@@ -216,6 +228,10 @@ pub struct ReqwestTransport {
     client: reqwest::blocking::Client,
     jar: Arc<Jar>,
     backoff_factor: f64,
+    /// The overlay cookies live in the one jar, so a request that carries them runs alone
+    /// (write) and every other request runs beside its peers (read). Otherwise a request that
+    /// finishes would clear the cookies of one still on its way, and a new one would borrow them.
+    gate: RwLock<()>,
 }
 
 /// reqwest is built without a bundled crypto provider, and the browser client needs one too.
@@ -251,10 +267,17 @@ impl ReqwestTransport {
             client,
             jar,
             backoff_factor,
+            gate: RwLock::new(()),
         }
     }
 
-    fn once(&self, req: &Request) -> std::result::Result<Response, reqwest::Error> {
+    /// One attempt. The flag says whether a failure is worth another try: urllib3 retried what
+    /// went wrong while connecting or waiting for the headers, and nothing after that.
+    fn once(&self, req: &Request) -> std::result::Result<Response, (Error, bool)> {
+        let fail = |e: &reqwest::Error| {
+            let (class, retry) = classify(&req.url, e);
+            (Error::new(class, e.to_string()), retry)
+        };
         let mut builder = self
             .client
             .get(&req.url)
@@ -265,7 +288,7 @@ impl ReqwestTransport {
         if req.accept_json {
             builder = builder.header("Accept", "application/json");
         }
-        let mut resp = builder.send()?;
+        let mut resp = builder.send().map_err(|e| fail(&e))?;
         let header = |name: &str| {
             resp.headers()
                 .get(name)
@@ -276,11 +299,11 @@ impl ReqwestTransport {
         let retry_after = header("retry-after").and_then(|v| v.trim().parse::<u64>().ok());
         let (status, url) = (resp.status().as_u16(), resp.url().to_string());
         let mut body = Vec::new();
-        if req.probe {
-            // a server that ignores Range would send the whole file; stop after the magic bytes
-            let _ = (&mut resp).take(400).read_to_end(&mut body);
-        } else {
-            body = resp.bytes()?.to_vec();
+        // a server that ignores Range would send the whole file; stop after the magic bytes
+        let limit = if req.probe { 400 } else { MAX_BODY };
+        let read = (&mut resp).take(limit).read_to_end(&mut body);
+        if let (Err(e), false) = (read, req.probe) {
+            return Err((Error::new("ConnectionError", e.to_string()), false));
         }
         Ok(Response {
             status,
@@ -299,29 +322,53 @@ impl Default for ReqwestTransport {
     }
 }
 
-fn error_class(e: &reqwest::Error) -> &'static str {
+/// What `requests` calls a URL it will not send to.
+fn url_class(url: &str) -> &'static str {
+    match url::Url::parse(url) {
+        Err(url::ParseError::RelativeUrlWithoutBase) => "MissingSchema",
+        Ok(u) if !matches!(u.scheme(), "http" | "https") => "InvalidSchema",
+        _ => "InvalidURL",
+    }
+}
+
+/// The name `requests` would have given the failure, and whether urllib3 would have tried
+/// again. An exhausted read timeout is a `ConnectionError` there, and a bad URL, a redirect
+/// loop or a body that cannot be decoded is raised once, not retried.
+fn classify(url: &str, e: &reqwest::Error) -> (&'static str, bool) {
+    if e.is_builder() {
+        return (url_class(url), false);
+    }
+    if e.is_redirect() {
+        return ("TooManyRedirects", false);
+    }
     let chain = format!("{e:?}").to_lowercase();
     if e.is_timeout() {
-        if e.is_connect() {
-            "ConnectTimeout"
-        } else {
-            "ReadTimeout"
-        }
-    } else if chain.contains("certificate") || chain.contains("handshake") {
-        "SSLError"
-    } else if e.is_redirect() {
-        "TooManyRedirects"
-    } else if e.is_decode() {
-        "ContentDecodingError"
-    } else if e.is_builder() {
-        "InvalidURL"
-    } else {
-        "ConnectionError"
+        return (
+            if e.is_connect() {
+                "ConnectTimeout"
+            } else {
+                "ConnectionError"
+            },
+            true,
+        );
     }
+    if chain.contains("certificate") || chain.contains("handshake") {
+        return ("SSLError", true);
+    }
+    if e.is_decode() {
+        return ("ContentDecodingError", false);
+    }
+    ("ConnectionError", true)
 }
 
 impl Transport for ReqwestTransport {
     fn get(&self, req: &Request) -> Result<Response> {
+        let (_shared, _alone);
+        if req.overlay.is_empty() {
+            _shared = self.gate.read().unwrap_or_else(|e| e.into_inner());
+        } else {
+            _alone = self.gate.write().unwrap_or_else(|e| e.into_inner());
+        }
         *self.jar.overlay.lock().expect("jar lock") = req.overlay.clone();
         let mut failures = 0u32;
         let outcome = loop {
@@ -336,7 +383,8 @@ impl Transport for ReqwestTransport {
                     )
                 }
                 Ok(r) => break Ok(r),
-                Err(e) => Error::new(error_class(&e), e.to_string()),
+                Err((e, false)) => break Err(e),
+                Err((e, true)) => e,
             };
             failures += 1;
             if failures > 3 {

@@ -135,11 +135,12 @@ fn get_obj<'a>(v: &'a Value, key: &str) -> Result<&'a Value> {
 }
 
 impl Theses {
-    /// GET a page, waiting out the placeholder pages the registry answers with under load.
-    pub fn get_page(&self, url: &str) -> Result<Page> {
+    /// GET, waiting out the placeholder pages the registry answers with under load. At most
+    /// four looks; the last one is returned whatever it is.
+    pub fn get_waiting(&self, req: &Request) -> Result<Response> {
         let mut last: Option<Response> = None;
         for _ in 0..4 {
-            let r = self.http.get(&Request::get(url, 30))?;
+            let r = self.http.get(req)?;
             let delay = stub_delay(head_chars(&r.text(), 400));
             last = Some(r);
             match delay {
@@ -147,7 +148,11 @@ impl Theses {
                 Some(d) => self.http.sleep(Duration::from_secs(d)),
             }
         }
-        let r = last.expect("at least one attempt");
+        Ok(last.expect("at least one attempt"))
+    }
+
+    pub fn get_page(&self, url: &str) -> Result<Page> {
+        let r = self.get_waiting(&Request::get(url, 30))?;
         Ok(Page::parse(&r.text(), &r.url))
     }
 

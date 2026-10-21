@@ -1,0 +1,48 @@
+{
+ "name": "audit_search_odd",
+ "env": {},
+ "saved": null,
+ "calls": [
+  {
+   "tool": "search",
+   "args": {
+    "query": "české & a/b+c ž",
+    "limit": 20
+   }
+  }
+ ],
+ "responses": [
+  {
+   "key": "https://theses.cz/vyhledavani/?search=české & a/b+c ž&start=1",
+   "status": 200,
+   "url": "https://theses.cz/vyhledavani/?search=české & a/b+c ž&start=1",
+   "headers": {
+    "Content-Type": "text/html; charset=utf-8"
+   },
+   "body": "<html><body><p>Výsledky 1 &ndash; 10 z 1 234 567 <span>(0,1 s)</span></p><div id=\"vysledky_vyhledavani\">\n<div class=\"vyh_polozka\" data-agenda=\"T\"><h4><a href=\"/id/abc123/Some%20File.pdf?x=1&amp;y=2\">  Title <br> one &amp;\n two&nbsp;three </a></h4>\n &nbsp;( Jan   Novák )\n<div class=\"vyh_hlavicky\"><p>Bakalářská práce,  X</p><p>2020</p></div><div class=\"vyh_text\">snip<span>pet</span> text</div></div>\n<div class=\"vyh_polozka\" data-agenda=\"T\"><h4><a href=\"/id/abc124\">T2</a></h4><span class=\"x\"> Elem <b>Author</b> </span><div class=\"vyh_hlavicky\">h</div><div class=\"vyh_text\">s</div></div>\n<div class=\"vyh_polozka\" data-agenda=\"T\"><h4><a href=\"/id/abc125/\">T3</a></h4><!-- a comment --><div class=\"vyh_hlavicky\">h</div><div class=\"vyh_text\">s</div></div>\n<div class=\"vyh_polozka\" data-agenda=\"1\"><h4><a href=\"https://is.example.cz/th/aaa/Pr%C3%A1ce.pdf?zpet=1#frag\">PDF title</a></h4>\n&nbsp;(Eva Čermáková)\n<div class=\"vyh_hlavicky\">hh</div><div class=\"vyh_text\">ss</div><span class=\"archiv\"><a href=\"/id/fff111\">rec</a></span></div>\n<div class=\"vyh_polozka\" data-agenda=\"1\"><h4><a href=\"https://is.example.cz/th/bbb/x.pdf\">no archiv</a></h4>\n&nbsp;()\n<div class=\"vyh_hlavicky\">hh</div><div class=\"vyh_text\">ss</div></div>\n<div class=\"vyh_polozka\" data-agenda=\"T\"><h4><a href=\"https://elsewhere.example/x?q=1\">odd host</a></h4>\n<div class=\"vyh_hlavicky\">hh</div></div>\n<div class=\"vyh_polozka\" data-agenda=\"T\"><h4>no anchor</h4>&nbsp;(Skipped)</div>\n<div class=\"vyh_polozka\" data-agenda=\"t\"><h4><a href=\"/id/lower\">lowercase T</a></h4>&nbsp;(L)<div class=\"vyh_text\"></div></div>\n<div class=\"vyh_polozka\"><h4><a href=\"/id/ünï\">unicode id</a></h4>text only author<div class=\"vyh_hlavicky\">h</div></div>\n<div class=\"vyh_polozka\" data-agenda=\"T\"><h4><a href=\"/id/last99/\">Last</a></h4>\n(Plain (nested) parens)\n<div class=\"vyh_hlavicky\">h</div></div>\n</div></body></html>"
+  },
+  {
+   "key": "https://theses.cz/vyhledavani/?search=české & a/b+c ž&start=11",
+   "status": 200,
+   "url": "https://theses.cz/vyhledavani/?search=české & a/b+c ž&start=11",
+   "headers": {
+    "Content-Type": "text/html; charset=utf-8"
+   },
+   "body": "<html><body></body></html>"
+  }
+ ],
+ "expected": {
+  "results": [
+   {
+    "error": false,
+    "text": "{\n  \"total\": 1234567,\n  \"returned\": 9,\n  \"results\": [\n    {\n      \"kind\": \"record\",\n      \"title\": \"Title one & two three\",\n      \"author\": \"Jan Novák\",\n      \"meta\": \"Bakalářská práce, X 2020\",\n      \"snippet\": \"snip pet text\",\n      \"url\": \"https://theses.cz/id/abc123/\"\n    },\n    {\n      \"kind\": \"record\",\n      \"title\": \"T2\",\n      \"author\": \"Elem Author\",\n      \"meta\": \"h\",\n      \"snippet\": \"s\",\n      \"url\": \"https://theses.cz/id/abc124/\"\n    },\n    {\n      \"kind\": \"record\",\n      \"title\": \"T3\",\n      \"author\": \"a comment\",\n      \"meta\": \"h\",\n      \"snippet\": \"s\",\n      \"url\": \"https://theses.cz/id/abc125/\"\n    },\n    {\n      \"kind\": \"fulltext\",\n      \"title\": \"PDF title\",\n      \"author\": \"Eva Čermáková\",\n      \"meta\": \"hh\",\n      \"snippet\": \"ss\",\n      \"pdf_url\": \"https://is.example.cz/th/aaa/Pr%C3%A1ce.pdf\",\n      \"url\": \"https://theses.cz/id/fff111\"\n    },\n    {\n      \"kind\": \"fulltext\",\n      \"title\": \"no archiv\",\n      \"author\": null,\n      \"meta\": \"hh\",\n      \"snippet\": \"ss\",\n      \"pdf_url\": \"https://is.example.cz/th/bbb/x.pdf\",\n      \"url\": null\n    },\n    {\n      \"kind\": \"record\",\n      \"title\": \"odd host\",\n      \"author\": null,\n      \"meta\": \"hh\",\n      \"snippet\": \"\",\n      \"url\": \"https://theses.czhttps://elsewhere.example/x\"\n    },\n    {\n      \"kind\": \"fulltext\",\n      \"title\": \"lowercase T\",\n      \"author\": \"L\",\n      \"meta\": \"\",\n      \"snippet\": \"\",\n      \"pdf_url\": \"/id/lower\",\n      \"url\": null\n    },\n    {\n      \"kind\": \"fulltext\",\n      \"title\": \"unicode id\",\n      \"author\": \"text only author\",\n      \"meta\": \"h\",\n      \"snippet\": \"\",\n      \"pdf_url\": \"/id/ünï\",\n      \"url\": null\n    },\n    {\n      \"kind\": \"record\",\n      \"title\": \"Last\",\n      \"author\": \"Plain (nested) parens\",\n      \"meta\": \"h\",\n      \"snippet\": \"\",\n      \"url\": \"https://theses.cz/id/last99/\"\n    }\n  ]\n}"
+   }
+  ],
+  "requests": [
+   "https://theses.cz/vyhledavani/?search=české & a/b+c ž&start=1",
+   "https://theses.cz/vyhledavani/?search=české & a/b+c ž&start=11"
+  ],
+  "saved_after": null,
+  "authenticated": []
+ }
+}
