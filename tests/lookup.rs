@@ -2,8 +2,7 @@
 // File: tests/lookup.rs
 // Description: Regressions for record codes, search parsing and school repository lookups.
 // Author: Jan Alexandr Kopřiva
-// License: MIT
-
+// License: AGPL-3.0-or-later
 mod common;
 
 use common::{Mock, reply};

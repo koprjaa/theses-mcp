@@ -2,8 +2,7 @@
 // File: tests/transport.rs
 // Description: The real HTTP transport against a local server: retries, cookies, ranged probes, text decoding.
 // Author: Jan Alexandr Kopřiva
-// License: MIT
-
+// License: AGPL-3.0-or-later
 use std::io::{Read, Write};
 use std::net::TcpListener;
 use std::sync::{Arc, Mutex};

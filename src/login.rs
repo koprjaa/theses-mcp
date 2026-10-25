@@ -2,8 +2,7 @@
 // File: src/login.rs
 // Description: Browser sign-in over the Chrome DevTools Protocol: opens a window, waits, reads back session cookies.
 // Author: Jan Alexandr Kopřiva
-// License: MIT
-
+// License: AGPL-3.0-or-later
 use crate::Theses;
 use crate::http::Cookie;
 use crate::session::{is_gated, is_signed_in};

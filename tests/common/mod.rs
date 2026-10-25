@@ -2,8 +2,7 @@
 // File: tests/common/mod.rs
 // Description: Replays recorded HTTP responses so every test runs offline.
 // Author: Jan Alexandr Kopřiva
-// License: MIT
-
+// License: AGPL-3.0-or-later
 #![allow(dead_code)]
 
 use base64::Engine;

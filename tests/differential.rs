@@ -2,8 +2,7 @@
 // File: tests/differential.rs
 // Description: Replay what the Python server did on recorded responses and compare, request by request.
 // Author: Jan Alexandr Kopřiva
-// License: MIT
-
+// License: AGPL-3.0-or-later
 //! Every file in `tests/fixtures/scenarios` holds a sequence of tool calls, the HTTP responses
 //! they saw, and what the Python server answered, asked, and wrote to disk when given exactly
 //! those responses. `live_main.json` was recorded against theses.cz and two school systems, then

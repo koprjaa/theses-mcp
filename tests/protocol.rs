@@ -2,8 +2,7 @@
 // File: tests/protocol.rs
 // Description: Start the real binary and speak MCP to it over stdio, against what the Python server answered.
 // Author: Jan Alexandr Kopřiva
-// License: MIT
-
+// License: AGPL-3.0-or-later
 use serde_json::{Value, json};
 use std::io::{BufRead, BufReader, Write};
 use std::process::{Command, Stdio};

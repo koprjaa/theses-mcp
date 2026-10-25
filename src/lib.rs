@@ -2,8 +2,7 @@
 // File: src/lib.rs
 // Description: MCP server for theses.cz: searches Czech university theses, reads their metadata, and lists their documents.
 // Author: Jan Alexandr Kopřiva
-// License: MIT
-
+// License: AGPL-3.0-or-later
 //! MCP server for theses.cz. Search Czech university theses and their metadata.
 
 pub mod dispatch;

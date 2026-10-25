@@ -2,8 +2,7 @@
 // File: tests/login_browser.rs
 // Description: End to end check of the browser login against a headless Chromium-family browser.
 // Author: Jan Alexandr Kopřiva
-// License: MIT
-
+// License: AGPL-3.0-or-later
 //! Needs an installed Chromium-family browser, so it is skipped by default:
 //!
 //!     cargo test --test login_browser -- --ignored

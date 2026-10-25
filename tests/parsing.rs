@@ -2,8 +2,7 @@
 // File: tests/parsing.rs
 // Description: Parsing, document-link matching, STAG portlets and session detection, without a network.
 // Author: Jan Alexandr Kopřiva
-// License: MIT
-
+// License: AGPL-3.0-or-later
 //! Port of the Python `test_parsing.py`, plus the table of Python answers in
 //! `fixtures/unit.json` for the helpers whose edge cases are easy to get subtly wrong.
 //!

@@ -2,8 +2,7 @@
 // File: src/util.rs
 // Description: Small string helpers that reproduce the Python behaviour the server relies on.
 // Author: Jan Alexandr Kopřiva
-// License: MIT
-
+// License: AGPL-3.0-or-later
 use regex::Regex;
 use serde_json::Value;
 use std::sync::LazyLock;

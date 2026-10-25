@@ -2,8 +2,7 @@
 // File: tests/audit.rs
 // Description: Regressions for differences from the Python server found by reading both side by side.
 // Author: Jan Alexandr Kopřiva
-// License: MIT
-
+// License: AGPL-3.0-or-later
 mod common;
 
 use common::{Mock, reply};

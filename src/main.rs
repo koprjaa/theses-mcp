@@ -2,8 +2,7 @@
 // File: src/main.rs
 // Description: Entry point: serves MCP over stdio, or runs the live self-test with --selftest.
 // Author: Jan Alexandr Kopřiva
-// License: MIT
-
+// License: AGPL-3.0-or-later
 use std::process::ExitCode;
 
 #[tokio::main]

@@ -2,8 +2,7 @@
 // File: src/http.rs
 // Description: HTTP transport with the retry policy, cookie jar and text decoding the server needs.
 // Author: Jan Alexandr Kopřiva
-// License: MIT
-
+// License: AGPL-3.0-or-later
 use crate::error::{Error, Result};
 use reqwest::header::HeaderValue;
 use serde::{Deserialize, Serialize};

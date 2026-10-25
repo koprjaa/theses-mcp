@@ -2,8 +2,7 @@
 // File: src/theses.rs
 // Description: The search, detail and fulltext tools: theses.cz parsing and school repository lookups.
 // Author: Jan Alexandr Kopřiva
-// License: MIT
-
+// License: AGPL-3.0-or-later
 use crate::dom::{Page, compact_text, node_text, sel, sibling_text};
 use crate::error::{Error, Result};
 use crate::http::{Request, Response};

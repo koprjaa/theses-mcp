@@ -2,8 +2,7 @@
 // File: src/selftest.rs
 // Description: Live check against theses.cz and school repositories; the parsers break when site markup changes.
 // Author: Jan Alexandr Kopřiva
-// License: MIT
-
+// License: AGPL-3.0-or-later
 use crate::Theses;
 use serde_json::Value;
 

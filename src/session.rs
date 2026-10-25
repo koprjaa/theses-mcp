@@ -2,8 +2,7 @@
 // File: src/session.rs
 // Description: Signed-in sessions: the saved cookie file, use_cookie, whoami and cookie verification.
 // Author: Jan Alexandr Kopřiva
-// License: MIT
-
+// License: AGPL-3.0-or-later
 use crate::Theses;
 use crate::dom::Page;
 use crate::error::Result;

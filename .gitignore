@@ -2,7 +2,7 @@
 # File: .gitignore
 # Description: Ignore build output, local tools, and editor files.
 # Author: Jan Alexandr Kopřiva
-# License: MIT
+# License: AGPL-3.0-or-later
 /target/
 /.tmp/
 /.venv/

@@ -2,8 +2,7 @@
 // File: tests/harness.rs
 // Description: Tests for the helpers that decide which school a search result belongs to.
 // Author: Jan Alexandr Kopřiva
-// License: MIT
-
+// License: AGPL-3.0-or-later
 //! Port of the Python `test_harness.py`.
 //!
 //! The Python coverage harness produced the school-by-school numbers; a bug there does not

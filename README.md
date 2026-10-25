@@ -3,7 +3,7 @@
 Search Czech university theses and retrieve document links for MCP clients.
 
 [![CI](https://github.com/koprjaa/theses-mcp/actions/workflows/ci.yml/badge.svg)](https://github.com/koprjaa/theses-mcp/actions/workflows/ci.yml)
-[![MIT license](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+[![License: AGPL-3.0](https://img.shields.io/badge/license-AGPL--3.0-blue.svg)](LICENSE)
 
 ## What it does
 
@@ -60,4 +60,4 @@ Use a record's code or URL for `detail` and `fulltext`. Search accepts `AND`, `O
 
 ## License
 
-[MIT](LICENSE)
+[AGPL-3.0-or-later](LICENSE)

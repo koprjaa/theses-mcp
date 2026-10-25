@@ -2,8 +2,7 @@
 // File: src/server.rs
 // Description: MCP over stdio: lists the six tools and routes calls to the blocking implementations.
 // Author: Jan Alexandr Kopřiva
-// License: MIT
-
+// License: AGPL-3.0-or-later
 use crate::Theses;
 use crate::dispatch::{Reply, call_blocking, login_params};
 use crate::tools::definitions;

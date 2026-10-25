@@ -2,8 +2,7 @@
 // File: src/tools.rs
 // Description: Tool names, descriptions and input schemas, identical to what the Python server advertised.
 // Author: Jan Alexandr Kopřiva
-// License: MIT
-
+// License: AGPL-3.0-or-later
 use serde_json::{Map, Value, json};
 
 /// `(name, description, input schema)` for every tool, in the order the Python server listed them.

@@ -2,8 +2,7 @@
 // File: src/error.rs
 // Description: Error type that carries the Python exception name some results print.
 // Author: Jan Alexandr Kopřiva
-// License: MIT
-
+// License: AGPL-3.0-or-later
 use std::fmt;
 
 /// `class` is the name the Python server printed for the same failure, for example

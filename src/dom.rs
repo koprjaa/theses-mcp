@@ -2,8 +2,7 @@
 // File: src/dom.rs
 // Description: HTML page wrapper and the text extraction the Python server did with BeautifulSoup.
 // Author: Jan Alexandr Kopřiva
-// License: MIT
-
+// License: AGPL-3.0-or-later
 use crate::util::squash;
 use scraper::{ElementRef, Html, Node, Selector};
 

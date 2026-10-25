@@ -2,8 +2,7 @@
 // File: tests/login.rs
 // Description: The parts of the browser login that can be checked without a browser.
 // Author: Jan Alexandr Kopřiva
-// License: MIT
-
+// License: AGPL-3.0-or-later
 mod common;
 
 use common::{Mock, reply};
